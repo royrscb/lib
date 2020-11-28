@@ -263,7 +263,7 @@ var La = {
             $(droppable).droppable(settings.drop)
         },
 
-		carousel(carousel, slideElement = 'img', transitonTime = 1500){
+		carousel(carousel = '#content .carousel', slideElement = 'img', transitonTime = 1500){
 
 			carousel = $(carousel)
 
@@ -292,6 +292,14 @@ var La = {
 			setTimeout(slideCarousel, transitonTime)
 		}
     },
+
+	is: {
+
+		number(x){
+
+			return /^\d+$/.test(x)
+		}
+	},
 
     load: {
 
@@ -334,39 +342,42 @@ var La = {
 
     make: {
 
-        editField(text, onSave){
+        editField(title, text, onSave){
 
             let edit_field_div = $('<div>').addClass('edit-field')
-            let text_div = $('<div>').addClass('edit-field-texts').appendTo(edit_field_div)
-            let icon_div = $('<div>').addClass('edit-field-icons').appendTo(edit_field_div)
-            let p = $('<p>').text(text).appendTo(text_div)
-            let input = $('<input>').addClass('input uppercase-first').val(text).appendTo(text_div).hide()
 
-            let pencil = $('<i>').addClass('ico pencil').appendTo(icon_div)
-            let check = $('<i>').addClass('ico green-check').appendTo(icon_div).hide()
+			if(title) $('<div>').addClass('edit-field-title').text(title).appendTo(edit_field_div)
+
+            let input = $('<input>').addClass('edit-field-input uppercase-first').prop('disabled', true).val(text).appendTo(edit_field_div)
+
+            let icon_div = $('<div>').addClass('edit-field-icons').appendTo(edit_field_div)
+            let pencil = $('<div>').addClass('ico pencil').appendTo(icon_div)
+            let save = $('<button>').text('Guardar').addClass('green edit-field-save').appendTo(icon_div).hide()
 
             pencil.click(function(){
 
-                p.hide()
-                pencil.hide()
+                edit_field_div.addClass('editing')
 
-                input.fadeIn().focus()
-                check.fadeIn()
+				input.prop('disabled', false)
+
+                pencil.hide()
+                save.fadeIn()
             })
 
-            check.click(function(){
+            save.click(function(){
 
-                input.hide()
-                check.hide()
+				edit_field_div.removeClass('editing')
 
-                p.fadeIn()
+				input.prop('disabled', true)
+
+				save.hide()
                 pencil.fadeIn()
 
                 La.util.hideMobileKeyboard()
 
-                if(onSave) onSave(input.val(), p, input)
+                if(onSave) onSave(input.val(), input)
             })
-            input.keyup(e => e.keyCode == 13 && check.click())
+            input.keyup(e => e.keyCode == 13 && save.click())
 
             return edit_field_div
         },
@@ -795,9 +806,11 @@ var La = {
             var div = $('<div></div>').addClass('pop-msg-div ' + type).appendTo($('body')).css({
 
                 position: 'fixed',
+				display: 'inline-table',
                 padding: '10px 15px',
+				maxWidth: '90vw',
                 border: 0,
-                margin: '10px',
+                margin: 0,
                 borderRadius: '15px',
                 bottom: 0,
                 left: '50%',
@@ -883,7 +896,7 @@ var La = {
 
     parse: {
 
-        date(date, format){
+        date(date, format, langIfStringFormat = 'en'){
 
             if(date instanceof Date){
                 if(isNaN(date)) La.make.popMessage('Invalid date: '+date, 'error')
@@ -914,19 +927,12 @@ var La = {
                     return number > 9 ? number : '0'+number
                 }
 
-                const monthNames =
-                {
-                    en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-                    ca: ["Gener", "Febrer","Març","Abril","Maig","Juny","Juliol","Agost","Setembre","Octubre","Novembre","Desembre"],
-                    es: ["Enero", "Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-                }
-
                 if(element == 'Y') return date.getFullYear()
                 else if(element == 'y') return date.getFullYear().toString().substring(2)
-                else if(element == 'M') return date.toLocaleString(La.get.lang(), { month: 'long' }).toUpperCase()
+                else if(element == 'M') return date.toLocaleString(langIfStringFormat, { month: 'long' }).toLowerCase()
                 else if(element == 'm') return addLeadingZero(parseInt(date.getMonth())+1)
                 else if(element == 'd') return addLeadingZero(date.getDate())
-                else if(element == 'D') return date.toLocaleString(La.get.lang(), { weekday: 'long' }).toUpperCase()
+                else if(element == 'D') return date.toLocaleString(langIfStringFormat, { weekday: 'long' }).toLowerCase()
                 else if(element == 'H') return addLeadingZero(date.getHours())
                 else if(element == 'h') return date.getHours() > 12 ? addLeadingZero(La.util.date_addition(date, -12, 'h').getHours()) : addLeadingZero(date.getHours())
                 else if(element == 'i') return addLeadingZero(date.getMinutes())
@@ -996,21 +1002,6 @@ var La = {
                 return true
 
             } else return false
-        },
-
-        urlParams(url) {
-
-            var params = {};
-
-            var rawParams = url.split('?').reverse()[0].split('&')
-
-            rawParams.forEach(function (param) {
-
-                keyValue = param.split('=')
-                params[keyValue[0]] = keyValue[1]
-            })
-
-            return params
         }
     },
 
@@ -1029,16 +1020,18 @@ var La = {
             if(La.get.device() == 'MOBILE') $(':focus').blur()
         },
 
-        date_addition(date, operand, format){
+		// s: second, i: minute, h: hour, d: day, w: week, y: year
+        date_addition(date, timeToAdd, format){
 
-            date = La.parse.date(date)
+            dateTime = La.parse.date(date).getTime()
 
-            if(format == 's') return new Date(date.getTime() + operand * 1000)
-            else if(format == 'i') return La.util.date_addition(date, operand * 60, 's')
-            else if(format == 'h') return La.util.date_addition(date, operand * 60, 'i')
-            else if(format == 'd') return La.util.date_addition(date, operand * 24, 'h')
-            else if(format == 'y') return La.util.date_addition(date, operand * 365, 'd')
-            else return La.make.popMessage('Unknown format for date_addition ['+format+']', 'error')
+            if(format == 's') return new Date(dateTime + timeToAdd * 1000)
+            else if(format == 'i') return La.util.date_addition(date, timeToAdd * 60, 's')
+            else if(format == 'h') return La.util.date_addition(date, timeToAdd * 60, 'i')
+            else if(format == 'd') return La.util.date_addition(date, timeToAdd * 24, 'h')
+            else if(format == 'w') return La.util.date_addition(date, timeToAdd * 7, 'd')
+            else if(format == 'y') return La.util.date_addition(date, timeToAdd * 365, 'd')
+            else return console.error('Unknown format for date_addition ['+format+']')
         },
 
         sha256(s) {
@@ -1202,23 +1195,6 @@ var La = {
             return Number.isInteger(price) ? price.toString() : price.toFixed(2)
         },
 
-        visitor_counter(phpSrc, success = function () {}) {
-
-            if (window.location.hostname == 'localhost') return 0
-
-            if (!sessionStorage.getItem('visit_counter') && !localStorage.getItem('admin')) {
-
-                sessionStorage.setItem('visit_counter', true)
-
-                var time = new Date().getHours() + ':' + new Date().getMinutes()
-
-                $.post(phpSrc, {
-                    time: time,
-                    device: La.get.device()
-                }).done(success).fail(La.parse.error)
-            }
-        },
-
         disableInputChars(charsToDisable){
 
             $(document).on('input', 'input:not([type=file]), textarea', function(e){
@@ -1234,7 +1210,12 @@ var La = {
                     }
                 }.bind(this))
             })
-        }
+        },
+
+		uppercaseFirst(string){
+
+			return string.charAt(0).toUpperCase() + string.slice(1);
+		}
     },
 
     debug: {
@@ -1280,7 +1261,7 @@ $(document).on('click', '.modal-img', function (e) {
 	div.click(function () {
 
 		$(TARGET).removeClass('popped-img')
-		div.remove()
+		div.fadeOut(100, () => div.remove())
 	})
 
 	// IMG ---------------------------------------------------------------
@@ -1303,7 +1284,8 @@ $(document).on('click', '.modal-img', function (e) {
 	if (IS_IMG_HORIZONTAL) {
 		img_div.width('95%');
 		img.width('100%')
-	} else {
+	}
+	else {
 		img_div.height('85%');
 		img.height('100%')
 	}
@@ -1331,7 +1313,8 @@ $(document).on('click', '.modal-img', function (e) {
 			cursor: 'default',
 			position: 'absolute',
 			left: 0,
-			top: img.height() + 'px',
+			bottom: 0,
+			transform: 'translateY(100%)',
 			margin: 0,
 			padding: '10px 10px 10px 0',
 			fontSize: '18px',
@@ -1343,6 +1326,7 @@ $(document).on('click', '.modal-img', function (e) {
 		img_div.css('top', 'calc(50% - 15px)')
 	}
 
+	div.hide().fadeIn('fast')
 })
 $(document).on('mouseenter', '.modal-img', e => $(e.target).css({
 		'cursor': 'pointer',
@@ -1370,6 +1354,4 @@ Array.prototype.max = function(callback = (a) => { return a }) {
 
   return Math.max.apply(Math, this.map(callback))
 }
-
-
 
