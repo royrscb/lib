@@ -1,4 +1,4 @@
-/*! La v1 | (c) Roy Ros Cobo | github.com/royrscb => https://raw.githubusercontent.com/royrscb/lib/main/js/la.js */
+/*! La v2 | (c) Roy Ros Cobo | github.com/royrscb */
 const La = {
 
     tmp: undefined, tmp2: undefined, tmp3: undefined,
@@ -727,6 +727,12 @@ const La = {
             return div
         },
 
+		imageUploader(phpSrc, data, backgroundImage, multiple = true){
+
+
+
+		},
+
         quillEditor(container, html, saveFunction) {
 
             let div = $('<div></div>').prop('id', 'quill_div').addClass('quill-div').appendTo($(container)).css({})
@@ -946,10 +952,10 @@ const La = {
 
                 if(element == 'Y') return date.getFullYear()
                 else if(element == 'y') return date.getFullYear().toString().substring(2)
-                else if(element == 'M') return date.toLocaleString(langIfStringFormat, { month: 'long' }).toLowerCase()
+                else if(element == 'M') return date.toString(langIfStringFormat, { month: 'long' }).toLowerCase()
                 else if(element == 'm') return addLeadingZero(parseInt(date.getMonth())+1)
                 else if(element == 'd') return addLeadingZero(date.getDate())
-                else if(element == 'D') return date.toLocaleString(langIfStringFormat, { weekday: 'long' }).toLowerCase()
+                else if(element == 'D') return date.toString(langIfStringFormat, { weekday: 'long' }).toLowerCase()
                 else if(element == 'H') return addLeadingZero(date.getHours())
                 else if(element == 'h') return date.getHours() > 12 ? addLeadingZero(La.util.date_addition(date, -12, 'h').getHours()) : addLeadingZero(date.getHours())
                 else if(element == 'i') return addLeadingZero(date.getMinutes())
@@ -959,13 +965,7 @@ const La = {
             }
 
             var display = ''
-
-            while(format) {
-
-                display += getDateElement(date, format[0])
-
-                format = format.substring(1)
-            }
+			for(var i = 0; i < format.length; i++) display += getDateElement(date, format.charAt(i))
 
             return display
         },
@@ -1022,7 +1022,9 @@ const La = {
 
     util: {
 
-        smoothScrollTo(top = 0){
+        smoothScrollTo(top_or_element){
+
+			const top = La.is.number(top_or_element) ? parseInt(top_or_element) : ($(top_or_element).offset().top -window.innerHeight/4)
 
 			return new Promise((resolve, reject) => {
 
