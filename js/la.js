@@ -1,5 +1,5 @@
-/*! La v1 | (c) Roy Ros Cobo | github.com/royrscb */
-var La = {
+/*! La v1 | (c) Roy Ros Cobo | github.com/royrscb => https://raw.githubusercontent.com/royrscb/lib/main/js/la.js */
+const La = {
 
     tmp: undefined, tmp2: undefined, tmp3: undefined,
 
@@ -10,6 +10,22 @@ var La = {
             if (window.innerWidth <= 600) return 'MOBILE'
             else if (window.innerWidth >= 601) return 'DESKTOP'
 
+        },
+
+        file(src, cache = true) {
+
+			const options = {}
+			if(!cache) options['cache'] = 'no-store'
+
+			return fetch(src, options).then(function (response) {return response.text()})
+        },
+
+        json(src, cache = true) {
+
+            const options = {}
+			if(!cache) options['cache'] = 'no-store'
+
+			return fetch(src, options).then(function (response) {return response.json()})
         },
 
         root(relative = true) {
@@ -337,7 +353,7 @@ var La = {
 
 				document.head.appendChild(script)
 			})
-		},
+		}
     },
 
     make: {
@@ -513,7 +529,7 @@ var La = {
             return div
         },
 
-        // set an image droppable, options: data, backgroundImage, multiple=true and callbacks: imageUploaded, crossClick
+		// set an image droppable, options: data, backgroundImage, multiple=true and callbacks: imageUploaded, crossClick
         imageDroppable(phpSrc, options, callbacks){
 
             options = $.extend({
@@ -890,8 +906,8 @@ var La = {
             labelDiv.on('mouseenter', e => $(e.target).css('opacity', 0))
                 .on('mouseout', e => $(e.target).css('opacity', 1))
 
-            return div
-        }
+			return div
+		}
     },
 
     parse: {
@@ -899,7 +915,8 @@ var La = {
         date(date, format, langIfStringFormat = 'en'){
 
             if(date instanceof Date){
-                if(isNaN(date)) La.make.popMessage('Invalid date: '+date, 'error')
+
+				if(isNaN(date)) return console.error('Invalid date: '+date)
             }
             else {// si es string o numeric
 
@@ -913,7 +930,7 @@ var La = {
 
                         date = new Date(date)
                     }
-                    //else La.make.popMessage('Not recognizable string date: '+date, 'error')
+                    else return console.error('Not recognizable string date: '+date)
                 }
                 else date = new Date(date)
             }
@@ -966,8 +983,6 @@ var La = {
 
         maybeJSON(maybeJSON) {
 
-            var ret
-
             try {
 
                 return JSON.parse(maybeJSON)
@@ -976,6 +991,21 @@ var La = {
 
                 return maybeJSON
             }
+        },
+
+        maybeError(maybeError, callback) {
+
+            if (La.parse.maybeJSON(maybeError) && typeof La.parse.maybeJSON(maybeError) == 'object' && La.parse.maybeJSON(maybeError).status == 'ERROR') {
+
+                const error = La.parse.maybeJSON(maybeError)
+
+                console.error('ERROR '+error.code +': '+error.text)
+                if(callback) callback(error)
+                else La.make.popMessage(error.text, 'error')
+
+                return true
+
+            } else return false
         },
 
         fail(jqxhr, textStatus, error) {
@@ -987,21 +1017,6 @@ var La = {
 
                 La.make.popMessage(textStatus+': '+error, 'error')
             }
-        },
-
-        maybeError(maybeError, callback) {
-
-            if (La.parse.maybeJSON(maybeError) && typeof La.parse.maybeJSON(maybeError) == 'object' && La.parse.maybeJSON(maybeError).status == 'ERROR') {
-
-                const error = La.parse.maybeJSON(maybeError)
-
-                console.error(error.code +': '+error.text)
-                if(callback) callback(error)
-                else La.make.popMessage(error.text, 'error')
-
-                return true
-
-            } else return false
         }
     },
 
@@ -1216,16 +1231,6 @@ var La = {
 
 			return string.charAt(0).toUpperCase() + string.slice(1);
 		}
-    },
-
-    debug: {
-
-        PHP: function(to_echo){
-
-            $.get('../php/_DEBUG.php', {to_echo: to_echo})
-            .done(res => console.log(La.parse.maybeJSON(res)))
-            .fail(La.parse.error)
-        }
     }
 }
 
@@ -1354,4 +1359,3 @@ Array.prototype.max = function(callback = (a) => { return a }) {
 
   return Math.max.apply(Math, this.map(callback))
 }
-
