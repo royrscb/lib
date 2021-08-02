@@ -1,263 +1,141 @@
 <?php
 
     const TIMESTAMP = 'Y-m-d H:i:s';
-    const STANDARD_DATE_FORMAT = 'Y-m-d H:i:s';
-    const TELEGRAM_ROYRSCB_BOT_TOKEN = 'xxx';
-    const TELEGRAM_INSECTES_BOT_TOKEN = 'xxx';
+    const TELEGRAM_ROYRSCB_BOT_TOKEN = '1258995587:AAEO2rnPl7_eVE8YDYLs-xcQyii1jH_bhZ8';
+    const TELEGRAM_INSECTES_BOT_TOKEN = '1396062241:AAGutzXymTPQCNpXVp_FIAB5RsI004pwTjo';
     const TELEGRAM_ROYRSCB_CHAT_ID = '465403410';
 
-    const SIGNATURE_SECRET = 'xxx';
 
-
-
-    function logAndTelegram($code, $text, $type, $telegram){
-
-        $logText = '';
-        if($me = whoami()) $logText .= '('.$me->id.': '.$me->email.') ';
-        else $log = '(Unknown user) ';
-        if($location = get_client_location()) $logText .= '{'.$location['country'].', '.$location['city'].'} ';
-        $logText .= $type.' '.$code.': '.$text.PHP_EOL;
-
-        $path = basename(getcwd()) == 'php' ? './' : '../';
-        file_put_contents($path.'error_log_la', $logText, FILE_APPEND);
-
-        $logText = '<b>'.str_replace($type.' '.$code.':', $type.' '.$code.':</b>', $logText);
-
-        if($telegram) send_telegram($logText, TELEGRAM_INSECTES_BOT_TOKEN, TELEGRAM_ROYRSCB_CHAT_ID, 'HTML');
-    }
-
-
-  function throwError($textOrCode, $text = null, $log = false, $telegram = false){
-
-
-    $error['status'] = 'ERROR';
-    if($text){
-
-        $error['code'] = $textOrCode;
-        $error['text'] = $text;
-    }
-      else{
-
-            $error['code'] = 500;
-            $error['text'] = $textOrCode;
-      }
-
-        if($log) logAndTelegram($code, $text, 'error', $telegram);
-
-		exit(json_encode($error));
-  }
-
-	function throwException($code = 500, $text = null, $log = true, $telegram = false){
-
-        if($log) logAndTelegram($code, $text, 'exception', $telegram);
-
-		header("HTTP/1.1 $code $text", true, 401);
-		exit();
-	}
-
-    function echoDebug($msg){
-
-        header("HTTP/1.1 555 ".json_encode($msg), true, 401);
-		exit();
-    }
-
-	function getJSON($path){
-
-		return json_decode(file_get_contents($path), true);
-	}
-
-	function saveJSON($path, $json){
-
-		return file_put_contents($path, json_encode($json, JSON_PRETTY_PRINT));
-	}
-
-	function is_img_extension($file){
-
-	    return  strtolower(pathinfo($file, PATHINFO_EXTENSION))=='jpg' ||
-	            strtolower(pathinfo($file, PATHINFO_EXTENSION))=='jpeg' ||
-	            strtolower(pathinfo($file, PATHINFO_EXTENSION))=='png';
-  	}
-
+	// GET --------------------------------------------------------------------------------------------------
 	function scandir_recursively($path){
 
-        if(is_dir($path)){
+		if(is_dir($path)){
 
-            $arr = array();
+			$arr = array();
 
-            $dir = array_slice(scandir($path), 2);
-            foreach($dir as $item)
-                if(is_file($path.'/'.$item)) array_push($arr, $item);
-                else if(is_dir($path)) $arr[$item] = scandir_recursively($path.'/'.$item);
+			$dir = array_slice(scandir($path), 2);
+			foreach($dir as $item)
+				if(is_file($path.'/'.$item)) array_push($arr, $item);
+				else if(is_dir($path)) $arr[$item] = scandir_recursively($path.'/'.$item);
 
-            return $arr;
-        }
-	}
-
-	function newFileInt($dir){
-
-		function strName2intCmp($a, $b){
-
-			$aInt = intval(pathinfo($a, PATHINFO_FILENAME));
-			$bInt = intval(pathinfo($b, PATHINFO_FILENAME));
-
-			return $aInt - $bInt;
+			return $arr;
 		}
-
-		$dir = array_slice(scandir($dir), 2);
-		usort($dir, "strName2intCmp");
-		$maxIntFile = array_pop($dir);
-		$maxInt = intval(pathinfo($maxIntFile, PATHINFO_FILENAME));
-
-		return $maxInt;
 	}
 
-	function save_uploaded_file(){
+	function get_client_location(){
 
-		if($_FILES['file']['error'] != 0) throwError('File not found!');
-		$path = $_POST['path'];
-		$_POST = json_decode($_POST['dataJSON'], true);
+		$info = unserialize(file_get_contents('http://ip-api.com/php/'.$_SERVER['REMOTE_ADDR']));
 
-    $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
-		$name = newFileInt($path) +1;
-		if(isset($_POST['name'])) $name = $_POST['name'];
-    $newImgSrc = $path.'/'.$name.'.'.$ext;
+		if($info['status'] == 'success'){
 
-		if(move_uploaded_file($_FILES['file']['tmp_name'], $newImgSrc)) return $newImgSrc;
-		else throwError('move_uploaded_file function failed!');
+			$location['city'] = $info['city'];
+			$location['region'] = $info['regionName'];
+			$location['country'] = $info['country'];
+
+			return $location;
+
+		}else return null;
 	}
 
-	function array_swap($array, $index_a, $index_b){
+	function timeToken($uniqid = null){
 
-		$tmp = $array[$index_a];
-		$array[$index_a] = $array[$index_b];
-		$array[$index_b] = $tmp;
+		$salt = 'una mica de salt secreta pero ben ben secreta i que no sap dingu';
 
-		return $array;
+		$token = md5($uniqid.':'.time().':'.$salt);
+
+		return $token;
+	}
+	function validateTimeToken($lifeSpan, $token, $uniqid = null){
+
+		if(!$token) throwException(500, 'Token not found to validate hour token');
+
+		if(is_numeric($lifeSpan)) { if($lifeSpan > 1000000) throwException(500, 'Not valid time token lifespan ['.$lifeSpan.'], max seconds 1000000'); }
+		else if(is_string($lifeSpan)){
+
+			if($lifeSpan == 'HOUR')         $lifeSpan = 3600;
+			else if($lifeSpan == 'DAY')     $lifeSpan = 3600*24;
+			else if($lifeSpan == 'WEEK')    $lifeSpan = 3600*24*7;
+			else throwException(500, 'Not valid time token lifespan ['.$lifeSpan.'], allowed lifespans "HOUR", "DAY", "WEEK"');
+		}
+		else throwException(500, 'Not valid time token lifespan ['.$lifeSpan.']');
+
+		$salt = 'una mica de salt secreta pero ben ben secreta i que no sap dingu';
+
+		$maybeTime = time();
+
+		while((time() - $maybeTime) < $lifeSpan && md5($uniqid.':'.$maybeTime.':'.$salt) != $token) $maybeTime--;
+
+		return md5($uniqid.':'.$maybeTime.':'.$salt) == $token;
 	}
 
-  function array_search_key($key, $value, $array){
 
-		$i = 0;
-		while($i < count($array) && $array[$i][$key] != $value) $i++;
+	// SEND -------------------------------------------------------------------------------------------------
+	function post_JSON($url, $json){
 
-		if($i == count($array)) return -1;
-		else return $i;
+		$ch = curl_init($url);
+
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		$result = curl_exec($ch);
+		curl_close($ch);
+
+		return json_decode($result, true);
 	}
 
-function array_insert($array, $positon, $element){
+	function send_telegram($message, $bot_token = TELEGRAM_ROYRSCB_BOT_TOKEN, $chat_id = TELEGRAM_ROYRSCB_CHAT_ID, $html = false){
 
-	for($i = count($array); $i > $positon; $i--) $array[$i] = $array[$i -1];
-	$array[$positon] = $element;
+		if(empty($message)) { logAndTelegram(500, 'Can not send empty message', 'telegram error', true, true); return null; }
 
-	return $array;
-}
+		$data = [ 'chat_id' => $chat_id, 'text' => $message ];
+		if($html) $data['parse_mode'] = 'HTML';
 
-  function get_client_location(){
+		$response = post_JSON('https://api.telegram.org/bot'.$bot_token.'/sendMessage', $data);
 
-    $info = unserialize(file_get_contents('http://ip-api.com/php/'.$_SERVER['REMOTE_ADDR']));
+		if(isset($response['ok'])){
 
-    if($info['status'] == 'success'){
+			if($response['ok']) return $response['result'];
+			else { logAndTelegram($response['error_code'], $response['description'], 'telegram error', true, true); return null; }
+		}
+		else throwException(500, 'error sending telegram to '.$data['chat_id'].' ('.$data['text'].')');
+	}
 
-      $location['city'] = $info['city'];
-      $location['region'] = $info['regionName'];
-      $location['country'] = $info['country'];
+	function send_mail($to, $subject, $message, $from, $html_styled = false){
 
-      return $location;
+		if(!$from) $from = $_SERVER['HTTP_HOST'];
+		$headers = 'From: '.$from.PHP_EOL;
+		if($html_styled) $headers .= 'Content-type: text/html; charset=iso-8859-1';
 
-    }else return null;
-  }
-
-    function get_telegram_updates($bot_token){
-
-        $url = 'https://api.telegram.org';
-
-        $request = $url.'/bot'.$bot_token.'/getUpdates';
-        $response = json_decode(file_get_contents($request), true);
-
-        if($response['ok']) return $response['result'];
-        else throwException($response->error_code, $reponse->message);
-    }
-
-    function send_telegram($message, $bot_token = TELEGRAM_ROYRSCB_BOT_TOKEN, $chat_id = TELEGRAM_ROYRSCB_CHAT_ID, $parse_mode = null, $keyboard = null){
-
-        $url = 'https://api.telegram.org';
-
-        $request = $url.'/bot'.$bot_token.'/sendMessage?chat_id='.$chat_id.'&text='.urlencode($message);
-        if($keyboard){
-
-            $keyboard['inline_keyboard'][0][0]['text'] = urlencode($keyboard['inline_keyboard'][0][0]['text']);
-            $request .= '&reply_markup='.json_encode($keyboard);
-        }
-        if($parse_mode) $request .= '&parse_mode='.$parse_mode;
-
-        $response = json_decode(file_get_contents($request), true);
-
-        if(isset($response['ok'])){
-
-            if($response['ok']) return $response['result'];
-            else throwException($response['error_code'], $reponse['message']);
-        }
-        else throwException(500, 'error sending telegram to '.$chat_id.' ('.$message.')');
-    }
+		return mail($to, $subject, $message, $headers);
+	}
 
 
-    function timeToken($uniqid = null){
+	// PARSE ------------------------------------------------------------------------------------------------
+	function date_spain($format = null){
 
-        $salt = 'una mica de salt secreta';
+		$now_spain = new DateTime('now', new DateTimeZone('Europe/Madrid'));
 
-        $token = md5($uniqid.':'.time().':'.$salt);
+		if($format) return $now_spain->format($format);
+		else return $now_spain;
+	}
+	function parse_date_spain($date, $format = null){
 
-        return $token;
-    }
-    function validateTimeToken($lifeSpan, $token, $uniqid = null){
+		if(is_string($date)) $date_spain = new DateTime($date, new DateTimeZone('Europe/Madrid'));
+		else if(is_numeric($date)) $date_spain = (new DateTime('@'.$date))->setTimezone(new DateTimeZone('Europe/Madrid'));
 
-        if(!$token) throwException(500, 'Token not found to validate hour token');
+		if($format) return $date_spain->format($format);
+		else return $date_spain;
+	}
 
-        if(is_numeric($lifeSpan)) { if($lifeSpan > 1000000) throwException(500, 'Not valid time token lifespan ['.$lifeSpan.'], max seconds 1000000'); }
-        else if(is_string($lifeSpan)){
+	function parse_bool($bool){
 
-            if($lifeSpan == 'HOUR')         $lifeSpan = 3600;
-            else if($lifeSpan == 'DAY')     $lifeSpan = 3600*24;
-            else if($lifeSpan == 'WEEK')    $lifeSpan = 3600*24*7;
-            else throwException(500, 'Not valid time token lifespan ['.$lifeSpan.'], allowed lifespans "HOUR", "DAY", "WEEK"');
-        }
-        else throwException(500, 'Not valid time token lifespan ['.$lifeSpan.']');
-
-        $salt = 'una mica de salt secreta';
-
-        $maybeTime = time();
-
-        while((time() - $maybeTime) < $lifeSpan && md5($uniqid.':'.$maybeTime.':'.$salt) != $token) $maybeTime--;
-
-        return md5($uniqid.':'.$maybeTime.':'.$salt) == $token;
-    }
-
-
-
-    function send_mail($to, $subject, $message, $from, $html_styled = false){
-
-        if(!$from) $from = $_SERVER['HTTP_HOST'];
-        $headers = 'From: '.$from.PHP_EOL;
-        if($html_styled) $headers .= 'Content-type: text/html; charset=iso-8859-1';
-
-        return mail($to, $subject, $message, $headers);
-    }
-
-    function date_spain($format = null){
-
-        $now_spain = new DateTime('now', new DateTimeZone('Europe/Madrid'));
-
-        if($format) return $now_spain->format($format);
-        else return $now_spain;
-    }
-    function parse_date_spain($date, $format = null){
-
-        if(is_string($date)) $date_spain = new DateTime($date, new DateTimeZone('Europe/Madrid'));
-        else if(is_numeric($date)) $date_spain = (new DateTime('@'.$date))->setTimezone(new DateTimeZone('Europe/Madrid'));
-
-        if($format) return $date_spain->format($format);
-        else return $date_spain;
-    }
+		if(is_bool($bool)) return $bool;
+		else if(strtolower($bool) === 'true') return true;
+		else if(strtolower($bool) === 'false') return false;
+		else return null;
+	}
 
 	function addSlashesToString($string){
 
@@ -270,67 +148,93 @@ function array_insert($array, $positon, $element){
 
 			if(is_string($value)){
 
-				if(strtolower($value) == 'null' || $value == '') $value = null;
+				if(strtolower($value) == 'null' || empty($value)) $value = null;
 				else if(strtolower($value) == 'true') $value = true;
 				else if(strtolower($value) == 'false') $value = false;
 			}
 		});
 
-		return "'".addSlashesToString(json_encode($json, JSON_NUMERIC_CHECK))."'";
+		return addSlashesToString(json_encode($json, JSON_NUMERIC_CHECK));
+	}
+
+	// returns the index of the first element that returns true to the callback(current_element, index), or null if not founds
+	function array_find_index(callable $callback, array $array){
+
+		$i = 0;
+		while($i < count($array) && !$callback($array[$i], $i)) $i++;
+
+		if($i < count($array)) return $i;
+		else return null;
+	}
+	// returns the first element that returns true to the callback(current_element, index), or null if not founds
+	function array_find(callable $callback, array $array){
+
+		$maybeIndex = array_find_index($callback, $array);
+
+		if(!is_null($maybeIndex)) return $array[$maybeIndex];
+		else return null;
+	}
+	// removes the first element that returns true to the callback(current_element, index)
+	function array_remove(callable $callback, array $array){
+
+		$maybeIndex = array_find_index($callback, $array);
+
+		return array_splice($array, $maybeIndex, 1);
 	}
 
 
 
-    function whoami(){
+	// DEBUG ------------------------------------------------------------------------------------------------
+    function logAndTelegram($code, $text, $type, $log, $telegram){
 
-        if(session_status() == PHP_SESSION_NONE) session_start();
+        $errorText = '';
+        if($location = get_client_location()) $errorText .= '{'.$location['country'].', '.$location['city'].'} ';
+        $errorText .= $type.' '.$code.': '.$text.PHP_EOL;
 
-        // session check
-        if(isset($_SESSION['user'])){
+		if($log){
 
-            $maybeUser = json_decode($_SESSION['user']);
+			$path = basename(getcwd()) == 'php' ? './' : '../';
+			file_put_contents($path.'error_log_la', $errorText, FILE_APPEND);
+		}
 
-            $allSet = isset($maybeUser->id) && isset($maybeUser->email) && isset($maybeUser->signature);
-            $correctSignature = $allSet && $maybeUser->signature == md5($maybeUser->id.'|'.$maybeUser->email.'|'.SIGNATURE_SECRET);
-
-            if($correctSignature) return $maybeUser;
-        }
-
-        // cookie check
-        if(isset($_COOKIE['user'])){
-
-            $maybeUser = json_decode($_COOKIE['user']);
-
-            $allSet = isset($maybeUser->id) && isset($maybeUser->email) && isset($maybeUser->signature);
-            $correctSignature = $allSet && $maybeUser->signature == md5($maybeUser->id.'|'.$maybeUser->email.'|'.SIGNATURE_SECRET);
-
-            if($correctSignature){
-
-                $_SESSION['user'] = $_COOKIE['user'];
-                return $maybeUser;
-            }
-            else setcookie('user', null, -1, '/');
-        }
-
-        return null;
+        $errorText = '<b>'.str_replace($type.' '.$code.':', $type.' '.$code.':</b>', $errorText);
+        if($telegram) send_telegram($errorText, TELEGRAM_INSECTES_BOT_TOKEN, TELEGRAM_ROYRSCB_CHAT_ID, true);
     }
 
+	function throwError($textOrCode, $text = null, $log = false, $telegram = false){
 
+		$error['status'] = 'ERROR';
+		if($text){
 
+			$error['code'] = $textOrCode;
+			$error['text'] = $text;
+		}
+		else{
 
-    function checkAuthAdmin($handleForbidden = true){
+			$error['code'] = 500;
+			$error['text'] = $textOrCode;
+		}
 
-        if(!is_null(whoami()) && intval(whoami()->id) === 1) return true;
-        else if($handleForbidden) throwException(403, 'Forbidden ADMIN');
-        else return false;
-    }
-    function checkAuthUser($id, $handleForbidden = true){
+		logAndTelegram($error['code'], $error['text'], 'error', $log, $telegram);
 
-        //if(checkAuthAdmin(false) || !is_null(whoami()) && intval(whoami()->id) === intval($id)) return true;
-        if(!is_null(whoami()) && intval(whoami()->id) === intval($id)) return true;
-        else if($handleForbidden) throwException(403, 'Forbidden USER');
-        else return false;
-    }
+		exit(json_encode($error));
+	}
+
+	function throwException($code = 500, $text = null, $log = true, $telegram = true){
+
+		logAndTelegram($code, $text, 'exception', $log, $telegram);
+
+		header("HTTP/1.1 $code $text", true, 401);
+		exit();
+	}
+
+	function echoDebug($msg){
+
+		if(gettype($msg) == 'array') $msg = json_encode($msg);
+
+		header("HTTP/1.1 555 ".$msg, true, 401);
+		exit();
+	}
 
 
 

@@ -152,7 +152,8 @@ const La = {
 
 		urlParams(params){
 
-			if(typeof params == 'string') window.history.replaceState(null, null, '?'+params)
+			if(!params) window.history.replaceState(null, null, location.pathname)
+			else if(typeof params == 'string') window.history.replaceState(null, null, location.href.split('?')[0]+'?'+params)
 			else if(typeof params == 'object') La.set.urlParams(Object.keys(params).map(k => k+'='+(typeof params[k] == 'string' ? params[k].split(' ').join('_') : params[k])).join('&'))
 		},
 
@@ -530,7 +531,7 @@ const La = {
         },
 
 		// set an image droppable, options: data, backgroundImage, multiple=true and callbacks: imageUploaded, crossClick
-        imageDroppable(phpSrc, options, callbacks){
+        imageUploader(phpSrc, options, callbacks){
 
             options = $.extend({
 
@@ -547,7 +548,7 @@ const La = {
             }, callbacks)
 
 
-            let div = $('<div>').addClass('files-droppable-div').css({
+            let div = $('<div>').addClass('image-uploader-div').css({
 
                 position: 'relative',
                 display: 'inline-block',
@@ -555,7 +556,7 @@ const La = {
                 minWidth: 150,
                 minHeight: 100,
 
-                border: '2px black dashed',
+                border: '1px black solid',
                 borderRadius: 3,
                 margin: 5,
 
@@ -570,16 +571,6 @@ const La = {
             if(options.backgroundImage) div.css('background-image', 'url('+options.backgroundImage+')')
 
             let input = $('<input>').prop('type', 'file').prop('multiple', options.multiple).hide().appendTo(div)
-
-            let droppable = $('<div>').appendTo(div).css({
-
-                minWidth: 150,
-                minHeight: 100,
-                width: '100%',
-                height: '100%',
-
-                transition: '0.5s'
-            })
 
             let cross = $('<div>').addClass('ico red-cross').appendTo(div).css({
 
@@ -598,39 +589,19 @@ const La = {
             cross.click(callbacks.crossClick)
 
 
-            let choose_text = $('<div>').addClass('center-abs-xy p-10').appendTo(div).css({
-
-                boxSizing: 'border-box',
-                width: '100%',
-                height: '100%',
-                paddingTop: '20%',
-
-                backgroundColor: 'rgba(255, 255, 255, 0.5)'
-            })
-            let choose_button = $('<button>').prop('type', 'button').text('Elige imagen'+(options.multiple ? 'es' : '')).appendTo(choose_text).css('background-color', 'aliceblue')
-                .hover(e => $(e.target).css({backgroundColor: 'black', color: 'white'}), e => $(e.target).css({backgroundColor: 'transparent', color: 'black'}))
-            $('<p>').text('o').addClass('m-5').css('font-size', 11).appendTo(choose_text)
-            $('<p>').text('Arrastra aqui').addClass('m-0').appendTo(choose_text).css({
-
-                fontSize: 14,
-                fontWeight: 'bold'
-            })
+            let choose_button = $('<button>').prop('type', 'button').text('Elige imagen'+(options.multiple ? 'es' : '')).appendTo(choose_text).css('background-color', 'white')
+                .hover(e => $(e.target).css({backgroundColor: 'black', color: 'white'}), e => $(e.target).css({backgroundColor: 'white', color: 'black'}))
 
             let loading_text = $('<div>').addClass('center-abs-xy p-10').appendTo(div).css({
 
                 boxSizing: 'border-box',
                 width: '100%',
-                height: '100%',
-                paddingTop: '20%',
-
-                backgroundColor: 'rgba(255, 255, 255, 0.5)',
 
                 fontSize: '16px'
 
             }).hide()
-            $('<p>').text('Uploading').addClass('m-5').appendTo(loading_text)
-            let percentage_number = $('<span>').text('32')
-            $('<p>').text('%').addClass('m-5').prepend(percentage_number).appendTo(loading_text)
+            let percentage_number = $('<span>').text('32').appendTo(loading_text)
+            $('<p>').text('%').addClass('m-5').appendTo(percentage_number).appendTo(loading_text)
 
 
             // on files added --------------------------
@@ -645,7 +616,6 @@ const La = {
             }
             function uploadFiles(files){
 
-                droppable.hide()
                 loading_text.show()
 
                 let formData = new FormData()
@@ -676,7 +646,6 @@ const La = {
 
                         loading_text.hide()
                         choose_text.show()
-                        droppable.fadeIn('fast')
 
                         if(options.multiple) callbacks.imageUploaded(JSON.parse(res))
                         else callbacks.imageUploaded(JSON.parse(res)[0])
@@ -689,49 +658,13 @@ const La = {
             // set events ----------------------
             choose_button.click(() => input.click())
 
-            choose_text.get(0).ondragover = function(){ droppable.trigger('ondragenter') }
-            droppable.get(0).ondragenter = function(e){
-
-                if(e) e.preventDefault()
-
-                choose_text.fadeOut('fast').get(0).style.pointerEvents = 'none'
-                droppable.css('backgroundColor', 'rgba(0, 0, 0, 0.3)')
-
-            }
-            droppable.get(0).ondragover = function(e){
-
-                e.preventDefault()
-
-                choose_text.fadeOut('fast').get(0).style.pointerEvents = 'none'
-            }
-            droppable.get(0).ondragleave = function(){
-
-                choose_text.fadeIn('fast').get(0).style.pointerEvents = null
-                droppable.css('backgroundColor', 'transparent')
-            }
-
             input.change(function(e){
 
                 choose_text.hide()
                 uploadFiles(e.target.files)
             })
-            droppable.get(0).ondrop = function(e){
-
-                e.preventDefault()
-
-                droppable.css('backgroundColor', 'transparent')
-
-                uploadFiles(e.dataTransfer.files)
-            }
-
             return div
         },
-
-		imageUploader(phpSrc, data, backgroundImage, multiple = true){
-
-
-
-		},
 
         quillEditor(container, html, saveFunction) {
 
