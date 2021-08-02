@@ -1,8 +1,9 @@
 <?php
 
-    require __DIR__.'/../composer/vendor/autoload.php';
+    require_once __DIR__.'/../composer/vendor/autoload.php';
 
-    class Customers{
+
+    final class Customers{
 
         private $customers;
 
@@ -27,6 +28,14 @@
             return $new_customer;
         }
 
+        function read($id){
+
+            try{ $customer = $this->customers->retrieve( $id , [] ); }
+            catch (Exception $e) { $customer = null; }
+
+            return $customer;
+        }
+
         function update($id, $attributes){
 
             try{ $updated_customer = $this->customers->update($id, $attributes); }
@@ -34,17 +43,9 @@
 
             return $updated_customer;
         }
-
-        function get($id){
-
-            try{ $customer = $this->customers->retrieve( $id , [] ); }
-            catch (Exception $e) { $customer = null; }
-
-            return $customer;
-        }
     }
 
-    class PaymentIntents{
+    final class PaymentIntents{
 
         private $paymentIntents;
 
@@ -53,14 +54,15 @@
             $this->paymentIntents = $paymentIntents;
         }
 
-        function create($amount, $customer_id = null, $description = null){
+		// amount is
+        function create($amount, $id_customer = null, $description = null){
 
             $parameters = [
 
-              'amount' => floatval($amount)*100,
+              'amount' => round(round($amount, 2)*100),
               'currency' => 'eur'
             ];
-            if($customer_id) $parameters['customer'] = $customer_id;
+            if($id_customer) $parameters['customer'] = $id_customer;
             if($description) $parameters['description'] = $description;
 
 
@@ -70,15 +72,7 @@
             return $new_paymentIntent;
         }
 
-        function update($id, $parameters){
-
-            try{ $updated_paymentIntent = $this->paymentIntents->update($id, $parameters); }
-            catch (Exception $e) { throwException(500, '[stripe paymentIntents update] '.$e->getError()->message); }
-
-            return $updated_paymentIntent;
-        }
-
-        function get($id){
+        function read($id){
 
             try{ $paymentIntent = $this->paymentIntents->retrieve( $id , [] ); }
             catch (Exception $e) { $paymentIntent = null; }
@@ -86,19 +80,29 @@
             return $paymentIntent;
         }
 
+        function update($id, $parameters){
+
+            try{ $updated_paymentIntent = $this->paymentIntents->update($id, $parameters); }
+            catch (Exception $e) { throwException(500, '[stripe paymentIntents update] '.$e->getError()->message); }
+
+            return $updated_paymentIntent;
+        }
     }
 
 
-    class Stripe{
+    final class Stripe{
 
-        public $customers, $paymentIntents;
-
-        function __construct($live) {
-
-            if(!isset($live)) throwException(500, 'Stripe object created without live defined');
+		private function connect($live){
 
             if($live) $stripe = new \Stripe\StripeClient('xxx');
             else $stripe = new \Stripe\StripeClient('xxx');
+
+			return $stripe;
+		}
+
+        function __construct() {
+
+			$stripe = $this->connect(true);
 
             $this->paymentIntents = new PaymentIntents($stripe->paymentIntents);
             $this->customers = new Customers($stripe->customers);

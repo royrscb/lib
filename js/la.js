@@ -1,31 +1,26 @@
 /*! La v2 | (c) Roy Ros Cobo | github.com/royrscb */
-const La = {
 
-    tmp: undefined, tmp2: undefined, tmp3: undefined,
+const La = {
 
     get: {
 
         device() {
 
-            if (window.innerWidth <= 600) return 'MOBILE'
-            else if (window.innerWidth >= 601) return 'DESKTOP'
-
+			return window.innerWidth <= 600 ? 'MOBILE' : 'DESKTOP'
         },
 
-        file(src, cache = true) {
+        file(src, version) {
 
-			const options = {}
-			if(!cache) options['cache'] = 'no-store'
+			if(version) src += '?v='+version
 
-			return fetch(src, options).then(function (response) {return response.text()})
+			return fetch(src).then(response => { return response.text() })
         },
 
-        json(src, cache = true) {
+        json(src, version) {
 
-            const options = {}
-			if(!cache) options['cache'] = 'no-store'
+            if(version) src += '?v='+version
 
-			return fetch(src, options).then(function (response) {return response.json()})
+			return fetch(src).then(response => { return response.json() })
         },
 
         root(relative = true) {
@@ -117,13 +112,11 @@ const La = {
                 tr: "Turkish",
                 uk: "Ukrainian"
             }
-            var lang = window.location.href.split('/').find(i => i.length == 2)
-            if(!lang) lang = navigator.language.slice(0, 2)
+            var lang = window.location.href.split('/').find(i => i.length == 2) ||
+				$('html').prop('lang').slice(0, 2) ||
+				navigator.language.slice(0, 2)
 
-            if (langs[lang]) {
-
-                if (!abbreviation) lang = langs[lang]
-            } else lang = undefined
+			if(!abbreviation) lang = langs[lang] || null
 
             return lang
         },
@@ -134,9 +127,7 @@ const La = {
 
                 var params = {};
 
-                var rawParams = window.location.search.slice(1).split('&')
-
-                rawParams.forEach(function (param) {
+                window.location.search.slice(1).split('&').forEach(param => {
 
                     keyValue = param.split('=')
                     params[keyValue[0]] = keyValue[1]
@@ -145,7 +136,30 @@ const La = {
                 return params
             }
             else return {}
-        }
+        },
+
+		// find key in json object searching recursively by depth, looking for object that match eval, what is a bool returning function with current object as parameter
+		objectFromJson(json, key, eval){
+
+			if(json.hasOwnProperty(key) && (!eval || eval(json[key]))) return json[key]
+			else for(k in json){
+
+				if(json[k] && typeof json[k] == 'object'){
+
+					const maybeObj = La.get.objectFromJson(json[k], key, eval)
+
+					if(maybeObj) return maybeObj
+				}
+			}
+
+			return null
+		},
+
+		timeOnPage(miliseconds = false){
+
+			if(miliseconds) return Math.round(performance.now())
+			else return Math.round(performance.now()/1000)
+		}
     },
 
 	set: {
@@ -280,7 +294,7 @@ const La = {
             $(droppable).droppable(settings.drop)
         },
 
-		carousel(carousel = '#content .carousel', slideElement = 'img', transitonTime = 1500){
+		carousel(carousel = '#root .carousel', slideElement = 'img', transitonTime = 1500){
 
 			carousel = $(carousel)
 
@@ -376,6 +390,7 @@ const La = {
                 edit_field_div.addClass('editing')
 
 				input.prop('disabled', false)
+				input.focus()
 
                 pencil.hide()
                 save.fadeIn()
@@ -394,140 +409,9 @@ const La = {
 
                 if(onSave) onSave(input.val(), input)
             })
-            input.keyup(e => e.keyCode == 13 && save.click())
+            input.keyup(e => { if(e.keyCode == 13) save.click() })
 
             return edit_field_div
-        },
-
-        uploadForm(phpSrc, path, data, success = ()=>{}) {
-
-            var div = $('<div></div>').prop('id', 'upload_div').addClass('upload-div').css({
-
-                position: 'relative',
-                display: 'inline-block',
-                textAlign: 'center',
-                boxSizing: 'border-box',
-                padding: '10px',
-                width: '100%',
-                height: '100%',
-                fontFamily: 'helvetica'
-            })
-
-            let input = $('<input>').attr('name', 'file').attr('type', 'file').appendTo(div).hide()
-            let choose_button = $('<button>').text('Choose file').addClass('upload-choose-button').appendTo(div).css({
-
-                cursor: 'pointer',
-                fontSize: '18px',
-                margin: '10px',
-                border: 0,
-                borderRadius: '3px',
-                padding: '5px 10px',
-                backgroundColor: 'darkgrey',
-                wordBreak: 'break-all',
-                color: 'white'
-            })
-            $('<br>').appendTo(div)
-            let send_button = $('<button>').text('Upload').addClass('upload-send-button').appendTo(div).css({
-
-                cursor: 'pointer',
-                fontSize: '20px',
-                margin: '10px',
-                border: 0,
-                borderRadius: '3px',
-                padding: '5px 10px',
-                backgroundColor: 'grey',
-                color: 'white'
-            })
-
-            choose_button.click(() => input.trigger('click'))
-            input.change(() => choose_button.text(input.prop('files')[0].name))
-            send_button.click(function (e) {
-
-                const file = input.prop('files')[0]
-                if (!file && phpSrc) return 0
-
-                div.empty().css('padding', 0)
-                var load_bar = $('<div></div>').addClass('load-bar').appendTo(div).css({
-
-                    position: 'absolute',
-                    bottom: 0,
-                    width: '100%',
-                    height: 0,
-                    backgroundColor: 'darkgrey'
-                })
-                var load_number = $('<p></p>').text('0%').addClass('load-number').appendTo(div).css({
-
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    margin: 0,
-                    transform: 'translateX(-50%) translateY(-50%)'
-                })
-
-                if (!phpSrc) {
-
-                    var loaded = 0,
-                        ms = 20
-                    if (typeof path == 'number') ms = path
-                    var interval = setInterval(function () {
-
-                        load_bar.height(loaded + '%')
-                        load_number.text(loaded + '%')
-
-                        loaded += 1
-
-                        if (loaded > 100) {
-
-                            clearInterval(interval)
-                            if (success) success()
-                        }
-
-                    }, ms)
-                    return 0
-                }
-
-                function showProgress(e) {
-
-                    if (e.lengthComputable) {
-
-                        var percentage = Math.round((e.loaded * 100) / e.total)
-
-                        load_bar.height(percentage + '%')
-                        load_number.text(percentage + '%')
-                    }
-                }
-
-                var form_data = new FormData()
-                form_data.append('file', file)
-                form_data.append('path', path)
-                form_data.append('dataJSON', JSON.stringify(data))
-
-                $.ajax({
-
-                        type: 'POST',
-                        url: phpSrc,
-                        xhr: function () {
-
-                            var xhr = $.ajaxSettings.xhr();
-
-                            if (xhr.upload) xhr.upload.addEventListener('progress', showProgress, false);
-
-                            return xhr;
-                        },
-                        processData: false,
-                        contentType: false,
-                        cache: false,
-                        data: form_data
-
-                    }).done(response => success(La.parse.maybeJSON(response)))
-                    .fail(function (response) {
-
-                        load_bar.css('backgroundColor', 'red')
-                        load_number.css('color', 'white').text('Error ' + response.status + ': ' + response.statusText)
-                    })
-            })
-
-            return div
         },
 
 		// set an image droppable, options: data, backgroundImage, multiple=true and callbacks: imageUploaded, crossClick
@@ -537,18 +421,18 @@ const La = {
 
                 data: {},
                 backgroundImage: null,
-                multiple: true,
+                multiple: true
 
             }, options)
             callbacks = $.extend({
 
-                imageUploaded: function(){},
-                crossClick: function(){}
+                imageUploaded: ()=>{},
+                crossClick: ()=>{}
 
             }, callbacks)
 
 
-            let div = $('<div>').addClass('image-uploader-div').css({
+            let div = $('<div>').addClass('image-uploader').css({
 
                 position: 'relative',
                 display: 'inline-block',
@@ -558,11 +442,12 @@ const La = {
 
                 border: '1px black solid',
                 borderRadius: 3,
-                margin: 5,
 
                 boxSizing: 'border-box',
 
                 textAlign: 'center',
+
+				backgroundColor: 'white',
 
                 backgroundSize: 'contain',
                 backgroundPosition: 'center',
@@ -570,7 +455,7 @@ const La = {
             })
             if(options.backgroundImage) div.css('background-image', 'url('+options.backgroundImage+')')
 
-            let input = $('<input>').prop('type', 'file').prop('multiple', options.multiple).hide().appendTo(div)
+            let input = $('<input>').prop('type', 'file').prop('accept', 'image/*').prop('multiple', options.multiple).hide().appendTo(div)
 
             let cross = $('<div>').addClass('ico red-cross').appendTo(div).css({
 
@@ -579,43 +464,57 @@ const La = {
                 top: 0,
                 right: 0,
 
-                maxWidth: 15,
+                width: 20,
 
                 padding: 5,
 
                 zIndex: 1
             })
             if(options.backgroundImage) cross.show()
-            cross.click(callbacks.crossClick)
+            cross.click(() => callbacks.crossClick(cross, div))
 
+            let button = $('<button>').prop('type', 'button').text('Subir '+(options.multiple ? 'imágenes' : 'imagen')).addClass('center-abs-xy').appendTo(div).css({
 
-            let choose_button = $('<button>').prop('type', 'button').text('Elige imagen'+(options.multiple ? 'es' : '')).appendTo(choose_text).css('background-color', 'white')
-                .hover(e => $(e.target).css({backgroundColor: 'black', color: 'white'}), e => $(e.target).css({backgroundColor: 'white', color: 'black'}))
+				color: 'black',
+				backgroundColor: 'white',
 
-            let loading_text = $('<div>').addClass('center-abs-xy p-10').appendTo(div).css({
+				width: 150,
+				maxWidth: '90%',
+				boxSizing: 'border-box',
+
+				fontSize: 16,
+				fontWeight: 600,
+
+				margin: 0,
+				border: 'solid 1px black',
+				padding: 5
+			})
+            .hover(e => $(e.target).css({backgroundColor: 'black', color: 'white'}), e => $(e.target).css({backgroundColor: 'white', color: 'black'}))
+
+            let loading_text = $('<div>').text(' %').addClass('center-abs-xy p-10').appendTo(div).css({
+
+				color: 'black',
+				backgroundColor: 'rgba(255, 255, 255, 0.3)',
 
                 boxSizing: 'border-box',
                 width: '100%',
 
-                fontSize: '16px'
+                fontSize: 18,
+				fontWeight: 600
 
             }).hide()
-            let percentage_number = $('<span>').text('32').appendTo(loading_text)
-            $('<p>').text('%').addClass('m-5').appendTo(percentage_number).appendTo(loading_text)
-
+            let percentage_number = $('<span>').text(0).prependTo(loading_text)
 
             // on files added --------------------------
             function showProgress(e) {
 
-                if (e.lengthComputable) {
-
-                    let percentage = Math.round((e.loaded * 100) / e.total)
-
-                    percentage_number.text(percentage)
-                }
+				if(La.is.number(e)) percentage_number.text(e)
+                else if(e.lengthComputable) percentage_number.text(Math.round((e.loaded * 100) / e.total))
             }
             function uploadFiles(files){
 
+				cross.hide()
+				button.hide()
                 loading_text.show()
 
                 let formData = new FormData()
@@ -629,48 +528,71 @@ const La = {
                     url: phpSrc,
                     xhr: function () {
 
-                        var xhr = $.ajaxSettings.xhr();
+                        var xhr = $.ajaxSettings.xhr()
 
-                        if (xhr.upload) xhr.upload.addEventListener('progress', showProgress, false);
+                        if(xhr.upload) xhr.upload.addEventListener('progress', showProgress, false)
 
-                        return xhr;
+                        return xhr
                     },
                     processData: false,
                     contentType: false,
                     cache: false,
                     data: formData
 
-                }).done(function(res){
+                })
+				.done(function(res){
 
                     if(!La.parse.maybeError(res)){
 
+						if(options.backgroundImage) cross.show()
+                        button.show()
                         loading_text.hide()
-                        choose_text.show()
 
-                        if(options.multiple) callbacks.imageUploaded(JSON.parse(res))
-                        else callbacks.imageUploaded(JSON.parse(res)[0])
+						const new_images = La.parse.maybeJSON(res)
+
+                        callbacks.imageUploaded(options.multiple ? new_images : new_images[0], div, cross)
                     }
 
                 }).fail(La.parse.fail)
             }
 
-
             // set events ----------------------
-            choose_button.click(() => input.click())
+            if(phpSrc) button.click(() => input.click())
+			else button.click(() => {
 
-            input.change(function(e){
+				if(parseInt(percentage_number.text()) < 100){
 
-                choose_text.hide()
-                uploadFiles(e.target.files)
-            })
+					cross.hide()
+					button.hide()
+					loading_text.show()
+					div.css('background-image', 'none')
+
+					showProgress(parseInt(percentage_number.text())+10)
+
+					setTimeout(() => button.click(), 500)
+				}
+				else{
+
+					showProgress(0)
+
+					cross.show()
+					loading_text.hide()
+					button.show()
+					div.css('background-image', 'initial')
+				}
+			})
+
+            input.change(e => uploadFiles(e.target.files))
+
+
             return div
         },
 
         quillEditor(container, html, saveFunction) {
 
-            let div = $('<div></div>').prop('id', 'quill_div').addClass('quill-div').appendTo($(container)).css({})
+            let div = $('<div>').prop('id', 'quill_div').addClass('quill-div').appendTo($(container)).css({})
 
-            let button_div = $('<div></div>').addClass('button-div').appendTo(div).css({
+            let button_div = $('<div>').addClass('button-div').appendTo(div).css({
 
                 textAlign: 'right',
                 margin: '10px'
@@ -699,8 +621,8 @@ const La = {
                 cursor: 'pointer'
             })
 
-            let quill_div = $('<div></div>').addClass('quill-div').appendTo(div).hide().css({})
-            let editor_div = $('<div></div>').addClass('editor_div').appendTo(quill_div).css({
+            let quill_div = $('<div>').addClass('quill-div').appendTo(div).hide().css({})
+            let editor_div = $('<div>').addClass('editor_div').appendTo(quill_div).css({
 
                 height: '70vh'
             })
@@ -738,7 +660,7 @@ const La = {
                 }
             })
 
-            let display_div = $('<div></div>').addClass('display-div').addClass('ql-editor').appendTo(div).css({
+            let display_div = $('<div>').addClass('display-div').addClass('ql-editor').appendTo(div).css({
 
             })
 
@@ -758,7 +680,7 @@ const La = {
 
         popMessage(msg, type = 'info', duration = 2000) {
 
-            var div = $('<div></div>').addClass('pop-msg-div ' + type).appendTo($('body')).css({
+            var div = $('<div>').addClass('pop-msg-div ' + type).appendTo($('body')).css({
 
                 position: 'fixed',
 				display: 'inline-table',
@@ -774,7 +696,7 @@ const La = {
                 fontFamily: 'helvetica',
                 zIndex: 9
             })
-            var text = $('<p></p>').text(msg).addClass('pop-msg-text').appendTo(div).css({
+            var text = $('<p>').text(msg).addClass('pop-msg-text').appendTo(div).css({
 
                 margin: 0,
                 textAlign: 'center'
@@ -801,11 +723,13 @@ const La = {
                     opacity: 0
                 }, 'fast', () => div.remove())
             }, duration))
+
+			return div
         },
 
         adminLabel(text = 'ADMIN', position = "left"){
 
-            var div = $('<div></div>')
+            var div = $('<div>')
             div.prop('id', 'admin_label')
             div.css({
 
@@ -819,7 +743,7 @@ const La = {
             if(position == 'left') div.css('left', 0)
             else if(position == 'right') div.css('right', 0)
 
-            var backDiv = $('<div></div>').appendTo(div)
+            var backDiv = $('<div>').appendTo(div)
             var backA = $('<a></a>').appendTo(backDiv)
             backA.attr('href', '..')
             backA.text('back')
@@ -829,7 +753,7 @@ const La = {
                 color: 'black'
             })
 
-            var labelDiv = $('<div></div>').appendTo(div)
+            var labelDiv = $('<div>').appendTo(div)
             labelDiv.text(text)
             labelDiv.css({
 
@@ -846,6 +770,76 @@ const La = {
                 .on('mouseout', e => $(e.target).css('opacity', 1))
 
 			return div
+		},
+
+		// set running marquee, speed in px/s, startLeftPercentage is where the first label will start on width percentage from left, separation is separation between each label
+		marquee(text, speed = 100, startLeftPercentage = 50, separation = 50){
+
+			let marquee_holder = $('<div>').addClass('marquee-holder').css({
+
+				position: 'relative',
+				width: '100%',
+				overflowX: 'hidden'
+			})
+
+			let fakeText = $('<p>').addClass('fake-marquee-text m-0').text(text).appendTo(marquee_holder).css({
+
+
+				display: 'inline-block',
+				visibility: 'hidden',
+				whiteSpace: 'nowrap'
+			})
+
+			function createMarquee(begin, textWidth){
+
+				const distance = textWidth + begin
+
+				let marquee = $('<p>').addClass('marquee-text').text(text).appendTo(marquee_holder).css({
+
+					position: 'absolute',
+					display: 'inline-block',
+					top: 0,
+					left: begin,
+					margin: 0,
+					whiteSpace: 'nowrap'
+				})
+				marquee.animate({left: -textWidth}, (distance/speed)*1000, 'linear', () => marquee.remove())
+
+				return marquee
+			}
+
+			function onHolderAddedToDOM(){
+
+				const textWidth = fakeText.outerWidth(true),
+					  holderWidth = marquee_holder.outerWidth(true),
+					  firstStartDistance = holderWidth*(startLeftPercentage/100)
+
+				createMarquee(firstStartDistance, textWidth)
+
+				const timeToStartRegularMarquees = (textWidth + separation - (holderWidth - firstStartDistance))/speed
+				setTimeout(() => {
+
+					createMarquee(holderWidth, textWidth)
+
+					const respawnTime = (textWidth + separation)/speed
+					setInterval(() => createMarquee(holderWidth, textWidth), respawnTime*1000)
+
+				}, timeToStartRegularMarquees*1000)
+			}
+
+			var observer = new MutationObserver(mutations => {
+
+				if (document.contains(marquee_holder.get(0))) {
+
+					onHolderAddedToDOM()
+
+					observer.disconnect()
+				}
+			})
+			observer.observe(document, {attributes: false, childList: true, characterData: false, subtree: true});
+
+
+			return marquee_holder
 		}
     },
 
@@ -859,7 +853,8 @@ const La = {
             }
             else {// si es string o numeric
 
-                if(isNaN(new Date(date))){
+                if(!isNaN(new Date(date))) date = new Date(date)
+				else{
 
                     if(date.length == 5 && date[2] == ':' || date.length == 8 && date[2] == ':' && date[5] == ':') date = new Date('01/01/1970 '+date)
                     else if(Number.isInteger(parseInt(date[0])) && Number.isInteger(parseInt(date[1])) && Number.isInteger(parseInt(date[2])) && Number.isInteger(parseInt(date[3]))){
@@ -871,45 +866,53 @@ const La = {
                     }
                     else return console.error('Not recognizable string date: '+date)
                 }
-                else date = new Date(date)
             }
 
-            if(!format) return date
+            if(format){
 
-            function getDateElement(date, element){
+				function getDateElement(date, element){
 
-                function addLeadingZero(number){
+					function addLeadingZero(number){
 
-                    return number > 9 ? number : '0'+number
-                }
+						return number > 9 ? number : '0'+number
+					}
 
-                if(element == 'Y') return date.getFullYear()
-                else if(element == 'y') return date.getFullYear().toString().substring(2)
-                else if(element == 'M') return date.toString(langIfStringFormat, { month: 'long' }).toLowerCase()
-                else if(element == 'm') return addLeadingZero(parseInt(date.getMonth())+1)
-                else if(element == 'd') return addLeadingZero(date.getDate())
-                else if(element == 'D') return date.toString(langIfStringFormat, { weekday: 'long' }).toLowerCase()
-                else if(element == 'H') return addLeadingZero(date.getHours())
-                else if(element == 'h') return date.getHours() > 12 ? addLeadingZero(La.util.date_addition(date, -12, 'h').getHours()) : addLeadingZero(date.getHours())
-                else if(element == 'i') return addLeadingZero(date.getMinutes())
-                else if(element == 's') return addLeadingZero(date.getSeconds())
-                else if(!('a' < element && element < 'z' || 'A' < element && element < 'Z')) return element
-                else return La.make.popMessage('Unknown element in format parse date ['+element+']', 'error')
-            }
+					if(element == 'U') return Math.floor(date.getTime()/1000)
+					else if(element == 'Y') return date.getFullYear()
+					else if(element == 'y') return date.getFullYear().toString().substring(2)
+					else if(element == 'M') return date.toLocaleString(langIfStringFormat, { month: 'long' }).toLowerCase()
+					else if(element == 'm') return addLeadingZero(parseInt(date.getMonth())+1)
+					else if(element == 'd') return addLeadingZero(date.getDate())
+					else if(element == 'D') return date.toLocaleString(langIfStringFormat, { weekday: 'long' }).toLowerCase()
+					else if(element == 'H') return addLeadingZero(date.getHours())
+					else if(element == 'h') return date.getHours() > 12 ? addLeadingZero(La.util.date_addition(date, -12, 'h').getHours()) : addLeadingZero(date.getHours())
+					else if(element == 'i') return addLeadingZero(date.getMinutes())
+					else if(element == 's') return addLeadingZero(date.getSeconds())
+					else if(!('a' < element && element < 'z' || 'A' < element && element < 'Z')) return element
+					else return La.make.popMessage('Unknown element in format parse date ['+element+']', 'error')
+				}
 
-            var display = ''
-			for(var i = 0; i < format.length; i++) display += getDateElement(date, format.charAt(i))
+				var display = ''
+				for(var i = 0; i < format.length; i++) display += getDateElement(date, format.charAt(i))
 
-            return display
+				return display
+			}
+			else return date
         },
 
         form2object(form) {
 
             var obj = {}
 
-            $(form).find('input').each((index, input) => obj[input.name] = input.type == 'checkbox' ? input.checked : $(input).val())
-            $(form).find('textarea').each((findex, textarea)  => obj[textarea.name] = $(textarea).val())
-            $(form).find('select').each((index, select) => obj[select.name] = $(select).val())
+            $(form).find('input, textarea, select').each((index, el) => {
+
+				if($(form).get(0) == el.form) {
+
+					obj[el.name] = el.type == 'checkbox' ? el.checked
+						: el.type == 'number' ? (!isNaN(parseFloat($(el).val())) ? parseFloat($(el).val()) : null)
+						: $(el).val()
+				}
+			})
 
             return obj
         },
@@ -950,19 +953,42 @@ const La = {
 
                 La.make.popMessage(textStatus+': '+error, 'error')
             }
-        }
+        },
+
+		// element is a css selector or element, json_text is a JSON object, attributes is attr to parse or array of attr (ph attr stands for placeholder) and lang is a bool where in case of object found having "lang" subfield and string typeof var as value is set
+		htmlWithJSON(element, json_obj, attributes, lang){
+
+			if(Array.isArray(attributes)) attributes.forEach(attr => La.parse.htmlWithJSON(element, json_obj, attr, lang))
+			else $(element).find('['+attributes+']').each((i, el) => {
+
+				const attr = attributes,
+					  key = $(el).attr(attr)
+
+				let textObject = La.get.objectFromJson(json_obj, key, obj => typeof obj == 'string' || typeof obj == 'number' || (obj && obj.hasOwnProperty(lang)))
+
+				if(textObject){
+
+					let text = (typeof textObject == 'string' || typeof textObject == 'number') ? textObject : textObject[lang]
+
+					if(text){
+
+						if(attr == 'placeholder' || attr == 'ph') $(el).prop('placeholder', text)
+						else $(el).text(text)
+					}
+					else console.error('['+key+'] key for attribute ('+attr+') for', element, ' has not the lang ['+lang+'] in', json_obj)
+				}
+				else console.error('['+key+'] key for attribute ('+attr+') not found for', element, 'in', json_obj)
+			})
+		}
     },
 
     util: {
 
-        smoothScrollTo(top_or_element){
+		smoothScrollTo(top_or_element){
 
-			const top = La.is.number(top_or_element) ? parseInt(top_or_element) : ($(top_or_element).offset().top -window.innerHeight/4)
+			const top = La.is.number(top_or_element) ? parseInt(top_or_element) : ($(top_or_element).offset().top -window.innerHeight/3)
 
-			return new Promise((resolve, reject) => {
-
-            	$('html').animate({scrollTop: top}, resolve)
-			})
+			return new Promise(resolve => $('html').animate({scrollTop: top}, () => resolve(top_or_element)))
         },
 
         hideMobileKeyboard(){
@@ -984,138 +1010,6 @@ const La = {
             else return console.error('Unknown format for date_addition ['+format+']')
         },
 
-        sha256(s) {
-
-            var chrsz = 8;
-            var hexcase = 0;
-
-            function safe_add(x, y) {
-                var lsw = (x & 0xFFFF) + (y & 0xFFFF);
-                var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-                return (msw << 16) | (lsw & 0xFFFF);
-            }
-
-            function S(X, n) {
-                return (X >>> n) | (X << (32 - n));
-            }
-
-            function R(X, n) {
-                return (X >>> n);
-            }
-
-            function Ch(x, y, z) {
-                return ((x & y) ^ ((~x) & z));
-            }
-
-            function Maj(x, y, z) {
-                return ((x & y) ^ (x & z) ^ (y & z));
-            }
-
-            function Sigma0256(x) {
-                return (S(x, 2) ^ S(x, 13) ^ S(x, 22));
-            }
-
-            function Sigma1256(x) {
-                return (S(x, 6) ^ S(x, 11) ^ S(x, 25));
-            }
-
-            function Gamma0256(x) {
-                return (S(x, 7) ^ S(x, 18) ^ R(x, 3));
-            }
-
-            function Gamma1256(x) {
-                return (S(x, 17) ^ S(x, 19) ^ R(x, 10));
-            }
-
-            function core_sha256(m, l) {
-
-                var K = new Array(0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174, 0xE49B69C1, 0xEFBE4786, 0xFC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x6CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13, 0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85, 0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3, 0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070, 0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5, 0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3, 0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208, 0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2);
-                var HASH = new Array(0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19);
-                var W = new Array(64);
-                var a, b, c, d, e, f, g, h, i, j;
-                var T1, T2;
-                m[l >> 5] |= 0x80 << (24 - l % 32);
-                m[((l + 64 >> 9) << 4) + 15] = l;
-                for (var i = 0; i < m.length; i += 16) {
-                    a = HASH[0];
-                    b = HASH[1];
-                    c = HASH[2];
-                    d = HASH[3];
-                    e = HASH[4];
-                    f = HASH[5];
-                    g = HASH[6];
-                    h = HASH[7];
-                    for (var j = 0; j < 64; j++) {
-                        if (j < 16) W[j] = m[j + i];
-                        else W[j] = safe_add(safe_add(safe_add(Gamma1256(W[j - 2]), W[j - 7]), Gamma0256(W[j - 15])), W[j - 16]);
-                        T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[j]), W[j]);
-                        T2 = safe_add(Sigma0256(a), Maj(a, b, c));
-                        h = g;
-                        g = f;
-                        f = e;
-                        e = safe_add(d, T1);
-                        d = c;
-                        c = b;
-                        b = a;
-                        a = safe_add(T1, T2);
-                    }
-                    HASH[0] = safe_add(a, HASH[0]);
-                    HASH[1] = safe_add(b, HASH[1]);
-                    HASH[2] = safe_add(c, HASH[2]);
-                    HASH[3] = safe_add(d, HASH[3]);
-                    HASH[4] = safe_add(e, HASH[4]);
-                    HASH[5] = safe_add(f, HASH[5]);
-                    HASH[6] = safe_add(g, HASH[6]);
-                    HASH[7] = safe_add(h, HASH[7]);
-                }
-                return HASH;
-            }
-
-            function str2binb(str) {
-
-                var bin = Array();
-                var mask = (1 << chrsz) - 1;
-                for (var i = 0; i < str.length * chrsz; i += chrsz) {
-                    bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i % 32);
-                }
-                return bin;
-            }
-
-            function Utf8Encode(string) {
-
-                string = string.replace(/\r\n/g, "\n");
-                var utftext = "";
-                for (var n = 0; n < string.length; n++) {
-                    var c = string.charCodeAt(n);
-                    if (c < 128) {
-                        utftext += String.fromCharCode(c);
-                    } else if ((c > 127) && (c < 2048)) {
-                        utftext += String.fromCharCode((c >> 6) | 192);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    } else {
-                        utftext += String.fromCharCode((c >> 12) | 224);
-                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                }
-                return utftext;
-            }
-
-            function binb2hex(binarray) {
-
-                var hex_tab = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
-                var str = "";
-                for (var i = 0; i < binarray.length * 4; i++) {
-                    str += hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) +
-                        hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF);
-                }
-                return str;
-            }
-            s = Utf8Encode(s);
-
-            return binb2hex(core_sha256(str2binb(s), s.length * chrsz));
-        },
-
         random(min = 0, max = 100, amount = 1, repeated = false) {
 
             if(amount == 1) return Math.floor(Math.random() * (max - min +1)) + min
@@ -1126,7 +1020,7 @@ const La = {
                 if(repeated) for(var i=0; i<amount; i++) arr.push(La.util.random(min, max))
                 else{
 
-                    for(var i=0; i<Math.min(amount, max - min); i++){
+                    for(var i=0; i<Math.min(amount, max - min +1); i++){
 
                         var num = La.util.random(min, max)
                         while(arr.includes(num)) num = La.util.random(min, max)
@@ -1138,16 +1032,9 @@ const La = {
             }
         },
 
-        prettyPrice(price){
+        disableInputChars(charsToDisable, selector = 'body'){
 
-            price = parseFloat(parseFloat(price).toFixed(2))
-
-            return Number.isInteger(price) ? price.toString() : price.toFixed(2)
-        },
-
-        disableInputChars(charsToDisable){
-
-            $(document).on('input', 'input:not([type=file]), textarea', function(e){
+            $(document).on('input', selector+' input:not([type=file]), '+selector+' textarea', function(e){
 
                 const str = $(this).val()
 
@@ -1156,21 +1043,42 @@ const La = {
                     if(str.includes(char)){
 
                         $(this).val(str.split(char).join(''))
-                        La.make.popMessage('Char '+char+' is not allowed', 'error')
+                        La.make.popMessage('El caracter '+char+' no está permitido', 'error')
                     }
                 }.bind(this))
             })
         },
 
-		uppercaseFirst(string){
+		sleep(seconds = 1){
 
-			return string.charAt(0).toUpperCase() + string.slice(1);
+			return new Promise(resolve => setTimeout(resolve, seconds*1000))
+		},
+
+		blink(element, color, bgColor, duration = 1000, loop = false){
+
+			let prevColor = $(element).css('color'),
+				prevBgColor = $(element).css('background-color'),
+				prevTransition = $(element).css('transition')
+
+			let cssToSet = { transition: (duration/1000/2)+'s' }
+			if(color) cssToSet['color'] = color
+			if(bgColor) cssToSet['backgroundColor'] = bgColor
+
+			$(element).css(cssToSet)
+			setTimeout(() => $(element).css({color: prevColor, backgroundColor: prevBgColor}), duration/2)
+			setTimeout(() => $(element).css({transition: prevTransition}), duration)
+
+			if(loop !== false) $(element).attr('id_blink_interval', setInterval(() => this.blink(element, color, bgColor, duration, false), loop))
+
+			return $(element)
 		}
     }
 }
 
+// CONSTS -------------------------
+const cl = console.log, TIMESTAMP = 'Y-m-d H:i:s'
 
-// Modal img -------------------------------------------------------
+// CLASS FUNCTIONS -------------------------------------------------------
 $(document).on('click', '.modal-img', function (e) {
 
 	const TARGET = e.target,
@@ -1185,7 +1093,7 @@ $(document).on('click', '.modal-img', function (e) {
 
 	$(TARGET).addClass('popped-img')
 
-	var div = $('<div></div>').addClass('modal-div').appendTo(document.body)
+	var div = $('<div>').addClass('modal-div').appendTo(document.body)
 	div.css({
 
 		display: 'flex',
@@ -1205,7 +1113,7 @@ $(document).on('click', '.modal-img', function (e) {
 	})
 
 	// IMG ---------------------------------------------------------------
-	var img_div = $('<div></div>').addClass('modal-img_div').appendTo(div)
+	var img_div = $('<div>').addClass('modal-img_div').appendTo(div)
 	img_div.css({
 
 		cursor: 'default',
@@ -1215,18 +1123,17 @@ $(document).on('click', '.modal-img', function (e) {
 		left: '50%',
 		zIndex: 8
 	})
-	img_div.click(e => e.stopPropagation())
 
 	var img = $('<img>').appendTo(img_div)
 	img.attr('src', IMG_SRC)
 	img.attr('alt', IMG_ALT)
 
 	if (IS_IMG_HORIZONTAL) {
-		img_div.width('95%');
+		img_div.width('95%')
 		img.width('100%')
 	}
 	else {
-		img_div.height('85%');
+		img_div.height('85%')
 		img.height('100%')
 	}
 
@@ -1246,7 +1153,7 @@ $(document).on('click', '.modal-img', function (e) {
 	// SUBTEXT ----------------------------------------------------------------------
 	if (IMG_SUBTEXT) {
 
-		var subtext = $('<p></p>').addClass('modal-subtext').appendTo(img_div)
+		var subtext = $('<p>').addClass('modal-subtext').appendTo(img_div)
 		subtext.text(IMG_SUBTEXT)
 		subtext.css({
 
@@ -1286,11 +1193,20 @@ $(document).on('input', '.uppercase-first', function(){
     if(val.length == 1) $(this).val(val.toUpperCase())
 })
 
-Array.prototype.min = function(callback = (a) => { return a }) {
+// PROTOTYPE EXTEND ----------------------------------------
+String.prototype['upperCaseFirst'] = function(){
 
-  return Math.min.apply(Math, this.map(callback))
+	if(this.length) return this[0].toUpperCase() + this.toString().slice(1)
+	else return ''
 }
-Array.prototype.max = function(callback = (a) => { return a }) {
+String.prototype['prettyPrice'] = Number.prototype['prettyPrice'] = function(){
 
-  return Math.max.apply(Math, this.map(callback))
+	let price = parseFloat(Math.round(this*100)/100)
+
+	return Number.isInteger(price) ? price.toString() : price.toFixed(2)
+}
+String.prototype['prettyUpperCase'] = function(){
+
+	if(this.length) return this.toLowerCase().upperCaseFirst().split(' ').map(w => w.length > 3 ? w.upperCaseFirst() : w).join(' ')
+	else return ''
 }

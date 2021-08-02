@@ -1,5 +1,7 @@
 <?php
 
+	require_once __DIR__.'/la.php';
+
 	class Telegram_message{
 
 		private $update;
@@ -19,16 +21,14 @@
 				$this->original_from = $update['callback_query']['from'];
 			}
 
-
 			$this->date = $this->message['date'];
 			$this->chat = $this->message['chat'];
 			$this->from = $this->message['from'];
-			if(isset($this->text)) $this->text = $this->message['text'];
+			if(isset($this->message['text'])) $this->text = $this->message['text'];
 
 			if(isset($this->message['group_chat_created']) && $this->message['group_chat_created']){
 
 				$this->type = 'group_chat_created';
-				send_telegram('chat created');
 			}
 			else if(isset($this->message['new_chat_member'])){
 
@@ -45,6 +45,7 @@
 				$this->type = 'command';
 				$this->command = explode('@', $this->message['text'])[0];
 			}
+			else $this->type = 'message';
 		}
 
 		function from_group(){
@@ -74,14 +75,10 @@
 
 		private function postMethod($method, $data){
 
-			$response = post_JSON('https://api.telegram.org/bot'.$this->token.'/'.$method, $data);
+			$response = post('https://api.telegram.org/bot'.$this->token.'/'.$method, $data);
 
-			if(isset($response['ok'])){
-
-				if($response['ok']) return $response['result'];
-				else return $this->throwError($response['error_code'], $response['description']);
-			}
-			else $this->throwError(500, 'error sending telegram to '.$data['chat_id'].' ('.$data['text'].')');
+			if($response['ok']) return $response['result'];
+			else return $this->throwError($response['error_code'], $response['description']);
 		}
 
 		// get ---------------------------------
