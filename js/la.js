@@ -1,4 +1,4 @@
-/*! La v2 | (c) Roy Ros Cobo | github.com/royrscb */
+/* (c) Roy Ros Cobo | github.com/royrscb */
 
 const La = {
 
@@ -6,7 +6,13 @@ const La = {
 
         device() {
 
-			return window.innerWidth <= 600 ? 'MOBILE' : 'DESKTOP'
+			const width = window.innerWidth
+
+			let current_device = width <= 600 ? DEVICE.mobile
+				: width < 768 ? DEVICE.tablet
+				: DEVICE.desktop
+
+			return current_device
         },
 
         file(src, version) {
@@ -121,7 +127,7 @@ const La = {
             return lang
         },
 
-        urlParams() {
+        urlQueries() {
 
             if(window.location.search){
 
@@ -164,11 +170,11 @@ const La = {
 
 	set: {
 
-		urlParams(params){
+		urlQueries(params){
 
 			if(!params) window.history.replaceState(null, null, location.pathname)
 			else if(typeof params == 'string') window.history.replaceState(null, null, location.href.split('?')[0]+'?'+params)
-			else if(typeof params == 'object') La.set.urlParams(Object.keys(params).map(k => k+'='+(typeof params[k] == 'string' ? params[k].split(' ').join('_') : params[k])).join('&'))
+			else if(typeof params == 'object') La.set.urlQueries(Object.keys(params).map(k => k+'='+(typeof params[k] == 'string' ? params[k].split(' ').join('_') : params[k])).join('&'))
 		},
 
         // options and events may have two fields (drag and drop) with associated options and events; options to override are drag: {handle, containment, snap, zIndex, axis, speed} drop: {tolerance}; Exceptions to official docs: options.drag.snap boolean, options.drop.emptyBorder boolean, events.change is called when two elements are changed.
@@ -321,6 +327,13 @@ const La = {
 			}
 
 			setTimeout(slideCarousel, transitonTime)
+		},
+
+		intervalAndExecute(func, delay) {
+
+			func()
+
+			return(setInterval(func, delay))
 		}
     },
 
@@ -329,6 +342,25 @@ const La = {
 		number(x){
 
 			return /^\d+$/.test(x)
+		},
+
+		device(device){
+
+			if(!device) throw Error('Device parameters required')
+
+			const current_device = La.get.device()
+
+			if(Array.isArray(device)) return device.includes(current_device)
+			else return device == current_device
+		},
+
+		portraitScreen(){
+
+			return window.innerWidth <= window.innerHeight
+		},
+		landscapeScreen(){
+
+			return window.innerHeight < window.innerWidth
 		}
 	},
 
@@ -350,7 +382,7 @@ const La = {
 				link.rel = 'stylesheet'
 				link.href = href+(version ? '?v='+version : '')
 
-				link.onload = resolve
+				link.onload = () => resolve(link)
 				link.onerror = reject
 
 				document.head.appendChild(link)
@@ -363,7 +395,7 @@ const La = {
 				let script = document.createElement('script')
 				script.src = src+(version ? '?v='+version : '')
 
-				script.onload = resolve
+				script.onload = () => resolve(script)
 				script.onerror = reject
 
 				document.head.appendChild(script)
@@ -678,7 +710,10 @@ const La = {
             save_button.click(() => saveFunction(quill.root.innerHTML))
         },
 
-        popMessage(msg, type = 'info', duration = 2000) {
+		// position can be TOP or BOTTOM
+        popMessage(msg, type = 'info', duration = 2000, position = 'BOTTOM') {
+
+			if(position != 'TOP' && position != 'BOTTOM') position = 'BOTTOM'
 
             var div = $('<div>').addClass('pop-msg-div ' + type).appendTo($('body')).css({
 
@@ -689,7 +724,7 @@ const La = {
                 border: 0,
                 margin: 0,
                 borderRadius: '15px',
-                bottom: 0,
+                [position.toLowerCase()]: 0,
                 left: '50%',
                 transform: 'translateX(-50%)',
                 opacity: 0,
@@ -702,26 +737,21 @@ const La = {
                 textAlign: 'center'
             })
 
-            if (type == 'info') div.css({
-                backgroundColor: 'floralwhite'
-            })
-            else if (type == 'success') div.css({
-                backgroundColor: 'limegreen',
-                color: 'white'
-            })
-            else if (type == 'error') div.css({
-                backgroundColor: 'firebrick',
-                color: 'white'
-            })
+			div.css({
+
+				color: type == 'success' || type == 'error' ? 'white' : 'black',
+				backgroundColor: type == 'success' ? 'limegreen' : type == 'error' ? 'firebrick' : 'floralwhite'
+			})
 
             div.animate({
-                bottom: '10vh',
-                opacity: 1
-            }, () => setTimeout(function () {
 
-                div.animate({
-                    opacity: 0
-                }, 'fast', () => div.remove())
+                [position.toLowerCase()]: position == 'BOTTOM' ? '10vh' : '7vh',
+                opacity: 1
+
+            }, () => setTimeout(() => {
+
+                div.animate({opacity: 0}, 'fast', () => div.remove())
+
             }, duration))
 
 			return div
@@ -845,61 +875,6 @@ const La = {
 
     parse: {
 
-        date(date, format, langIfStringFormat = 'en'){
-
-            if(date instanceof Date){
-
-				if(isNaN(date)) return console.error('Invalid date: '+date)
-            }
-            else {// si es string o numeric
-
-                if(!isNaN(new Date(date))) date = new Date(date)
-				else{
-
-                    if(date.length == 5 && date[2] == ':' || date.length == 8 && date[2] == ':' && date[5] == ':') date = new Date('01/01/1970 '+date)
-                    else if(Number.isInteger(parseInt(date[0])) && Number.isInteger(parseInt(date[1])) && Number.isInteger(parseInt(date[2])) && Number.isInteger(parseInt(date[3]))){
-
-                        var year = date.slice(0, 4)
-                        date = date.slice(5, 7)+'/'+date.slice(8, 10)+'/'+year+date.slice(10)
-
-                        date = new Date(date)
-                    }
-                    else return console.error('Not recognizable string date: '+date)
-                }
-            }
-
-            if(format){
-
-				function getDateElement(date, element){
-
-					function addLeadingZero(number){
-
-						return number > 9 ? number : '0'+number
-					}
-
-					if(element == 'U') return Math.floor(date.getTime()/1000)
-					else if(element == 'Y') return date.getFullYear()
-					else if(element == 'y') return date.getFullYear().toString().substring(2)
-					else if(element == 'M') return date.toLocaleString(langIfStringFormat, { month: 'long' }).toLowerCase()
-					else if(element == 'm') return addLeadingZero(parseInt(date.getMonth())+1)
-					else if(element == 'd') return addLeadingZero(date.getDate())
-					else if(element == 'D') return date.toLocaleString(langIfStringFormat, { weekday: 'long' }).toLowerCase()
-					else if(element == 'H') return addLeadingZero(date.getHours())
-					else if(element == 'h') return date.getHours() > 12 ? addLeadingZero(La.util.date_addition(date, -12, 'h').getHours()) : addLeadingZero(date.getHours())
-					else if(element == 'i') return addLeadingZero(date.getMinutes())
-					else if(element == 's') return addLeadingZero(date.getSeconds())
-					else if(!('a' < element && element < 'z' || 'A' < element && element < 'Z')) return element
-					else return La.make.popMessage('Unknown element in format parse date ['+element+']', 'error')
-				}
-
-				var display = ''
-				for(var i = 0; i < format.length; i++) display += getDateElement(date, format.charAt(i))
-
-				return display
-			}
-			else return date
-        },
-
         form2object(form) {
 
             var obj = {}
@@ -922,8 +897,8 @@ const La = {
             try {
 
                 return JSON.parse(maybeJSON)
-
-            } catch (e) {
+            }
+			catch(e) {
 
                 return maybeJSON
             }
@@ -975,9 +950,9 @@ const La = {
 						if(attr == 'placeholder' || attr == 'ph') $(el).prop('placeholder', text)
 						else $(el).text(text)
 					}
-					else console.error('['+key+'] key for attribute ('+attr+') for', element, ' has not the lang ['+lang+'] in', json_obj)
+					else throw Error('['+key+'] key for attribute ('+attr+') for', element, ' has not the lang ['+lang+'] in', json_obj)
 				}
-				else console.error('['+key+'] key for attribute ('+attr+') not found for', element, 'in', json_obj)
+				else throw Error('['+key+'] key for attribute ('+attr+') not found for', element, 'in', json_obj)
 			})
 		}
     },
@@ -994,20 +969,6 @@ const La = {
         hideMobileKeyboard(){
 
             if(La.get.device() == 'MOBILE') $(':focus').blur()
-        },
-
-		// s: second, i: minute, h: hour, d: day, w: week, y: year
-        date_addition(date, timeToAdd, format){
-
-            dateTime = La.parse.date(date).getTime()
-
-            if(format == 's') return new Date(dateTime + timeToAdd * 1000)
-            else if(format == 'i') return La.util.date_addition(date, timeToAdd * 60, 's')
-            else if(format == 'h') return La.util.date_addition(date, timeToAdd * 60, 'i')
-            else if(format == 'd') return La.util.date_addition(date, timeToAdd * 24, 'h')
-            else if(format == 'w') return La.util.date_addition(date, timeToAdd * 7, 'd')
-            else if(format == 'y') return La.util.date_addition(date, timeToAdd * 365, 'd')
-            else return console.error('Unknown format for date_addition ['+format+']')
         },
 
         random(min = 0, max = 100, amount = 1, repeated = false) {
@@ -1051,7 +1012,7 @@ const La = {
 
 		sleep(seconds = 1){
 
-			return new Promise(resolve => setTimeout(resolve, seconds*1000))
+			return new Promise(resolve => setTimeout(() => resolve(), seconds*1000))
 		},
 
 		blink(element, color, bgColor, duration = 1000, loop = false){
@@ -1063,20 +1024,220 @@ const La = {
 			let cssToSet = { transition: (duration/1000/2)+'s' }
 			if(color) cssToSet['color'] = color
 			if(bgColor) cssToSet['backgroundColor'] = bgColor
+			if(loop === true) loop = duration+1000
 
 			$(element).css(cssToSet)
 			setTimeout(() => $(element).css({color: prevColor, backgroundColor: prevBgColor}), duration/2)
 			setTimeout(() => $(element).css({transition: prevTransition}), duration)
 
-			if(loop !== false) $(element).attr('id_blink_interval', setInterval(() => this.blink(element, color, bgColor, duration, false), loop))
+			if(loop) $(element).attr('id_blink_interval', setInterval(() => this.blink(element, color, bgColor, duration, false), loop))
 
 			return $(element)
+		},
+
+		count(timeOnPage = false){
+
+			if(timeOnPage) setInterval(() => console.log(La.get.timeOnPage()), 1000)
+			else{
+
+				let count = 0
+				setInterval(() => console.log(count++), 1000)
+			}
+		},
+
+        addLeadingZero(number){
+
+            return number > 9 ? number : '0'+number
+        }
+    },
+
+    time: {
+
+        parse(date, format = null, langIfStringFormat = 'en'){
+
+            if(date instanceof Date){
+
+				if(isNaN(date)) throw Error('Invalid date: '+date)
+            }
+            else {// si es string o numeric
+
+                let newDate = new Date(date)
+
+                if(!isNaN(newDate)) date = newDate
+				else{
+
+                    if(date.length == 5 && date[2] == ':' || date.length == 8 && date[2] == ':' && date[5] == ':') date = new Date('01/01/1970 '+date)
+                    else if(Number.isInteger(parseInt(date[0])) && Number.isInteger(parseInt(date[1])) && Number.isInteger(parseInt(date[2])) && Number.isInteger(parseInt(date[3]))){
+
+                        var year = date.slice(0, 4)
+                        date = date.slice(5, 7)+'/'+date.slice(8, 10)+'/'+year+date.slice(10)
+
+                        date = new Date(date)
+                    }
+                    else throw Error('Not recognizable string date: '+date)
+                }
+            }
+
+            return !format ? date : La.time.format(date, format, langIfStringFormat)
+        },
+        format(date, format, langIfStringFormat = 'en'){
+
+            date = La.time.parse(date)
+
+            let display
+
+            if(format.length == 1){
+
+                display = format == TIMEFORMAT.unix_time ? Math.floor(date.getTime()/1000)
+                    : format == TIMEFORMAT.seconds ? La.util.addLeadingZero(date.getSeconds())
+                    : format == TIMEFORMAT.minutes ? La.util.addLeadingZero(date.getMinutes())
+                    : format == TIMEFORMAT.hours ? La.util.addLeadingZero(date.getHours() > 12 ? La.time.add(date, -12, 'h').getHours() : date.getHours())
+                    : format == TIMEFORMAT.hour_24 ? La.util.addLeadingZero(date.getHours())
+                    : format == TIMEFORMAT.days ? La.util.addLeadingZero(date.getDate())
+                    : format == TIMEFORMAT.day_name ? date.toLocaleString(langIfStringFormat, { weekday: 'long' }).toLowerCase()
+                    : format == TIMEFORMAT.months ? La.util.addLeadingZero(parseInt(date.getMonth())+1)
+                    : format == TIMEFORMAT.month_name ? date.toLocaleString(langIfStringFormat, { month: 'long' }).toLowerCase()
+                    : format == TIMEFORMAT.years ? date.getFullYear().toString().substring(2)
+                    : format == TIMEFORMAT.year_full ? date.getFullYear()
+                    : !('a' < format && format < 'z' || 'A' < format && format < 'Z') ? format
+                    : null
+
+                if(display === null) throw Error('Unknown element in format parse date ['+format+']', 'error')
+            }
+            else{
+
+                display = ''
+                for(var i = 0; i < format.length; i++) display += La.time.format(date, format.charAt(i), langIfStringFormat)
+            }
+
+            return display
+        },
+
+        add(date, timeToAdd, timeFormat, format = null, langIfStringFormat = 'en'){
+
+			if(timeFormat == TIMEFORMAT.milliseconds) return La.time.parse(La.time.parse(date).getTime() + timeToAdd, format, langIfStringFormat)
+            else if(timeFormat == TIMEFORMAT.seconds) return La.time.add(date, timeToAdd * 1000, TIMEFORMAT.milliseconds)
+            else if(timeFormat == TIMEFORMAT.minutes) return La.time.add(date, timeToAdd * 60, TIMEFORMAT.seconds)
+            else if(timeFormat == TIMEFORMAT.hours) return La.time.add(date, timeToAdd * 60, TIMEFORMAT.minutes)
+            else if(timeFormat == TIMEFORMAT.days) return La.time.add(date, timeToAdd * 24, TIMEFORMAT.hours)
+            else if(timeFormat == TIMEFORMAT.weeks) return La.time.add(date, timeToAdd * 7, TIMEFORMAT.days)
+            else if(timeFormat == TIMEFORMAT.years) return La.time.add(date, timeToAdd * 365, TIMEFORMAT.days)
+            else throw Error('Unknown format for date_addition ['+timeFormat+']')
+        },
+        addMillis: (date, millis, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.milliseconds, format, langIfStringFormat),
+        addSeconds: (date, seconds, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.seconds, format, langIfStringFormat),
+        addMinutes: (date, minutes, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.minutes, format, langIfStringFormat),
+        addHours: (date, hours, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.hours, format, langIfStringFormat),
+        addDays: (date, days, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.days, format, langIfStringFormat),
+        addWeeks: (date, weeks, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.weeks, format, langIfStringFormat),
+        addYears: (date, years, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.years, format, langIfStringFormat),
+
+        equalDay: (date_a, date_b) => La.time.format(date_a, 'Y-m-d') == La.time.format(date_b, 'Y-m-d'),
+        equalMonth: (date_a, date_b) => La.time.format(date_a, 'Y-m') == La.time.format(date_b, 'Y-m'),
+        equalYear: (date_a, date_b) => La.time.format(date_a, 'Y') == La.time.format(date_b, 'Y'),
+
+        toUnixTime: (date) => Math.floor(La.time.parse(date).getTime() / 1000),
+
+        toMillis: (time, format) => La.time.add(0, time, format).getTime(),
+        toSeconds: (time, format) => Math.floor(La.time.toMillis(time, format) / 1000),
+        toMinutes: (time, format) => Math.floor(La.time.toSeconds(time, format) / 60),
+        toHours: (time, format) => Math.floor(La.time.toMinutes(time, format) / 60),
+        toDays: (time, format) => Math.floor(La.time.toHours(time, format) / 24),
+        toWeeks: (time, format) => Math.floor(La.time.toDays(time, format) / 7),
+        toYears: (time, format) => Math.floor(La.time.toDays(time, format) / 365)
+    },
+
+	storage: {
+
+		expirationTimesName: '_expiration_times_',
+
+		exists(key){
+
+			let expirationTimes = JSON.parse(localStorage.getItem(La.storage.expirationTimesName)) || {}
+
+			if(Object.keys(localStorage).includes(key) && (!expirationTimes[key] || Date.now() < expirationTimes[key])) return true
+			else{
+
+				La.storage.remove(key)
+
+				return false
+			}
+		},
+		get(key){
+
+			if(La.storage.exists(key)) return La.parse.maybeJSON(localStorage.getItem(key))
+		},
+		set(key, value, expiration){
+
+			let expirationTimes = JSON.parse(localStorage.getItem(La.storage.expirationTimesName)) || {}
+
+			if(expiration) expirationTimes[key] = Number.isInteger(expiration) ? Date.now() + expiration : La.time.parse(expiration).getTime()
+			else if(expiration === null && expirationTimes[key]) delete expirationTimes[key]
+
+			if(!expiration || Date.now() < expirationTimes[key]){
+
+				localStorage.setItem(key, JSON.stringify(value))
+				localStorage.setItem(La.storage.expirationTimesName, JSON.stringify(expirationTimes))
+
+				return value
+			}
+		},
+		remove(key){
+
+			localStorage.removeItem(key)
+
+			let expirationTimes = JSON.parse(localStorage.getItem(La.storage.expirationTimesName)) || {}
+
+			if(expirationTimes[key]){
+
+				delete expirationTimes[key]
+				localStorage.setItem(La.storage.expirationTimesName, JSON.stringify(expirationTimes))
+			}
+		},
+		list(){
+
+			let expirationTimes = JSON.parse(localStorage.getItem(La.storage.expirationTimesName)) || {}
+
+			Object.keys(localStorage).forEach(key => {
+
+				if(Object.keys(expirationTimes).includes(key)) console.log('%c'+key+' %c['+La.time.parse(expirationTimes[key], TIMESTAMP)+']', 'font-weight: bold; font-size: 12px', 'color: red', La.storage.get(key))
+				else console.log('%c'+key, 'font-weight: bold; font-size: 12px', La.storage.get(key))
+			})
+		},
+		clear(){
+
+			localStorage.clear()
 		}
-    }
+	}
 }
 
 // CONSTS -------------------------
-const cl = console.log, TIMESTAMP = 'Y-m-d H:i:s'
+const cl = console.log,
+	  TIMESTAMP = 'Y-m-d H:i:s'
+
+// ENUMS --------------------------
+const TIMEFORMAT = {
+
+	unix_time: 'U',
+	milliseconds: 'ms',
+	seconds: 's',
+	minutes: 'i',
+	hours: 'h',
+	hour_24: 'H',
+	days: 'd',
+	day_name: 'D',
+	weeks: 'w',
+	months: 'm',
+	month_name: 'M',
+	years: 'y',
+	year_full: 'Y'
+},
+	  DEVICE = {
+
+		  mobile: 'MOBILE',
+		  tablet: 'TABLET',
+		  desktop: 'DESKTOP'
+	  }
 
 // CLASS FUNCTIONS -------------------------------------------------------
 $(document).on('click', '.modal-img', function (e) {
@@ -1199,14 +1360,16 @@ String.prototype['upperCaseFirst'] = function(){
 	if(this.length) return this[0].toUpperCase() + this.toString().slice(1)
 	else return ''
 }
-String.prototype['prettyPrice'] = Number.prototype['prettyPrice'] = function(){
+Number.prototype['prettyPrice'] = function(){
 
 	let price = parseFloat(Math.round(this*100)/100)
 
-	return Number.isInteger(price) ? price.toString() : price.toFixed(2)
+	if(Number.isNaN(price)) return NaN
+	else return Number.isInteger(price) ? price.toString() : price.toFixed(2)
 }
-String.prototype['prettyUpperCase'] = function(){
+String.prototype['prettyPrice'] = Number.prototype['prettyPrice']
+String.prototype['prettyUpperCase'] = function(minLengthToUpper = 4){
 
-	if(this.length) return this.toLowerCase().upperCaseFirst().split(' ').map(w => w.length > 3 ? w.upperCaseFirst() : w).join(' ')
+	if(this.length) return this.toLowerCase().upperCaseFirst().split(' ').map(w => w.length >= minLengthToUpper ? w.upperCaseFirst() : w).join(' ')
 	else return ''
 }
