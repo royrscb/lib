@@ -1098,7 +1098,7 @@ const La = {
                     : format == TIMEFORMAT.months ? La.util.addLeadingZero(parseInt(date.getMonth())+1)
                     : format == TIMEFORMAT.month_name ? date.toLocaleString(langIfStringFormat, { month: 'long' }).toLowerCase()
                     : format == TIMEFORMAT.years ? date.getFullYear().toString().substring(2)
-                    : format == TIMEFORMAT.year_full ? date.getFullYear()
+                    : format == TIMEFORMAT.year_full ? date.getFullYear().toString()
                     : !('a' < format && format < 'z' || 'A' < format && format < 'Z') ? format
                     : null
 
@@ -1125,12 +1125,12 @@ const La = {
             else throw Error('Unknown format for date_addition ['+timeFormat+']')
         },
         addMillis: (date, millis, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.milliseconds, format, langIfStringFormat),
-        addSeconds: (date, seconds, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.seconds, format, langIfStringFormat),
-        addMinutes: (date, minutes, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.minutes, format, langIfStringFormat),
-        addHours: (date, hours, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.hours, format, langIfStringFormat),
-        addDays: (date, days, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.days, format, langIfStringFormat),
-        addWeeks: (date, weeks, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.weeks, format, langIfStringFormat),
-        addYears: (date, years, format = null, langIfStringFormat) => La.time.add(date, millis, TIMEFORMAT.years, format, langIfStringFormat),
+        addSeconds: (date, seconds, format = null, langIfStringFormat) => La.time.add(date, seconds, TIMEFORMAT.seconds, format, langIfStringFormat),
+        addMinutes: (date, minutes, format = null, langIfStringFormat) => La.time.add(date, minutes, TIMEFORMAT.minutes, format, langIfStringFormat),
+        addHours: (date, hours, format = null, langIfStringFormat) => La.time.add(date, hours, TIMEFORMAT.hours, format, langIfStringFormat),
+        addDays: (date, days, format = null, langIfStringFormat) => La.time.add(date, days, TIMEFORMAT.days, format, langIfStringFormat),
+        addWeeks: (date, weeks, format = null, langIfStringFormat) => La.time.add(date, weeks, TIMEFORMAT.weeks, format, langIfStringFormat),
+        addYears: (date, years, format = null, langIfStringFormat) => La.time.add(date, years, TIMEFORMAT.years, format, langIfStringFormat),
 
         equalDay: (date_a, date_b) => La.time.format(date_a, 'Y-m-d') == La.time.format(date_b, 'Y-m-d'),
         equalMonth: (date_a, date_b) => La.time.format(date_a, 'Y-m') == La.time.format(date_b, 'Y-m'),
