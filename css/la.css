@@ -2,8 +2,6 @@
 input:focus, textarea:focus, select:focus{ outline: 0; }
 
 
-
-
 .pop-up-holder{
 
 	display: none;
@@ -30,7 +28,7 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 	left: 50%;
 	transform: translateX(-50%) translateY(-50%);
 
-	max-height: calc(100% - 25px);
+	max-height: calc(100% - 5vh);
 
 	background-color: var(--body-color);
 
@@ -90,7 +88,10 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 
 	content: ')';
 }
+.euro.between-brackets::after{
 
+	content: '\20AC)';
+}
 
 
 
@@ -178,7 +179,7 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 
 
 /* ico --------------------------- */
-.ico{
+ico, .ico{
 
     display: inline;
     vertical-align: middle;
@@ -187,31 +188,42 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 
     cursor: pointer;
 }
-.ico.small{
+ico.small, .ico.small{
 
 	max-width: 18px;
 	max-height: 18px;
 }
-.ico.big{
+ico.big, .ico.big{
 
 	max-width: 30px;
 	max-height: 30px;
 }
-.ico.giant{
+ico.giant, .ico.giant{
 
 	max-width: 37px;
 	max-height: 37px;
 }
-.ico.so-giant{
+ico.so-giant, .ico.so-giant{
 
 	max-width: 50px;
 	max-height: 50px;
 }
-.ico.titanic{
+ico.titanic, .ico.titanic{
 
 	max-width: 100px;
 	max-height: 100px;
 }
+ico.so-titanic, .ico.so-titanic{
+
+	max-width: 200px;
+	max-height: 200px;
+}
+ico.colosal, .ico.colosal{
+
+	max-width: 500px;
+	max-height: 500px;
+}
+
 
 .ico.dot.full::before{
 
@@ -352,7 +364,7 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 .pl-0{padding-left: 0;}		.pl-5{padding-left: 5px;}	.pl-10{padding-left: 10px;} 	.pl-15{padding-left: 15px;} 	.pl-20{padding-left: 20px;}		.pl-25{padding-left: 25px;} 	.pl-50{padding-left: 50px;} 	.ml-100{padding-left: 100px;}
 
 /* font size */
-.fs-10{ font-size: 10px; } .fs-11{ font-size: 11px; } .fs-12{ font-size: 12px; } .fs-14{ font-size: 14px; } .fs-16{ font-size: 16px; } .fs-18{ font-size: 18px; } .fs-20{ font-size: 20px; } .fs-22{ font-size: 22px; } .fs-24{ font-size: 24px; } .fs-26{ font-size: 26px; } .fs-28{ font-size: 28px; } .fs-30{ font-size: 30px; } .fs-35{ font-size: 35px; } .fs-40{ font-size: 40px; } .fs-45{ font-size: 45px; } .fs-50{ font-size: 50px; } .fs-55{ font-size: 55px; } .fs-60{ font-size: 60px; } .fs-70{ font-size: 70px; } .fs-80{ font-size: 80px; } .fs-90{ font-size: 90px; } .fs-100{ font-size: 100px; }
+.fs-8{ font-size: 8px; } .fs-9{ font-size: 9px; } .fs-10{ font-size: 10px; } .fs-11{ font-size: 11px; } .fs-12{ font-size: 12px; } .fs-14{ font-size: 14px; } .fs-16{ font-size: 16px; } .fs-18{ font-size: 18px; } .fs-20{ font-size: 20px; } .fs-22{ font-size: 22px; } .fs-24{ font-size: 24px; } .fs-26{ font-size: 26px; } .fs-28{ font-size: 28px; } .fs-30{ font-size: 30px; } .fs-35{ font-size: 35px; } .fs-40{ font-size: 40px; } .fs-45{ font-size: 45px; } .fs-50{ font-size: 50px; } .fs-55{ font-size: 55px; } .fs-60{ font-size: 60px; } .fs-70{ font-size: 70px; } .fs-80{ font-size: 80px; } .fs-90{ font-size: 90px; } .fs-100{ font-size: 100px; }
 
 
 
@@ -386,6 +398,25 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
     animation-timing-function: linear;
 }
 .rotate-backwards.fast{ animation-duration: 2s; }
+
+@keyframes rainbow{
+
+	from{ color: white; background-color: #9400D3; }
+	15%	{ color: white; background-color: #4B0082; }
+	30%	{ color: white; background-color: #0000FF; }
+	45%	{ color: black; background-color: #00FF00; }
+	60%	{ color: black; background-color: #FFFF00; }
+	75%	{ color: black; background-color: #FF7F00; }
+	90%	{ color: black; background-color: #FF0000; }
+	to	{ color: white; background-color: #9400D3; }
+}
+.rainbow{
+
+	animation-name: rainbow;
+	animation-duration: 3s;
+	animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
 
 @keyframes turn{
 
