@@ -54,16 +54,17 @@
             $this->paymentIntents = $paymentIntents;
         }
 
-		// amount is
-        function create($amount, $id_customer = null, $description = null){
+        // Amount is with decimal comma (2.71)
+        function create($amount, $customer_id = null, $description = null, $metadata = null){
 
             $parameters = [
 
               'amount' => round(round($amount, 2)*100),
               'currency' => 'eur'
             ];
-            if($id_customer) $parameters['customer'] = $id_customer;
+            if($customer_id) $parameters['customer'] = $customer_id;
             if($description) $parameters['description'] = $description;
+            if($metadata) $parameters['metadata'] = $metadata;
 
 
             try{ $new_paymentIntent = $this->paymentIntents->create($parameters); }
@@ -92,17 +93,20 @@
 
     final class Stripe{
 
+        public $customers,
+            $paymentIntents;
+
 		private function connect($live){
 
-            if($live) $stripe = new \Stripe\StripeClient('xxx');
-            else $stripe = new \Stripe\StripeClient('xxx');
+            if($live) $stripe = new \Stripe\StripeClient('');
+            else $stripe = new \Stripe\StripeClient('');
 
 			return $stripe;
 		}
 
-        function __construct() {
+        function __construct($live) {
 
-			$stripe = $this->connect(true);
+			$stripe = $this->connect($live);
 
             $this->paymentIntents = new PaymentIntents($stripe->paymentIntents);
             $this->customers = new Customers($stripe->customers);

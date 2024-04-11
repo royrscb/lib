@@ -1,12 +1,13 @@
 <?php
 
-    const TIMESTAMP = 'Y-m-d H:i:s',
-    	TELEGRAM_ROYRSCB_BOT_TOKEN = 'xxx',
-    	TELEGRAM_BUG_BOT_TOKEN = 'xxx',
-		TELEGRAM_VOLANDOBOT_BOT_TOKEN = 'xxx',
-    	TELEGRAM_ROYRSCB_CHAT_ID = 'xxx';
+	const PROJECT_NAME = '🏞Hericamps';
 
-	const PROJECT_NAME = 'VolandoBoy';
+    const TIMESTAMP = 'Y-m-d H:i:s',
+    	TELEGRAM_ROYRSCB_BOT_TOKEN = '1258995587:AAEO2rnPl7_eVE8YDYLs-xcQyii1jH_bhZ8',
+    	TELEGRAM_BUG_BOT_TOKEN = '1396062241:AAGutzXymTPQCNpXVp_FIAB5RsI004pwTjo',
+		TELEGRAM_VOLANDOBOT_BOT_TOKEN = '1155380140:AAEUudYPHh18Q3tpUh6FMoAOJmxAugixBwM',
+    	TELEGRAM_ROYRSCB_CHAT_ID = '465403410',
+		TELEGRAM_HERIBERT_CHAT_ID = '5944127154';
 
 	// parse input vars ----------
 	function getInputVars(){
@@ -126,7 +127,18 @@
 	// SEND ---------------------------------------------------------------------------
     function send_telegram($message, $bot_token = TELEGRAM_ROYRSCB_BOT_TOKEN, $chat_id = TELEGRAM_ROYRSCB_CHAT_ID, $keyboard = null){
 
+		$GLOBALS['telegram_count'] = isset($GLOBALS['telegram_count']) ? $GLOBALS['telegram_count']+1 : 0;
+		if($GLOBALS['telegram_count'] >= 10) exit();
+
 		if(empty($message)) throwError('Can not send empty message');
+
+		while(strlen($message) > 4000){
+
+			send_telegram('🧩['.$GLOBALS['telegram_count'].']<br>'.substr($message, 0, 3900), $bot_token, $chat_id, $keyboard);
+
+			$message = substr($message, 3900);
+			if(strlen($message) <= 4000) $message = '🧩['.$GLOBALS['telegram_count'].']<br>'.$message;
+		}
 
 		if($chat_id == TELEGRAM_ROYRSCB_CHAT_ID && $bot_token != TELEGRAM_VOLANDOBOT_BOT_TOKEN) $message = '<b>['.PROJECT_NAME.'] </b>'.$message;
 		$to_replace = [
@@ -151,20 +163,25 @@
 		$data = [ 'chat_id' => $chat_id, 'text' => $message, 'parse_mode' => 'HTML' ];
 		if(isset($keyboard)) $data['reply_markup'] = $keyboard;
 
-		$response = post('https://api.telegram.org/bot'.$bot_token.'/sendMessage', $data);
+		try{ $response = post('https://api.telegram.org/bot'.$bot_token.'/sendMessage', $data); }
+		catch(Exception $e){ throwException(500, 'Call to telegram API<br><br><b>Chat:</b> '.$chat_id); }
 
 		if($response['ok']) return $response['result'];
 		else{
 
-			logAndTelegram($response['error_code'], $response['description'], 'Telegram error', false, true);
-			throwException($response['error_code'], 'Telegram error: '.$response['description'].' Message: '.$message, true, false);
+			logAndTelegram($response['error_code'], '<br><br><b>Chat:</b> '.$chat_id.'<br><b>Description:</b> '.$response['description'], 'Telegram error', false, true);
+			logAndTelegram($response['error_code'], 'Telegram error: '.$response['description'].' Message: '.$message, 'Telegram error', true, false);
+			throwError($response['error_code'], 'Telegram error: '.$response['description']);
 		}
 	}
-	function send_mail($to, $subject, $message, $from, $html_styled = false){
+	function send_mail($to, $subject, $message, $from, $html_styled = false, $cc = null, $bcc = null){
 
 		if(!$from) $from = $_SERVER['HTTP_HOST'];
-		$headers = 'From: '.$from.PHP_EOL;
-		if($html_styled) $headers .= 'Content-type: text/html; charset=iso-8859-1';
+		
+		$headers = 'From: '.$from."\r\n";
+		if($html_styled) $headers .= 'Content-type: text/html; charset=utf-8'."\r\n";
+		if($cc) $headers .= 'Cc: '.$cc."\r\n";
+		if($bcc) $headers .= 'Bcc: '.$bcc."\r\n";
 
 		$res = mail($to, $subject, $message, $headers);
 
@@ -237,6 +254,11 @@
 	function parse_bool($bool){
 
 		if(is_bool($bool)) return $bool;
+		else if(is_numeric($bool)){
+
+			if($bool == 0) return false;
+			else if($bool == 1) return true;
+		}
 		else if(is_string($bool)){
 
 			if(strtolower($bool) === 'true') return true;
@@ -249,6 +271,42 @@
 	function addSlashesToString($string){
 
 		return addcslashes($string, "\"'\\");
+	}
+
+	function mountLangField(&$data, $field, $langs = null){
+
+		if(is_null($langs)){
+
+			$langsKeys = array_filter(array_keys($data), function($key)use($field){ 
+
+				// Return okay if key is $field_xx
+				return preg_match('/'.$field.'_..$/', $key);
+			});
+			
+			$langs = array_map(function($key){ return explode('_', $key)[1]; }, $langsKeys);
+		}
+
+		$data[$field] = [];
+
+		foreach($langs as $lang){
+
+			$data[$field][$lang] = $data[$field.'_'.$lang] ?? null;
+
+			if(isset($data[$field.'_'.$lang])) unset($data[$field.'_'.$lang]);
+		}
+
+		return $data[$field];
+	}
+	function unmountLangField(&$data, $field, $langs = null){
+
+		if(is_null($langs)) $langs = array_keys($data[$field]);
+
+		foreach($langs as $lang){
+
+			$data[$field.'_'.$lang] = $data[$field][$lang] ?? null;
+		}
+
+		if(isset($data[$field])) unset($data[$field]);
 	}
 
 	function json_stringify($json){
@@ -266,6 +324,7 @@
 		return addSlashesToString(json_encode($json, JSON_NUMERIC_CHECK));
 	}
 
+	// Array extension ------------------------------------------------------------------------------------------
 	// returns the index of the first element that returns true to the callback(current_element, index), or null if not founds
 	function array_find_index(callable $callback, array $array){
 
@@ -294,6 +353,10 @@
 
 	// UTIL -------------------------------------------------------------------------------------------------
 	function je($value){ return json_encode($value); }
+	function no($var){
+
+		return !isset($var) || is_null($var) || empty($var);
+	}
 	function reduce_image_width($src, $width_to_reduce){
 
         try{ $img = new Imagick($src); }
@@ -315,14 +378,24 @@
 
 		return (parse_date_spain($time, 'U') + $addTime) < time();
 	}
-	function generate_report(){
+	function is_time_mins_multiple($number){
 
+		return (intdiv(time(), 60) % $number) == 0;
+	}
+	function generate_report($appended = false){
 
-		return '<b>PHP REPORT</b><br><br>'.
-			'<b>DIR: </b>'.__DIR__.'<br>'.
-			'<b>FILE: </b>'.__FILE__.'<br>'.
-			'<b>'.$_SERVER['REQUEST_METHOD'].':</b> '.json_encode($_GET ?? $_POST ?? $_PUT ?? $_DELETE ?? null).'<br><br>'.
-			'<b>SERVER: </b>'.json_encode($_SERVER);
+		$report = '<b>📃 REPORT </b> ('.(function_exists('whoami') && whoami() ? whoami()->type.' '.whoami()->id : 'unown').')<br><br>'.
+			'<b>IP: </b>'.($_SERVER['REMOTE_ADDR'] ?? 'null').'<br>'.
+			'<b>LANG: </b>'.($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'null').'<br>'.
+			'<b>HTML FILE: </b>'.($_SERVER['HTTP_REFERER'] ?? 'null').'<br>'.
+			'<b>REQUEST URI: </b>'.($_SERVER['REQUEST_URI'] ?? 'null').'<br>'.
+			'<b>SCRIPT NAME: </b>'.($_SERVER['SCRIPT_NAME'] ?? 'null').'<br>'.
+			'<b>AGENT: </b>'.($_SERVER['HTTP_USER_AGENT'] ?? 'null').'<br>'.
+			'<b>'.$_SERVER['REQUEST_METHOD'].(isset($_SERVER['CONTENT_LENGTH']) ? ' ('.$_SERVER['CONTENT_LENGTH'].') ' : '').':</b> '.json_encode($_GET ?? $_POST ?? $_PUT ?? $_DELETE ?? null);
+
+		if($appended) $report = '<br><br>---------------------------------------<br>'.$report;
+
+		return $report;
 	}
 	function makeTelegramKeyboard($url, $text){
 
@@ -339,14 +412,26 @@
 		];
 	}
 
+    # string ------------------------------------------------------------------
+    function namifyEmail($object_or_email){
+
+        $commonEmails = ['info'];
+        $email = gettype($object_or_email) == 'string' ? $object_or_email : $object_or_email['email'];
+
+        $name = implode(' ', array_map(ucfirst, explode('_', implode('_', explode('.', explode('@', $email)[0])))));
+        if(in_array(strtolower($name), $commonEmails)) $name .= ' '.implode(' ', array_map(ucfirst, array_slice(explode('.', explode('@', $email)[1]), 0, -1)));
+
+        return $name;
+    }
+
 
 	// DEBUG ------------------------------------------------------------------------------------------------
-    function logAndTelegram($code, $text, $type, $log, $telegram){
+    function logAndTelegram($code, $text, $type, $log = true, $telegram = true){
 
-		$errorText = '🐛<b>';
-        if($location = get_client_location()) $errorText .= '{'.$location['country'].', '.$location['city'].'} ';
-		if(function_exists('whoami') && $me = whoami()) $errorText .= '('.$me->type.': '.$me->id.') '; else $errorText .= '(unown) ';
-        $errorText .= $type.' '.$code.': </b>'.$text;
+		$me = (function_exists('whoami') && $me = whoami()) ? $me->type.' '.$me->id : "unown";
+        //* $location = ' {'.(($location = get_client_location()) ? $location['country'].', '.$location['city'] : '').'} ';
+
+		$errorText = "🐛 <b>($me) <u>$type $code</u>:</b><br>$text";
 
 		if($log){
 
@@ -388,7 +473,7 @@
 
 	function throwException($code = 500, $text = null, $log = true, $telegram = true){
 
-		logAndTelegram($code, $text, 'exception', $log, $telegram);
+		logAndTelegram($code, $text.generate_report(true), 'exception', $log, $telegram);
 
 		header("HTTP/1.1 $code $text", true, 401);
 		exit();

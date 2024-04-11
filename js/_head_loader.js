@@ -1,7 +1,9 @@
-const HTML_FILE = location.pathname.split('/').reverse()[0].split('.')[0] || 'index'
+const HTML_FILE = document.documentElement.attributes.filename?.value 
+	|| location.pathname.split('/').reverse()[0].split('.')[0] 
+	|| 'index'
 
 const _event_all_done_ = new Event('_all_done_'),
-	  _all_done_ = new Promise(resolve => document.addEventListener('_all_done_', () => resolve(true)))
+	  _all_done_ = new Promise(resolve => document.addEventListener('_all_done_', resolve))
 
 document.documentElement.hidden = true
 
@@ -42,30 +44,33 @@ async function load_head(js_filename, css_filename){
 		})
 	}
 
-	if(typeof $ == 'undefined') await load_script('../js/lib/jquery.min.js')
-    window.VERSION = navigator.onLine ? await fetch('../version', {cache: "no-store"}).then(res => res.text()) : false
+	const rootPath = ''
+
+	if(typeof $ == 'undefined') await load_script(rootPath+'js/lib/jquery.min.js')
+    window.VERSION = await Promise.race([
+		fetch(rootPath+'version', {cache: "no-store"}).then(res => res.text()).catch(() => 0),
+		new Promise(resolve => setTimeout(() => resolve(0), 3000))
+	])
 
 	// load manifest --------------------------------------------------
 	let link = document.createElement('link')
 	link.rel = 'manifest'
-	link.href = '../manifest.json'+(VERSION ? '?v='+VERSION : '')
+	link.href = rootPath+'manifest.json'+(VERSION ? '?v='+VERSION : '')
 	document.head.appendChild(link)
 
 	// load styles ----------------------------------------------------
 	let link_promises = [
 
-		load_link('../css/lib/la.css', VERSION),
-		load_link('../css/all.css', VERSION),
-		load_link('../css/allMobile.css', VERSION),
-		load_link('../css/allDesktop.css', VERSION)
+		load_link(rootPath+'css/lib/la.css', VERSION),
+		load_link(rootPath+'css/all.css', VERSION)
 	]
-	if(css_filename) link_promises.push(load_link('../css/'+css_filename, VERSION))
-	Promise.all(link_promises).then(() => $(document.documentElement).fadeIn())
+	if(css_filename) link_promises.push(load_link(rootPath+'css/'+css_filename, VERSION))
+	Promise.all(link_promises).then(() => { document.documentElement.hidden = false })
 
 	// load scripts ----------------------------------------------------
-	load_script('../js/lib/la.js', VERSION).then(() => {
+	load_script(rootPath+'js/lib/la.js', VERSION).then(() => {
 
-		load_script('../js/all.js', VERSION)
-		if(js_filename) load_script('../js/'+js_filename, VERSION)
+		load_script(rootPath+'js/all.js', VERSION)
+		if(js_filename) load_script(rootPath+'js/'+js_filename, VERSION)
 	})
 }

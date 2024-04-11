@@ -11,23 +11,27 @@
 		// help private functions
 		private function executeQuery($sql){
 
-			// send_telegram('Executing query to table '.$this->tableName.'<br><br><b>SQL:</b> <i>'.$sql.'</i>');
+			# send_telegram('Executing query to table <u>'.$this->tableName.'</u><br><br><b>SQL:</b> <i>'.$sql.'</i>');
 
 			if(strpos(strtoupper($sql), 'DROP ')) throwException(500, 'MySQL warning <u>DROP</u> executed to '.$this->tableName.'<br><br><b>SQL:</b> <i>'.$sql.'</i>');
 			else if(strpos(strtoupper($sql), 'ALTER ')) throwException(500, 'MySQL warning <u>ALTER</u> executed to '.$this->tableName.'<br><br><b>SQL:</b> <i>'.$sql.'</i>');
-			else if(strpos($sql, ';')) throwException(500, 'MySQL warning <u>";"</u> executed to '.$this->tableName.'<br><br><b>SQL:</b> '.$sql);
+			//else if(strpos($sql, ';')) throwException(500, 'MySQL warning <u>";"</u> executed to '.$this->tableName.'<br><br><b>SQL:</b> '.$sql);
 
 			else return $this->conn->query($sql);
 		}
 		private function throwSqlException($method, $sql){
 
-			throwException(500, 'MySQL '.$method.' '.$this->tableName.': '.$this->conn->error.'<br><br><b>SQL:</b> <i>'.$sql.'</i>');
+			throwException(500, 'MySQL '.$method.' '.$this->tableName.':<br>'.$this->conn->error.'<br><br><b>SQL:</b> <i>'.$sql.'</i>');
 		}
         private function parseUnknownDataElementToSql($element){
 
             if(is_bool(parse_bool($element))) return parse_bool($element) ? 1 : 0;
-			else if(is_numeric($element)) return $element;
-            else if(is_string($element) && !empty($element)) return "'".addSlashesToString($element)."'";
+			else if(is_numeric($element) && !(is_string($element) && ($element[0] == '+' || $element[0] == '0' && $element != '0'))) return $element;
+            else if(is_string($element) && !empty($element)){
+
+				if($element == 'UTC_TIMESTAMP') return 'UTC_TIMESTAMP()';
+				else return "'".addSlashesToString($element)."'";
+			}
             else if(is_array($element)) return "'".json_stringify($element)."'";
             else return 'NULL';
         }
@@ -62,7 +66,7 @@
                 if(isset($id_owner)) $sql = 'SELECT * FROM '.$this->tableName.' WHERE id_'.$id_owner.'='.$id;
                 else $sql = 'SELECT * FROM '.$this->tableName.' WHERE id='.$id;
 
-            }else $sql = 'SELECT * FROM '.$this->tableName;
+            } else $sql = 'SELECT * FROM '.$this->tableName;
 
 			if(isset($filter)) $sql .= isset($id) ? ' AND ('.$filter.')' : ' WHERE '.$filter;
 			if(isset($order)) $sql .= ' ORDER BY '.$order;
@@ -91,21 +95,24 @@
         }
 
 		// help protected
-		protected function buildTimeFilterSql($fieldName, $filter){
+		protected function buildTimeFilterSql($field, $filter){
 
 			if(isset($filter)){
 
-				if(is_numeric($filter)) $sql_filter = '('.$filter.' <= unix_timestamp(CONVERT_TZ('.$fieldName.', "+02:00", "+00:00")))';
-				else if(is_array($filter) && is_numeric($filter[0]) && is_numeric($filter[1])) $sql_filter = '('.$filter[0].' <= unix_timestamp(CONVERT_TZ('.$fieldName.', "+02:00", "+00:00")) AND unix_timestamp(CONVERT_TZ('.$fieldName.', "+02:00", "+00:00")) <= '.$filter[1].')';
+				if(is_numeric($filter)) $sql_filter = '('.$filter.' <= unix_timestamp(CONVERT_TZ('.$field.', "+02:00", "+00:00")))';
+				else if(is_array($filter) && is_numeric($filter[0]) && is_numeric($filter[1])) $sql_filter = '('.$filter[0].' <= unix_timestamp(CONVERT_TZ('.$field.', "+02:00", "+00:00")) AND unix_timestamp(CONVERT_TZ('.$field.', "+02:00", "+00:00")) <= '.$filter[1].')';
 				else throwException(500, 'command time filter ('.json_encode($filter).') is not a unix time');
 			}
 			else $sql_filter = null;
 
 			return $sql_filter;
 		}
-		protected function readHashword(int $id){
+		public function readHashword($id_or_email){
 
-			$sql = $this->buildSelectSql($id, null, null, null);
+			$sql = is_numeric($id_or_email) ?
+				$this->buildSelectSql($id_or_email, null, null, null) :
+				$this->buildSelectSql(null, null, null, "email='$id_or_email'");
+
             $row = $this->executeQuery($sql)->fetch_assoc();
 
 			if(isset($row['hashword'])) return $row['hashword'];
@@ -117,7 +124,7 @@
 				'WHERE '.(is_numeric($id_or_email) ? 'id='.$id_or_email : 'email="'.$id_or_email.'"');
 
 			if($this->executeQuery($sql) === TRUE) return true;
-            else throwException(500, 'Error updating hashword of user with email: '.$email);
+            else throwException(500, 'Error updating hashword of user with email: '.$id_or_email);
 		}
 		protected function readByEmail($email){
 
@@ -125,25 +132,6 @@
 
 			if(!empty($res)) return $res[0];
 			else return null;
-		}
-		protected function getName(&$data){
-
-			$data['name'] = [
-
-				'en' => $data['name_en'],
-				'ca' => $data['name_ca'],
-				'es' => $data['name_es']
-			];
-
-			unset($data['name_en'], $data['name_ca'], $data['name_es']);
-		}
-		protected function setName(&$data){
-
-			$data['name_en'] = $data['name']['en'];
-			$data['name_ca'] = $data['name']['ca'];
-			$data['name_es'] = $data['name']['es'];
-
-			unset($data['name']);
 		}
 		protected function newDisplayOrder(int $id = null, string $id_owner = null){
 
@@ -157,20 +145,23 @@
 		}
 
 		// constructor
-        final public function __construct($conn, $db){
+        final public function __construct($conn, $db, $tableName = null){
 
             $this->conn = $conn;
 
-			$this->tableName = strtolower(get_class($this));
-
 			$this->db = $db;
+			
+			$this->tableName = $tableName ?? strtolower(get_class($this));
         }
 
-        // crud
+        // CRUD
         public function create(array $data){
 
 			if(!isset($this->create_fields)) throwException(500, 'create_fields array not exist for table '.$this->tableName);
 			if(empty($this->create_fields)) throwException(500, 'create_fields array is empty for table '.$this->tableName);
+
+			// Change all fields from obj form to field_xx form. Example: {name: {ca: 'nom', 'es': 'nombre'}} => {name_ca: 'nom', name_es: 'nombre'}
+			if(isset($this->lang_fields)) foreach($this->lang_fields as $field) unmountLangField($data, $field, $this->langs ?? null);
 
 			$sql = $this->buildInsertSql($this->create_fields, $data);
 
@@ -183,9 +174,12 @@
             $result = $this->executeQuery($sql);
 
 			$row_array = [];
-            while($row = $result->fetch_assoc()){
+            if($result) while($row = $result->fetch_assoc()){
 
-				if(method_exists($this, 'read_foreach_row')) $this->read_foreach_row($row);
+				if(!($this->prevent_foreach_row ?? false) && method_exists($this, 'read_foreach_row')) $this->read_foreach_row($row);
+				
+				// Change all fields from field_xx form to obj form. Example: {name_ca: 'nom', name_es: 'nombre'} => {name: {ca: 'nom', 'es': 'nombre'}}
+				if(isset($this->lang_fields)) foreach($this->lang_fields as $field) mountLangField($row, $field, $this->langs ?? null);
 
 				array_push($row_array, $row);
 			}
@@ -201,6 +195,9 @@
 
 			if(!isset($this->update_fields)) throwException(500, 'update_fields array not exist for table '.$this->tableName);
 			if(empty($this->update_fields)) throwException(500, 'update_fields array is empty for table '.$this->tableName);
+
+			// Change all fields from obj form to field_xx form. Example: {name: {ca: 'nom', 'es': 'nombre'}} => {name_ca: 'nom', name_es: 'nombre'}
+			if(isset($this->lang_fields)) foreach($this->lang_fields as $field) unmountLangField($data, $field, $this->langs ?? null);
 
 			$sql = $this->buildUpdateSql($this->update_fields, $data, $id);
 
