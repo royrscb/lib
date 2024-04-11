@@ -1,6 +1,6 @@
 <?php
 
-	const PROJECT_NAME = '🏞Hericamps';
+	const PROJECT_NAME = '';
 
     const TIMESTAMP = 'Y-m-d H:i:s',
     	TELEGRAM_ROYRSCB_BOT_TOKEN = '1258995587:AAEO2rnPl7_eVE8YDYLs-xcQyii1jH_bhZ8',
@@ -9,8 +9,14 @@
     	TELEGRAM_ROYRSCB_CHAT_ID = '465403410',
 		TELEGRAM_HERIBERT_CHAT_ID = '5944127154';
 
-	// parse input vars ----------
+	// parse input vars ---------------------------------------------------------------------------
 	function getInputVars(){
+
+		if(isset($_SERVER['REQUEST_METHOD'])){
+
+			if($_SERVER['REQUEST_METHOD'] == 'GET' && !empty($_GET)) return $_GET;
+			else if($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) return $_POST;
+		}
 
 		$input = file_get_contents('php://input');
 
@@ -24,12 +30,15 @@
 
 		return $vars;
 	}
-	if($_SERVER['REQUEST_METHOD'] == 'GET'){ if(empty($_GET)) $_GET = getInputVars(); }
-	else if($_SERVER['REQUEST_METHOD'] == 'POST'){ if(empty($_POST)) $_POST = getInputVars(); }
-	else if($_SERVER['REQUEST_METHOD'] == 'PUT') $_PUT = getInputVars();
-	else if($_SERVER['REQUEST_METHOD'] == 'DELETE') $_DELETE = getInputVars();
+	if(isset($_SERVER['REQUEST_METHOD'])){
 
-	// HTTP -------------------------------------------------------------------------------------------------
+		if($_SERVER['REQUEST_METHOD'] == 'GET'){ if(empty($_GET)) $_GET = getInputVars(); }
+		else if($_SERVER['REQUEST_METHOD'] == 'POST'){ if(empty($_POST)) $_POST = getInputVars(); }
+		else if($_SERVER['REQUEST_METHOD'] == 'PUT') $_PUT = getInputVars();
+		else if($_SERVER['REQUEST_METHOD'] == 'DELETE') $_DELETE = getInputVars();
+	}
+
+	// HTTP ---------------------------------------------------------------------------------------
 	function http_request(string $method, string $url, $data = null){
 
 		if($method != 'GET' && $method != 'POST' && $method != 'PUT' && $method != 'DELETE') throwException(500, 'http request method must be either GET or POST');
@@ -62,7 +71,7 @@
 		return http_request('POST', $url, $data);
 	}
 
-	// GET --------------------------------------------------------------------------------------------------
+	// GET ----------------------------------------------------------------------------------------
 	function scandir_recursively($path){
 
 		if(is_dir($path)){
@@ -91,6 +100,39 @@
 			return $location;
 
 		}else return null;
+	}
+
+	function getParameters($fileName = 'parameters.json'){
+
+		$filePath = __DIR__;
+
+		// Find filePath
+		if($_SERVER['HTTP_HOST'] == 'localhost') $filePath = __DIR__.'/../..';
+		else{
+
+			$i = 0;
+			while($i < 9 && strpos($filePath, $_SERVER['HTTP_HOST']) !== false && !file_exists($filePath.'/'.$fileName)){
+				
+				$pathArrayPieces = explode('/', $filePath);
+				array_pop($pathArrayPieces);
+				
+				$filePath = implode('/', $pathArrayPieces);
+				
+				$i++;
+			}
+		}
+
+		if($i == 9 || !file_exists($filePath.'/'.$fileName)) return null;
+
+		$parameters = file_get_contents($filePath.'/'.$fileName);
+		if(!$parameters){
+
+			send_telegram('Parameters file not found');
+
+			return null;
+		}
+
+		return json_decode($parameters, true);
 	}
 
 	function timeToken($uniqid = null){
@@ -124,7 +166,7 @@
 		return md5($uniqid.':'.$maybeTime.':'.$salt) == $token;
 	}
 
-	// SEND ---------------------------------------------------------------------------
+	// SEND ---------------------------------------------------------------------------------------
     function send_telegram($message, $bot_token = TELEGRAM_ROYRSCB_BOT_TOKEN, $chat_id = TELEGRAM_ROYRSCB_CHAT_ID, $keyboard = null){
 
 		$GLOBALS['telegram_count'] = isset($GLOBALS['telegram_count']) ? $GLOBALS['telegram_count']+1 : 0;
@@ -140,7 +182,12 @@
 			if(strlen($message) <= 4000) $message = '🧩['.$GLOBALS['telegram_count'].']<br>'.$message;
 		}
 
-		if($chat_id == TELEGRAM_ROYRSCB_CHAT_ID && $bot_token != TELEGRAM_VOLANDOBOT_BOT_TOKEN) $message = '<b>['.PROJECT_NAME.'] </b>'.$message;
+		if($chat_id == TELEGRAM_ROYRSCB_CHAT_ID && $bot_token != TELEGRAM_VOLANDOBOT_BOT_TOKEN){
+
+			$project_name = PROJECT_NAME;
+			if($_SERVER['HTTP_HOST'] == 'localhost') $project_name = 'localhost|'.PROJECT_NAME;
+			$message = '<b>['.$project_name.'] </b>'.$message;
+		}
 		$to_replace = [
 
 			'<br>' => "\n",
@@ -169,9 +216,22 @@
 		if($response['ok']) return $response['result'];
 		else{
 
-			logAndTelegram($response['error_code'], '<br><br><b>Chat:</b> '.$chat_id.'<br><b>Description:</b> '.$response['description'], 'Telegram error', false, true);
-			logAndTelegram($response['error_code'], 'Telegram error: '.$response['description'].' Message: '.$message, 'Telegram error', true, false);
-			throwError($response['error_code'], 'Telegram error: '.$response['description']);
+			// Log only with full message
+			logAndTelegramProblem($response['error_code'], $response['description'].' Message: '.$message, 'Telegram error', true, false);
+			
+			$wellKnownError = 
+				$response['error_code'] == 403 && (
+					$response['description'] == 'Forbidden: bot was blocked by the user'
+					|| $response['description'] == 'Forbidden: user is deactivated'
+				);
+			
+			if(!$wellKnownError){
+
+				// Telegram only, with no message to prevent infinite loops
+				logAndTelegramProblem($response['error_code'], '<br><br><b>Chat:</b> '.$chat_id.'<br><b>Description:</b> '.$response['description'], 'Telegram error', false, true);
+				// Throw error to user (no log nor telegram)
+				throwError($response['error_code'], 'Telegram error: '.$response['description']);
+			}
 		}
 	}
 	function send_mail($to, $subject, $message, $from, $html_styled = false, $cc = null, $bcc = null){
@@ -188,23 +248,35 @@
 		if($res) return $res;
 		else throwException(500, 'Error sending email to: '.$to);
 	}
-	function send_push_notification($notification, $subscription, $onClickLink = null, $ttl = null){
+	function send_push_notification($notification, $subscription, $onClickLink = null, $badge = null){
 
-		if(!isset($subscription)) return null;
+		if(!isset($subscription) || !$subscription) return false;
+		
+		if(!is_array($notification)) $notification = ['body' => $notification];
 
 		require_once __DIR__.'/pushNotification.php';
-		$push_notification = new PushNotification($ttl);
+		$push_notification = new PushNotification();
 
-		if(isset($onClickLink)){
+		if(isset($onClickLink)) $notification['data']['onClickLink'] = $onClickLink;
+		if($badge !== null){
 
-			if(is_array($notification)) $notification['data']['onClickLink'] = $onClickLink;
-			else $notification = ['body' => $notification, 'data' => ['onClickLink' => $onClickLink]];
+			$notification['badge'] = $badge;
+			if(!$notification['body']) $notification['preventNotification'] = true;
 		}
 
 		$res = $push_notification->send($notification, $subscription);
 
-		if(isset($res['error'])) throwException($res['code'], 'Send push notification:<br>'.json_encode($notification).'<br><br>to subscription:<br>'.json_encode($notification['data']['receiver'] ?? $subscription).'<br><br>reason:<br>'.$res['reason']);
+		if($res['error']){
 
+			$text = '<br><b>Reason:</b><br>'.$res['reason']
+				.'<br><br><b>Notification:</b><br>'.json_encode($notification)
+				.'<br><br><b>Subscription:</b><br>'.json_encode($subscription);
+
+			logAndTelegramProblem($res['code'], $text, 'Sending push notification');
+
+			return null;
+		}
+		
 		return $res;
 	}
 	function send_multiple_push_notifications($notification, $subscriptions, $onClickLink = null, $ttl = null){
@@ -221,15 +293,26 @@
 
 		$responses = $push_notification->sendMultipleEqual($notification, $subscriptions);
 
-		if($responses !== true)
-			foreach($responses as $index => $res)
-				if(isset($res['error'])) throwException($res['code'], 'Send push notification:<br>'.json_encode($notification).'<br><br>to subscription:<br>'.json_encode(isset($notification['data']['receiver'][$index]) ?? $subscriptions[$index]).'<br><br>reason:<br>'.$res['reason']);
+		if($responses !== true){
+			foreach($responses as $index => $res){
+				if($res['error']){
+
+					$text = '<br><b>Reason:</b><br>'.$res['reason']
+						.'<br><br><b>Notification:</b><br>'.json_encode($notification)
+						.'<br><br><b>Subscription:</b><br>'.json_encode($subscriptions[$index]);
+
+					logAndTelegramProblem($res['code'], $text, 'Sending push notification');
+
+					$responses[$index] = null;
+				}
+			}
+		}
 
 		return $responses;
 	}
 
 
-	// PARSE ------------------------------------------------------------------------------------------------
+	// PARSE --------------------------------------------------------------------------------------
 	function date_spain($format = null){
 
 		$now_spain = new DateTime('now', new DateTimeZone('Europe/Madrid'));
@@ -324,34 +407,35 @@
 		return addSlashesToString(json_encode($json, JSON_NUMERIC_CHECK));
 	}
 
-	// Array extension ------------------------------------------------------------------------------------------
-	// returns the index of the first element that returns true to the callback(current_element, index), or null if not founds
+	// Array extension ----------------------------------------------------------------------------
+	// returns the index of the first element that returns true to the callback(current_element, index) or -1 if not founds
 	function array_find_index(callable $callback, array $array){
 
 		$i = 0;
 		while($i < count($array) && !$callback($array[$i], $i)) $i++;
 
 		if($i < count($array)) return $i;
-		else return null;
+		else return -1;
 	}
-	// returns the first element that returns true to the callback(current_element, index), or null if not founds
+	// returns the first element that returns true to the callback(current_element, index) or null if not found
 	function array_find(callable $callback, array $array){
 
-		$maybeIndex = array_find_index($callback, $array);
+		$index = array_find_index($callback, $array);
 
-		if(!is_null($maybeIndex)) return $array[$maybeIndex];
+		if($index >= 0) return $array[$index];
 		else return null;
 	}
-	// removes the first element that returns true to the callback(current_element, index)
+	// removes the first element that returns true to the callback(current_element, index) or null if not found
 	function array_remove(callable $callback, array $array){
 
-		$maybeIndex = array_find_index($callback, $array);
+		$index = array_find_index($callback, $array);
 
-		return array_splice($array, $maybeIndex, 1);
+		if($index >= 0) return array_splice($array, $index, 1);
+		else return null;
 	}
 
 
-	// UTIL -------------------------------------------------------------------------------------------------
+	// UTIL ---------------------------------------------------------------------------------------
 	function je($value){ return json_encode($value); }
 	function no($var){
 
@@ -384,6 +468,8 @@
 	}
 	function generate_report($appended = false){
 
+		$inputVars = getInputVars();
+
 		$report = '<b>📃 REPORT </b> ('.(function_exists('whoami') && whoami() ? whoami()->type.' '.whoami()->id : 'unown').')<br><br>'.
 			'<b>IP: </b>'.($_SERVER['REMOTE_ADDR'] ?? 'null').'<br>'.
 			'<b>LANG: </b>'.($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'null').'<br>'.
@@ -391,7 +477,7 @@
 			'<b>REQUEST URI: </b>'.($_SERVER['REQUEST_URI'] ?? 'null').'<br>'.
 			'<b>SCRIPT NAME: </b>'.($_SERVER['SCRIPT_NAME'] ?? 'null').'<br>'.
 			'<b>AGENT: </b>'.($_SERVER['HTTP_USER_AGENT'] ?? 'null').'<br>'.
-			'<b>'.$_SERVER['REQUEST_METHOD'].(isset($_SERVER['CONTENT_LENGTH']) ? ' ('.$_SERVER['CONTENT_LENGTH'].') ' : '').':</b> '.json_encode($_GET ?? $_POST ?? $_PUT ?? $_DELETE ?? null);
+			'<b>'.$_SERVER['REQUEST_METHOD'].(' ('.(strlen(json_encode($inputVars))).') ').':</b> '.json_encode($inputVars);
 
 		if($appended) $report = '<br><br>---------------------------------------<br>'.$report;
 
@@ -412,7 +498,7 @@
 		];
 	}
 
-    # string ------------------------------------------------------------------
+    # string --------------------------------------------------------------------------------------
     function namifyEmail($object_or_email){
 
         $commonEmails = ['info'];
@@ -425,17 +511,18 @@
     }
 
 
-	// DEBUG ------------------------------------------------------------------------------------------------
-    function logAndTelegram($code, $text, $type, $log = true, $telegram = true){
+	// DEBUG --------------------------------------------------------------------------------------
+    function logAndTelegramProblem($code, $text, $type, $log = true, $telegram = true){
 
 		$me = (function_exists('whoami') && $me = whoami()) ? $me->type.' '.$me->id : "unown";
         //* $location = ' {'.(($location = get_client_location()) ? $location['country'].', '.$location['city'] : '').'} ';
 
-		$errorText = "🐛 <b>($me) <u>$type $code</u>:</b><br>$text";
+		$errorText = "🐛 <b>($me) $type $code:</b><br>$text";
+		if($type == 'warning') $errorText = "⚠️ <b>($me) $type:</b><br>$text";
 
-		if($log){
+		if($log && $_SERVER['HTTP_HOST'] != 'localhost'){
 
-			$newLogLine = '['.date_spain('d-M-Y H:i:s').' ESP] '.$errorText;
+			$newLogLine = '['.date_spain(TIMESTAMP.' O').'] '.$errorText;
 			$to_replace = ['<br>' => ' ',
 						   '<b>' => '', '</b>' => '',
 						   '<i>' => '', '</i>' => '',
@@ -446,12 +533,26 @@
 
 			$file = (basename(getcwd()) == 'php' ? './' : '../').'error_log_la';
 			$logFileData = file_exists($file) ? $newLogLine.PHP_EOL.file_get_contents($file) : $newLogLine.PHP_EOL;
-			if(!file_put_contents($file, $logFileData)) logAndTelegram(500, 'Can not log in file: <i>'.$file.'</i><br><br><b>error: </b>'.$newLogLine, 'log error', false, true);
+			if(!file_put_contents($file, $logFileData)){
+
+				sleep(1);
+
+				// Second try (sometimes doesn't log correctly) [BETA]
+				if(!file_put_contents($file, $logFileData)){
+
+					// Telegram only
+					logAndTelegramProblem(500, 'Can not log in file <b>TWO TIMES</b>: <i>'.$file.'</i><br><br><b>error: </b>'.$newLogLine, 'log error', false, true);
+				}
+			}
 		}
 
         if($telegram) send_telegram($errorText, TELEGRAM_BUG_BOT_TOKEN);
     }
 
+	function throwWarning($text, $log = true, $telegram = true){
+
+		logAndTelegramProblem(-1, $text, 'warning', $log, $telegram);
+	}
 	function throwError($textOrCode, $text = null, $log = false, $telegram = false){
 
 		$error['status'] = 'ERROR';
@@ -466,14 +567,14 @@
 			$error['text'] = $textOrCode;
 		}
 
-		logAndTelegram($error['code'], $error['text'], 'error', $log, $telegram);
+		logAndTelegramProblem($error['code'], $error['text'], 'error', $log, $telegram);
 
 		exit(json_encode($error));
 	}
 
 	function throwException($code = 500, $text = null, $log = true, $telegram = true){
 
-		logAndTelegram($code, $text.generate_report(true), 'exception', $log, $telegram);
+		logAndTelegramProblem($code, $text.generate_report(true), 'exception', $log, $telegram);
 
 		header("HTTP/1.1 $code $text", true, 401);
 		exit();
