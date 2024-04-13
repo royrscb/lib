@@ -102,14 +102,14 @@ const La = {
         },
 
 		// find key in json object searching recursively by depth, looking for object that match eval, what is a bool returning function with current object as parameter
-		objectFromJson(json, key, eval){
+		objectFromJson(json, key, condition){
 
-			if(json.hasOwnProperty(key) && (!eval || eval(json[key]))) return json[key]
+			if(json.hasOwnProperty(key) && (!condition || condition(json[key]))) return json[key]
 			else for(k in json){
 
 				if(json[k] && typeof json[k] == 'object'){
 
-					const maybeObj = La.get.objectFromJson(json[k], key, eval)
+					const maybeObj = La.get.objectFromJson(json[k], key, condition)
 
 					if(maybeObj) return maybeObj
 				}
@@ -1193,16 +1193,18 @@ const La = {
 
                 position: 'fixed',
 				display: 'inline-table',
-                padding: '10px 15px',
-				maxWidth: '90vw',
-                border: 0,
-                margin: 0,
-                borderRadius: '15px',
+
                 [position.toLowerCase()]: 0,
+				maxWidth: '90vw',
                 left: '50%',
                 transform: 'translateX(-50%)',
+                
+                padding: '10px 15px',
+                border: 0,
+                borderRadius: '5px',
+                margin: 0,
+                
                 opacity: 0,
-                fontFamily: 'helvetica',
                 zIndex: 9
             })
             var text_p = $('<p>').html(txt).addClass('pop-msg-text').appendTo(div).css({
@@ -1213,8 +1215,12 @@ const La = {
 
 			div.css({
 
-				color: type == 'success' || type == 'error' ? 'white' : 'black',
-				backgroundColor: type == 'success' ? 'limegreen' : type == 'error' ? 'firebrick' : type == 'warning' ? 'yellow' : 'floralwhite'
+				color: type == 'success' ? 'white' : 'black',
+				backgroundColor: 
+                    type == 'success' ? 'limegreen' 
+                    : type == 'warning' ? 'yellow' 
+                    : type == 'error' ? 'red' 
+                    : 'white'
 			})
 
             div.animate({
@@ -1230,6 +1236,9 @@ const La = {
 
 			return div
         },
+        succees: (txt, duration = 2000, position = 'BOTTOM') => La.pop.text(txt, 'succees', duration, position),
+        warning: (txt, duration = 3000, position = 'BOTTOM') => La.pop.text(txt, 'warning', duration, position),
+        error: (txt, duration = 4000, position = 'BOTTOM') => La.pop.text(txt, 'error', duration, position),
 
         popUp(title, content, button_text, okButton_callback, closeback){
 

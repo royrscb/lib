@@ -140,6 +140,23 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 	white-space: nowrap;
 }
 
+.thin {
+
+	font-weight: 100;
+}
+.light {
+
+	font-weight: 300;
+}
+.semi-bold {
+
+	font-weight: 600;
+}
+.bold {
+
+	font-weight: bold;
+}
+
 :disabled, .disabled{
 
 	filter: grayscale(1);
