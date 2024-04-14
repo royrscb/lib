@@ -2043,158 +2043,8 @@ const TIMEFORMAT = {
     }
 
 
-// Class bubbling functions ---------------------
-$(document).on('click', '.modal-img', function (e) {
-
-	const TARGET = e.target,
-		SCREEN_RATIO = (window.innerWidth - 100) / (window.innerHeight - 100),
-		IMG_WIDTH = TARGET.naturalWidth,
-		IMG_HEIGHT = TARGET.naturalHeight,
-		IMG_RATIO = IMG_WIDTH / IMG_HEIGHT,
-		IMG_SRC = TARGET.src,
-		IMG_ALT = TARGET.alt,
-		IMG_SUBTEXT = $(TARGET).attr('subtext'),
-		IS_IMG_HORIZONTAL = IMG_RATIO > SCREEN_RATIO
-
-	$(TARGET).addClass('popped-img')
-
-	var div = $('<div>').addClass('modal-div').appendTo(document.body)
-	div.css({
-
-		display: 'flex',
-		position: 'fixed',
-		top: 0,
-		left: 0,
-		backgroundColor: 'rgba(0, 0, 0, 0.9)',
-		height: '100vh',
-		width: '100vw',
-		cursor: 'pointer',
-		zIndex: 7
-	})
-	div.click(function () {
-
-		$(TARGET).removeClass('popped-img')
-		div.fadeOut(100, () => div.remove())
-	})
-
-	// IMG ---------------------------------------------------------------
-	var img_div = $('<div>').addClass('modal-img_div').appendTo(div)
-	img_div.css({
-
-		cursor: 'default',
-		position: 'absolute',
-		transform: 'translateY(-50%) translateX(-50%)',
-		top: '50%',
-		left: '50%',
-		zIndex: 8
-	})
-
-	var img = $('<img>').appendTo(img_div)
-	img.attr('src', IMG_SRC)
-	img.attr('alt', IMG_ALT)
-
-	if (IS_IMG_HORIZONTAL) {
-		img_div.width('95%')
-		img.width('100%')
-	}
-	else {
-		img_div.height('85%')
-		img.height('100%')
-	}
-
-	// CROSS -----------------------------------------------------------------------
-	var cross = $('<p>&#10006;&#xFE0E;</p>').addClass('modal-cross').appendTo(div)
-	cross.css({
-
-		position: 'absolute',
-		right: 0,
-		top: 0,
-		margin: '20px',
-		color: 'white',
-		fontSize: '30px',
-		zIndex: 9
-	})
-
-	// SUBTEXT ----------------------------------------------------------------------
-	if (IMG_SUBTEXT) {
-
-		var subtext = $('<p>').addClass('modal-subtext').appendTo(img_div)
-		subtext.text(IMG_SUBTEXT)
-		subtext.css({
-
-			cursor: 'default',
-			position: 'absolute',
-			left: 0,
-			bottom: 0,
-			transform: 'translateY(100%)',
-			margin: 0,
-			padding: '10px 10px 10px 0',
-			fontSize: '18px',
-			color: 'white',
-			zIndex: 9
-		})
-		subtext.click(e => e.stopPropagation())
-
-		img_div.css('top', 'calc(50% - 15px)')
-	}
-
-	div.hide().fadeIn('fast')
-})
-$(document).on('mouseenter', '.modal-img', e => $(e.target).css({
-		'cursor': 'pointer',
-		'opacity': 0.7,
-		'transition': '0.3s'
-	}))
-	.on('mouseout', '.modal-img', e => $(e.target).css('opacity', 1))
-
-$(document).on('click', '.checkbox-text', function(){
-
-    $(this).parent().find('input[type=checkbox]').click()
-})
-$(document).on('click', '.radio-text', function(){
-
-    $(this).parent().find('input[type=radio]').click()
-})
-$(document).on('input', '.uppercase-first', function(){
-
-    const val = $(this).val()
-
-    if(val.length == 1) $(this).val(val.toUpperCase())
-})
-$(document).on('paste', '.uppercase-first', function(a, b, c){
-
-    setTimeout(() => {
-        
-        $(this).val($(this).val().upperCaseFirst())
-    }, 1);
-})
-
-// JQuery Extend --------------------------------
-$.prototype['enable'] = function(timeToDisableAgain = null){
-
-    this.prop('disabled', false)
-
-    if(timeToDisableAgain) {
-        
-        setTimeout(() => $(this).disable(), timeToDisableAgain)
-    }
-
-    return this
-}
-$.prototype['disable'] = function(timeToEnableAgain = null){
-
-    this.prop('disabled', true)
-
-    if(timeToEnableAgain) {
-        
-        setTimeout(() => $(this).enable(), timeToEnableAgain)
-    }
-
-    return this
-}
-
-// Prototype extend -----------------------------
-// Number
+// JavaScript prototype extend ------------------
+// Number ---
 Number.prototype['round'] = function(decimals = 0){
 
     const factor = Math.pow(10, decimals)
@@ -2210,7 +2060,7 @@ Number.prototype['prettyPrice'] = function(){
 	else return Number.isInteger(price) ? price.toString() : price.toFixed(2)
 }
 
-// String
+// String ---
 String.prototype['round'] = Number.prototype.round
 String.prototype['prettyPrice'] = Number.prototype.prettyPrice
 
@@ -2225,7 +2075,7 @@ String.prototype['prettyUpperCase'] = function(minLengthToUpper = 4){
 	else return ''
 }
 
-// Array
+// Array ---
 Array.prototype['shuffle'] = function() {
 
     let currentIndex = this.length, randomIndex
@@ -2371,3 +2221,155 @@ String.prototype['replaceAll'] = function(search, replace){
 
     return this.split(search).join(replace)
 }
+
+
+// JQuery Extend --------------------------------
+$.prototype['enable'] = function(timeToDisableAgain = null){
+
+    this.prop('disabled', false)
+
+    if(timeToDisableAgain) {
+        
+        setTimeout(() => $(this).disable(), timeToDisableAgain)
+    }
+
+    return this
+}
+$.prototype['disable'] = function(timeToEnableAgain = null){
+
+    this.prop('disabled', true)
+
+    if(timeToEnableAgain) {
+        
+        setTimeout(() => $(this).enable(), timeToEnableAgain)
+    }
+
+    return this
+}
+
+
+// Class bubbling functions ---------------------
+$(document).on('click', '.modal-img', function (e) {
+
+	const TARGET = e.target,
+		SCREEN_RATIO = (window.innerWidth - 100) / (window.innerHeight - 100),
+		IMG_WIDTH = TARGET.naturalWidth,
+		IMG_HEIGHT = TARGET.naturalHeight,
+		IMG_RATIO = IMG_WIDTH / IMG_HEIGHT,
+		IMG_SRC = TARGET.src,
+		IMG_ALT = TARGET.alt,
+		IMG_SUBTEXT = $(TARGET).attr('subtext'),
+		IS_IMG_HORIZONTAL = IMG_RATIO > SCREEN_RATIO
+
+	$(TARGET).addClass('popped-img')
+
+	var div = $('<div>').addClass('modal-div').appendTo(document.body)
+	div.css({
+
+		display: 'flex',
+		position: 'fixed',
+		top: 0,
+		left: 0,
+		backgroundColor: 'rgba(0, 0, 0, 0.9)',
+		height: '100vh',
+		width: '100vw',
+		cursor: 'pointer',
+		zIndex: 7
+	})
+	div.click(function () {
+
+		$(TARGET).removeClass('popped-img')
+		div.fadeOut(100, () => div.remove())
+	})
+
+	// IMG ---------------------------------------------------------------
+	var img_div = $('<div>').addClass('modal-img_div').appendTo(div)
+	img_div.css({
+
+		cursor: 'default',
+		position: 'absolute',
+		transform: 'translateY(-50%) translateX(-50%)',
+		top: '50%',
+		left: '50%',
+		zIndex: 8
+	})
+
+	var img = $('<img>').appendTo(img_div)
+	img.attr('src', IMG_SRC)
+	img.attr('alt', IMG_ALT)
+
+	if (IS_IMG_HORIZONTAL) {
+		img_div.width('95%')
+		img.width('100%')
+	}
+	else {
+		img_div.height('85%')
+		img.height('100%')
+	}
+
+	// CROSS -----------------------------------------------------------------------
+	var cross = $('<p>&#10006;&#xFE0E;</p>').addClass('modal-cross').appendTo(div)
+	cross.css({
+
+		position: 'absolute',
+		right: 0,
+		top: 0,
+		margin: '20px',
+		color: 'white',
+		fontSize: '30px',
+		zIndex: 9
+	})
+
+	// SUBTEXT ----------------------------------------------------------------------
+	if (IMG_SUBTEXT) {
+
+		var subtext = $('<p>').addClass('modal-subtext').appendTo(img_div)
+		subtext.text(IMG_SUBTEXT)
+		subtext.css({
+
+			cursor: 'default',
+			position: 'absolute',
+			left: 0,
+			bottom: 0,
+			transform: 'translateY(100%)',
+			margin: 0,
+			padding: '10px 10px 10px 0',
+			fontSize: '18px',
+			color: 'white',
+			zIndex: 9
+		})
+		subtext.click(e => e.stopPropagation())
+
+		img_div.css('top', 'calc(50% - 15px)')
+	}
+
+	div.hide().fadeIn('fast')
+})
+$(document).on('mouseenter', '.modal-img', e => $(e.target).css({
+		'cursor': 'pointer',
+		'opacity': 0.7,
+		'transition': '0.3s'
+	}))
+	.on('mouseout', '.modal-img', e => $(e.target).css('opacity', 1))
+
+$(document).on('click', '.checkbox-text', function(){
+
+    $(this).parent().find('input[type=checkbox]').click()
+})
+$(document).on('click', '.radio-text', function(){
+
+    $(this).parent().find('input[type=radio]').click()
+})
+$(document).on('input', '.uppercase-first', function(){
+
+    const val = $(this).val()
+
+    if(val.length == 1) $(this).val(val.toUpperCase())
+})
+$(document).on('paste', '.uppercase-first', function(a, b, c){
+
+    setTimeout(() => {
+        
+        $(this).val($(this).val().upperCaseFirst())
+    }, 1);
+})
