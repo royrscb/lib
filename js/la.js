@@ -1351,7 +1351,13 @@ const La = {
                     progresBar_div.find('.progress-bar').width(percentage+'%')
                     progresBar_div.find('.percentage-cont .percentage').text(Math.round(percentage))
 
-                    if(percentage == 100) progresBar_div.find('.progress-bar').css({backgroundColor: 'limegreen'})
+                    if(percentage == 100) {
+
+                        progresBar_div.find('.progress-bar').css({backgroundColor: 'limegreen'})
+                        progresBar_div.find('.percentage-cont').css({fontWeight: 'bold'})
+                    }
+                    else if(percentage != 0 && !percentage) console.warn('Percentage is not defined: ('+percentage+')', popUp)
+                    else if(percentage < 0) console.warn('Percentage under 0, percentage at ('+percentage+'%)', popUp)
                     else if(percentage > 100) console.warn('Percentage over 100, percentage at ('+percentage+'%)', popUp)
 
                     return progresBar_div
