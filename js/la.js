@@ -1519,9 +1519,27 @@ const La = {
             if(date === null || date === undefined) return undefined
             else if(!La.is.date(date)) { // Si es string o numeric
 
-                // Trim and replace '/' -> '-'
-                if(typeof date == 'string') date = date.trim()
-                if(date.toString().includes('/')) date = date.toString().replaceAll('/', '-')
+                if(typeof date == 'string'){
+
+                    // Trim
+                    date = date.trim()
+
+                    // Replace '/' -> '-'
+                    if(date.toString().includes('/')) date = date.toString().replaceAll('/', '-')
+
+
+                    // Add maybe missing leading zeroes [1970-1-2]
+                    let datePieces = date.split(' ')
+
+                    datePieces[0] = datePieces[0].split('-').map(dp => {
+
+                        if(dp.length == 1 && Number.isInteger(parseFloat(dp))) return La.util.addLeadingZero(dp)
+                        else return dp
+
+                    }).join('-')
+
+                    date = datePieces.join(' ')
+                }
 
                 let newDate = new Date(date)
 
@@ -1539,28 +1557,12 @@ const La = {
 
                     if(isAnHour) newDate = new Date('1970-01-01 '+date)
                 }
-
-                // Check if is month without leading zero. [1970-5]
-                if(!La.is.date(newDate)) {
-
-                    const timePieces = date.split('-')
-                    const isMonthWithoutLeadingZero = timePieces.length == 2
-                        && Number.isInteger(parseFloat(timePieces[0])) && timePieces[0].length == 4 // Year
-                        && Number.isInteger(parseFloat(timePieces[1])) && timePieces[1].length == 1 // Month without leading zero
-
-                    if(isMonthWithoutLeadingZero) {
-
-                        const newStringDate = timePieces[0]+'-'+La.util.addLeadingZero(timePieces[1])
-
-                        newDate = new Date(newStringDate)
-                    }
-                }
-
+                
                 if(La.is.date(newDate)) date = newDate
                 else throw Error('Not recognizable string date: '+date)
             }
 
-            return format
+            return format 
                 ? La.time.format(date, format, lang)
                 : date
         },
