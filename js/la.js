@@ -475,6 +475,11 @@ const La = {
 
 			return La.is.number() && !x.toString().includes('.')
 		},
+        date(date) {
+
+            return (date instanceof Date)
+                && !isNaN(date)
+        },
 
 		device(device){
 
@@ -1509,34 +1514,54 @@ const La = {
                 +' UTC'
         },
 
-        parse(date, formatOut = null, lang = (typeof LANG != 'undefined' ? LANG : 'en')){
+        parse(date, format = null, lang = 'en'){
 
             if(date === null || date === undefined) return undefined
-            else if(date instanceof Date){
+            else if(!La.is.date(date)) { // Si es string o numeric
 
-				if(isNaN(date)) throw Error('Invalid date: '+date)
-            }
-            else {// si es string o numeric
+                // Trim and replace '/' -> '-'
+                if(typeof date == 'string') date = date.trim()
+                if(date.toString().includes('/')) date = date.toString().replaceAll('/', '-')
 
                 let newDate = new Date(date)
 
-                if(!isNaN(newDate)) date = newDate
-				else{
+                // Check if is an hour
+                if(!La.is.date(newDate)) {
 
-                    if(date.length == 5 && date[2] == ':' || date.length == 8 && date[2] == ':' && date[5] == ':') date = new Date('01/01/1970 '+date)
-                    else if(Number.isInteger(parseInt(date[0])) && Number.isInteger(parseInt(date[1])) && Number.isInteger(parseInt(date[2])) && Number.isInteger(parseInt(date[3]))){
+                    const isAnHour = [2, 3].includes(date.split(':').length)
+                        && date.split(':').every((timePiece, index) => {
 
-                        var year = date.slice(0, 4)
-                        date = date.slice(5, 7)+'/'+date.slice(8, 10)+'/'+year+date.slice(10)
+                            const isHourPiece = timePiece.length <= 2 && Number.isInteger(parseInt(timePiece)),
+                                inRange = 0 <= timePiece && timePiece <= (index == 0 ? 23 : 59)
 
-                        date = new Date(date)
-                    }
-                    else throw Error('Not recognizable string date: '+date)
+                            return isHourPiece && inRange
+                        })
+
+                    if(isAnHour) newDate = new Date('1970-01-01 '+date)
                 }
+
+                // Check if is month without leading zero. [1970-5]
+                if(!La.is.date(newDate)) {
+
+                    const timePieces = date.split('-')
+                    const isMonthWithoutLeadingZero = timePieces.length == 2
+                        && Number.isInteger(parseFloat(timePieces[0])) && timePieces[0].length == 4 // Year
+                        && Number.isInteger(parseFloat(timePieces[1])) && timePieces[1].length == 1 // Month without leading zero
+
+                    if(isMonthWithoutLeadingZero) {
+
+                        const newStringDate = timePieces[0]+'-'+La.util.addLeadingZero(timePieces[1])
+
+                        newDate = new Date(newStringDate)
+                    }
+                }
+
+                if(La.is.date(newDate)) date = newDate
+                else throw Error('Not recognizable string date: '+date)
             }
 
-            return formatOut 
-                ? La.time.format(date, formatOut, lang)
+            return format
+                ? La.time.format(date, format, lang)
                 : date
         },
         format(date, formatOut, lang = (typeof LANG != 'undefined' ? LANG : 'en')){
