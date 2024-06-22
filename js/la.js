@@ -1514,6 +1514,7 @@ const La = {
                 +' UTC'
         },
 
+        // ⚠️ Caution [string '2000' = 2000-01-01], [int 2000 = 1970-01-01 00:00:02 (2000 milliseconds after 0 unix time)]
         parse(date, format = null, lang = 'en'){
 
             if(date === null || date === undefined) return undefined
@@ -1526,7 +1527,6 @@ const La = {
 
                     // Replace '/' -> '-'
                     if(date.toString().includes('/')) date = date.toString().replaceAll('/', '-')
-
 
                     // Add maybe missing leading zeroes [1970-1-2]
                     let datePieces = date.split(' ')
