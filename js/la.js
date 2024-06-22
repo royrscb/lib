@@ -1586,8 +1586,7 @@ const La = {
                     case TIMEFORMAT.months:       return La.util.addLeadingZero(parseInt(date.getMonth())+1)
                     case TIMEFORMAT.month_name_short: return date.toLocaleString(lang, { month: 'short' }).toLowerCase()
                     case TIMEFORMAT.month_name:   return date.toLocaleString(lang, { month: 'long' }).toLowerCase()
-                    case TIMEFORMAT.years:        return date.getFullYear().toString().substring(2)
-                    case TIMEFORMAT.year_full:    return date.getFullYear().toString()
+                    case TIMEFORMAT.years:        return date.getFullYear().toString()
                     default:                      return formatOut
                 }
 
@@ -2065,8 +2064,7 @@ const TIMEFORMAT = {
 	months: 'm',
     month_name_short: 'N',
 	month_name: 'M',
-	years: 'y',
-	year_full: 'Y'
+	years: 'Y'
 },
     DEVICE = {
 
