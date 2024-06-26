@@ -102,16 +102,16 @@
 		}else return null;
 	}
 
-	function getParameters($fileName = 'parameters.json'){
+	function getFileContent($filename) {
 
 		$filePath = __DIR__;
 
 		// Find filePath
 		if($_SERVER['HTTP_HOST'] == 'localhost') $filePath = __DIR__.'/../..';
-		else{
+		else {
 
 			$i = 0;
-			while($i < 9 && strpos($filePath, $_SERVER['HTTP_HOST']) !== false && !file_exists($filePath.'/'.$fileName)){
+			while($i < 9 && strpos($filePath, $_SERVER['HTTP_HOST']) !== false && !file_exists($filePath.'/'.$filename)) {
 				
 				$pathArrayPieces = explode('/', $filePath);
 				array_pop($pathArrayPieces);
@@ -122,17 +122,59 @@
 			}
 		}
 
-		if($i == 9 || !file_exists($filePath.'/'.$fileName)) return null;
+		$fileFullNamePath = $filePath.'/'.$filename;
 
-		$parameters = file_get_contents($filePath.'/'.$fileName);
-		if(!$parameters){
+		if($i < 9 && file_exists($fileFullNamePath)) {
 
-			send_telegram('Parameters file not found');
+			$contents = file_get_contents($fileFullNamePath);
+
+			if($contents) return $contents;
+		}
+
+		logAndTelegramProblem(404, 'Contents for file: "<u>'.$fileFullNamePath.'</u>" not found', 'File not found');
+
+		return null;
+	}
+	
+	function getParameters($filename = 'parameters.json'){
+
+		$parameters = getFileContent($filename);
+
+		return json_decode($parameters, true);
+	}
+
+	function getObjectFromJson($objectKey, $json) {
+
+		if(isset($json[$objectKey])) return $json[$objectKey];
+		else {
+			
+			foreach(array_values($json) as $object) {
+
+				if(gettype($object) == 'array') {
+
+					$maybeObject = getObjectFromJson($objectKey, $object);
+					
+					if($maybeObject) return $maybeObject;
+				}
+			}
+		}
+
+		return null;
+	}
+	function getTextByKey($textKey, $lang, $filename = 'text.json'){
+
+		$text = getFileContent($filename);
+		$textJson = json_decode($text, true);
+		
+		$maybeObject = getObjectFromJson($textKey, $textJson);
+
+		if(isset($maybeObject[$lang])) return $maybeObject[$lang];
+		else {
+
+			throwWarning('Text key "'.$textKey.'" not found in php text.json');
 
 			return null;
 		}
-
-		return json_decode($parameters, true);
 	}
 
 	function timeToken($uniqid = null){
