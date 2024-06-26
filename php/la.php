@@ -107,19 +107,17 @@
 		$filePath = __DIR__;
 
 		// Find filePath
-		if($_SERVER['HTTP_HOST'] == 'localhost') $filePath = __DIR__.'/../..';
-		else {
+		$pathArrayPieces = explode('/', $filePath);
 
-			$i = 0;
-			while($i < 9 && strpos($filePath, $_SERVER['HTTP_HOST']) !== false && !file_exists($filePath.'/'.$filename)) {
-				
-				$pathArrayPieces = explode('/', $filePath);
-				array_pop($pathArrayPieces);
-				
-				$filePath = implode('/', $pathArrayPieces);
-				
-				$i++;
-			}
+		$i = 0;
+		while($i < 9 && count($pathArrayPieces) > 1 && !file_exists($filePath.'/'.$filename)) {
+
+			$pathArrayPieces = explode('/', $filePath);
+			array_pop($pathArrayPieces);
+
+			$filePath = implode('/', $pathArrayPieces);
+
+			$i++;
 		}
 
 		$fileFullNamePath = $filePath.'/'.$filename;
@@ -135,7 +133,7 @@
 
 		return null;
 	}
-	
+
 	function getParameters($filename = 'parameters.json'){
 
 		$parameters = getFileContent($filename);
