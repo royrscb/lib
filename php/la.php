@@ -226,7 +226,7 @@
 
 			$project_name = PROJECT_NAME;
 			if($_SERVER['HTTP_HOST'] == 'localhost') $project_name = 'localhost|'.PROJECT_NAME;
-			$message = '<b>['.$project_name.'] </b>'.$message;
+			$message = '<b>['.$project_name.']</b><br>'.$message;
 		}
 		$to_replace = [
 
