@@ -1444,7 +1444,7 @@ const La = {
                 console.error('ERROR '+error.code +': '+error.text)
                 
                 if(callback) callback(error)
-                else La.pop.text(error.text, 'error')
+                else La.pop.text(error.text, 'error', 5000)
 
                 return true
 
@@ -1672,7 +1672,7 @@ const La = {
             else if(formatIn == TIMEFORMAT.months) dateString = La.time.parse(date, 'Y-m')
             else if(formatIn == TIMEFORMAT.years) dateString = La.time.parse(date, 'Y')
 
-            let startTime = La.time.parse(dateString).getTime()
+            let startTime = La.time.parse(dateString.toString()).getTime()
             if(addOffsetFromUTC) startTime += La.time.getOffsetFromUTC()
 
             return startTime
@@ -1961,6 +1961,26 @@ const La = {
 
             $(element).one(eventName, action)
             action(paramToPassActionNow)
+        },
+
+        checkEmptyRequiredFields(element) {
+            let fields = La.parse.inputsToJSON(element)
+
+            // Foreach field
+            Object.keys(fields).forEach(fieldName => {
+                const value = fields[fieldName]
+                let field_el = $(element).find('[name="'+fieldName+'"]')
+
+                // If non 0 and no value and was required
+                if(value !== 0 && !value && field_el.is(':required')) {
+                    La.util.blink(field_el, 'black', 'red')
+                    La.pop.error('Field "<b>'+fieldName+'</b>" is required')
+                    
+                    throw new Error('Field '+fieldName+' is required')
+                }
+            })
+
+            return fields
         }
     }
 }
