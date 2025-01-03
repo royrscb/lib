@@ -2240,31 +2240,37 @@ Array.prototype['sum'] = function(callbackfn = item => item, initialValue = 0){
 
     }, initialValue)
 }
-Array.prototype['max'] = function(){
+Array.prototype['max'] = function(predicate = el => el){
 
-    if(this.length == 0) return null
-
-    let max = -Infinity
+    let maxValue = -Infinity
+    let maxElement = null
 
     this.forEach(el => {
+        var value = predicate(el)
 
-        if(el > max) max = el
+        if(value > maxValue) {
+            maxValue = value
+            maxElement = el
+        }
     })
 
-    return max
+    return maxElement
 }
-Array.prototype['min'] = function(){
+Array.prototype['min'] = function(predicate = el => el){
 
-    if(this.length == 0) return null
-
-    let min = Infinity
+    let minValue = Infinity
+    let minElement = null
 
     this.forEach(el => {
+        var value = predicate(el)
 
-        if(el < min) min = el
+        if(value < minValue) {
+            minValue = value
+            minElement = el
+        }
     })
 
-    return min
+    return minElement
 }
 
 // Prototype override ---------------------------
