@@ -540,6 +540,11 @@ const La = {
             else if(a > b) return 1
             else if(a < b) return -1
             else return 0
+        },
+        byTime(time_a, time_b, oldToNew = true){
+
+            if(oldToNew) return La.time.parse(time_a) - La.time.parse(time_b)
+            else return La.time.parse(time_b) - La.time.parse(time_a)
         }
     } ,
 
