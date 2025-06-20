@@ -165,10 +165,10 @@ const La = {
             return bits / 8_000_000
         },
 
-        // Min and max both included
+        // Min included, max excluded
         random(min = 0, max = 100, amount = 1, repeated = false) {
 
-            if(amount == 1) return Math.floor(Math.random() * (max - min +1)) + min
+            if(amount == 1) return Math.floor(Math.random() * (max - min)) + min
             else{
 
                 var arr = []
