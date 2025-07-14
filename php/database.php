@@ -158,14 +158,17 @@
 
 		public final static function instance(){
 
-			if(!isset(self::$instance)) self::$instance = new Database();
+			if(!isset(self::$instance)){
+				self::$instance = new Database();
+			}
 
 			return self::$instance;
 		}
 
 		final function __destruct(){
-
-            $this->conn->close();
+			if (isset($this->conn)){
+				$this->conn->close();
+			}
         }
     }
 
