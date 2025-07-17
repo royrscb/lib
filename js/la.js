@@ -906,21 +906,22 @@ const La = {
             return div
         },
 
-		// set an image droppable, options: data, backgroundImage, multiple=true and callbacks: imageUploaded, crossClick
+		/// set an image droppable
+        /// options: data, backgroundImage = null, multiple = true
+        /// callbacks:
+        ///     - imageUploaded(string/array newImage/s (if multiple), div, cross)
+        ///     - crossClick(cross, div)
         imageUploader(phpSrc, options, callbacks){
 
             options = $.extend({
-
                 data: {},
                 backgroundImage: null,
                 multiple: true
-
             }, options)
-            callbacks = $.extend({
 
+            callbacks = $.extend({
                 imageUploaded: ()=>{},
                 crossClick: ()=>{}
-
             }, callbacks)
 
 
