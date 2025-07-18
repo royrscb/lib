@@ -458,17 +458,17 @@
 		else return -1;
 	}
 	// returns the first element that returns true to the callback(current_element, index) or null if not found
-	function array_find(callable $callback, array $array){
+	function array_find(array $array, callable $callback){
 
-		$index = array_find_index($callback, $array);
+		$index = array_find_index($array, $callback);
 
 		if($index >= 0) return $array[$index];
 		else return null;
 	}
 	// removes the first element that returns true to the callback(current_element, index) or null if not found
-	function array_remove(callable $callback, array $array){
+	function array_remove(array $array, callable $callback){
 
-		$index = array_find_index($callback, $array);
+		$index = array_find_index($array, $callback);
 
 		if($index >= 0) return array_splice($array, $index, 1);
 		else return null;

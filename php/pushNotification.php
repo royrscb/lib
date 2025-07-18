@@ -59,7 +59,7 @@
 			$errors = [];
 			foreach($this->webPush->flush() as $report) array_push($errors, $this->handleReport($report));
 
-			return array_find(function($err){ return isset($err['error']) || $err === false; }, $errors) ? $errors : true;
+			return array_find($errors, function($err){ return isset($err['error']) || $err === false; }) ? $errors : true;
 		}
 		function sendMultipleEqual($notification, array $subscriptions){
 
