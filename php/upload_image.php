@@ -1,7 +1,6 @@
 <?php
 
     require_once __DIR__.'/../lib/la.php';
-	require_once __DIR__.'/../lib/auth.php';
 
     const VALID_FORMATS = ['jpg', 'jpeg', 'png', 'webp'];
 
@@ -24,8 +23,10 @@
 
         // New image
         $newImageName = time();
-        if(parse_bool($data['multiple_images'])) $newImageName .= '-'.$i;
+        if (isset($data['name_prefix'])) $newImageName = $data['name_prefix'].$newImageName;
+        if (parse_bool($data['multiple_images'])) $newImageName .= '-'.$i;
         $newImageName .= '.'.$extension;
+
         $newImageFileName = __DIR__.'/'.$data['destination_folder'].'/'.$newImageName;
 
         // Move to folder
