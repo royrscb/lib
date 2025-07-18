@@ -909,7 +909,7 @@ const La = {
 		/// set an image droppable
         /// phpSrc: PHP path where to upload the image. If null provided you can see a test preview
         /// options:
-        ///     - data: To pass to PHP
+        ///     - data: To pass to PHP. "destination_folder" is required
         ///     - backgroundImage = null: Background to the image uploader
         ///     - multiple = true
         /// callbacks:
@@ -917,11 +917,15 @@ const La = {
         ///     - crossClick(cross, div)
         imageUploader(phpSrc, options, callbacks){
 
+            if (phpSrc && !options?.data?.destination_folder)
+                return La.pop.error('options.data.destination_folder is required', 5000)
+
             options = $.extend({
                 data: {},
                 backgroundImage: null,
                 multiple: true
             }, options)
+            options.data['multiple_images'] = options.multiple
 
             callbacks = $.extend({
                 imageUploaded: ()=>{},

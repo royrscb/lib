@@ -449,8 +449,7 @@
 
 	// Array extension ----------------------------------------------------------------------------
 	// returns the index of the first element that returns true to the callback(current_element, index) or -1 if not founds
-	function array_find_index(callable $callback, array $array){
-
+	function array_find_index(array $array, callable $callback){
 		$i = 0;
 		while($i < count($array) && !$callback($array[$i], $i)) $i++;
 
@@ -459,7 +458,6 @@
 	}
 	// returns the first element that returns true to the callback(current_element, index) or null if not found
 	function array_find(array $array, callable $callback){
-
 		$index = array_find_index($array, $callback);
 
 		if($index >= 0) return $array[$index];
@@ -467,7 +465,6 @@
 	}
 	// removes the first element that returns true to the callback(current_element, index) or null if not found
 	function array_remove(array $array, callable $callback){
-
 		$index = array_find_index($array, $callback);
 
 		if($index >= 0) return array_splice($array, $index, 1);
