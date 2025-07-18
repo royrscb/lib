@@ -907,7 +907,11 @@ const La = {
         },
 
 		/// set an image droppable
-        /// options: data, backgroundImage = null, multiple = true
+        /// phpSrc: PHP path where to upload the image. If null provided you can see a test preview
+        /// options:
+        ///     - data: To pass to PHP
+        ///     - backgroundImage = null: Background to the image uploader
+        ///     - multiple = true
         /// callbacks:
         ///     - imageUploaded(string/array newImage/s (if multiple), div, cross)
         ///     - crossClick(cross, div)
@@ -1009,7 +1013,6 @@ const La = {
 				percentage_number.text(progress)
             }
             function uploadFiles(files){
-
 				cross.hide()
 				button.hide()
                 loading_text.show()
