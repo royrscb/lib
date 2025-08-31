@@ -909,7 +909,9 @@ const La = {
 		/// set an image droppable
         /// phpSrc: PHP path where to upload the image. If null provided you can see a test preview
         /// options:
-        ///     - data: To pass to PHP. "destination_folder" is required. "name_prefix" is optional to add a prefix to the image name
+        ///     - data: To pass to PHP
+        ///         + REQUIRED: "destination_folder"
+        ///         + OPTIONAL: "name_prefix" to add a prefix to the image name
         ///     - backgroundImage = null: Background to the image uploader
         ///     - multiple = true
         /// callbacks:
