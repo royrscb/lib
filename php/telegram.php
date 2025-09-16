@@ -6,6 +6,7 @@
 
 		private $update;
 		public $message, $type, $date, $chat, $from, $text;
+		public $chat_id;
 
 		function __construct($update) {
 
@@ -25,6 +26,8 @@
 			$this->chat = $this->message['chat'];
 			$this->from = $this->message['from'];
 			if(isset($this->message['text'])) $this->text = $this->message['text'];
+
+			$this->$chat_id = $this->chat['id'];
 
 			if(isset($this->message['group_chat_created']) && $this->message['group_chat_created']){
 
@@ -51,6 +54,10 @@
 				$this->type = 'command';
 				$this->command = explode('@', $this->message['text'])[0];
 			}
+			else if (isset($this->message['reply_to_message'])) {
+				$this->type = 'reply_to_message';
+				$this->message_replied = $this->message['reply_to_message']['text'];
+			}
 			else $this->type = 'message';
 		}
 
@@ -64,12 +71,18 @@
     class Telegram_bot{
 
 		private $id, $token, $username;
+		public $msg;
 
-        function __construct(string $token, string $username) {
+        function __construct(string $token, string $username, $update = null) {
 
-			$this->id = explode(':', $token)[0];
 			$this->token = $token;
+			$this->id = explode(':', $token)[0];
+
 			$this->username = $username;
+
+			if (isset($update)) {
+				$this->msg = new Telegram_message($update);
+			}
 		}
 
 		private function throwError($code, $text){
@@ -79,7 +92,7 @@
 			return null;
 		}
 
-		private function postMethod($method, $data){
+		private function postMethod($method, $data = null){
 
 			$response = post('https://api.telegram.org/bot'.$this->token.'/'.$method, $data);
 
@@ -93,7 +106,7 @@
 			return $this->postMethod('getMe', null);
 		}
 
-		function getUpdates($bot_token){
+		function getUpdates(){
 
 			return $this->postMethod('getUpdates', null);
 		}
@@ -104,14 +117,28 @@
 			$this->default_chat_id = $chat_id;
 		}
 
+		public function getWebhook() {
+			return $this->postMethod('getWebhookInfo');
+		}
 		public function setWebhook($url){
 
 			$data = [ 'url' => $url ];
 
 			return $this->postMethod('setWebhook', $data);
 		}
+		public function deleteWebhook($drop_pending_updates = true) {
+			$data = [ 'drop_pending_updates' => $drop_pending_updates ];
+
+			return $this->postMethod('deleteWebhook', $data);
+		}
 
 		// send --------------------
+		public function replyMessage($text) {
+			if (!isset($this->msg)) throwError("Any message set from constructor");
+			else {
+				$this->sendMessage($text, $this->msg->$chat_id);
+			}
+		}
 		public function sendMessage($message, $chat_id = null, $keyboard = null, $html = false){
 
 			if(empty($message)) $this->throwError(500, 'Can not send empty message');
@@ -174,7 +201,35 @@
 
 			return $this->postMethod('answerCallbackQuery', $data);
 		}
-
     }
+
+	$updateExample = [
+		"update_id" => 724578981,
+		"message" => [
+			"message_id" => 105735,
+			"from" => [
+				"id" => 000003410,
+				"is_bot" => false,
+				"first_name" => "x",
+				"username" => "xxx",
+				"language_code" => "es"
+			],
+			"chat" => [
+				"id" => 000003410,
+				"first_name" => "x",
+				"username" => "xxx",
+				"type" => "private"
+			],
+			"date" => 1748854016,
+			"text" => "/start",
+			"entities" => [
+				[
+					"offset" => 0,
+					"length" => 6,
+					"type" => "bot_command"
+				]
+			]
+		]
+	];
 
 ?>
