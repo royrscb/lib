@@ -3,11 +3,10 @@
 	const PROJECT_NAME = '';
 
     const TIMESTAMP = 'Y-m-d H:i:s',
-    	TELEGRAM_ROYRSCB_BOT_TOKEN = '1258995587:AAEO2rnPl7_eVE8YDYLs-xcQyii1jH_bhZ8',
-    	TELEGRAM_BUG_BOT_TOKEN = '1396062241:AAGutzXymTPQCNpXVp_FIAB5RsI004pwTjo',
-		TELEGRAM_VOLANDOBOT_BOT_TOKEN = '1155380140:AAEUudYPHh18Q3tpUh6FMoAOJmxAugixBwM',
-    	TELEGRAM_ROYRSCB_CHAT_ID = '465403410',
-		TELEGRAM_HERIBERT_CHAT_ID = '5944127154';
+    	TELEGRAM_ROYRSCB_BOT_TOKEN = '1258...:...xqc4',
+    	TELEGRAM_BUG_BOT_TOKEN = '1396...:...TAl0',
+		TELEGRAM_VOLANDOBOT_BOT_TOKEN = '1155...:...aras',
+    	TELEGRAM_ROYRSCB_CHAT_ID = '000003410';
 
 	// parse input vars ---------------------------------------------------------------------------
 	function getInputVars(){
@@ -41,21 +40,44 @@
 	// HTTP ---------------------------------------------------------------------------------------
 	function http_request(string $method, string $url, $data = null){
 
-		if($method != 'GET' && $method != 'POST' && $method != 'PUT' && $method != 'DELETE') throwException(500, 'http request method must be either GET or POST');
+		if($method != 'GET' && $method != 'POST' && $method != 'PUT' && $method != 'DELETE') {
+			throwException(500, 'http request method must be either GET or POST');
+		}
 
 		$ch = curl_init($url);
 
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-		if(isset($data)){
 
-			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+		$headers = [
+			'User-Agent: Mozilla/5.0 (compatible; PHP-cURL/7.0)',
+			'Accept: */*'
+		];
+
+		if(isset($data)) {
+			$jsonEncoded = json_encode($data);
+
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonEncoded);
+			array_push($headers, 'Content-Type: application/json');
+			array_push($headers, 'Content-Length: '.strlen($jsonEncoded));
 		}
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+		// Other
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 9);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 
+		// SSL options
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+		// Execute --------------
 		$result = curl_exec($ch);
+		// ----------------------
+
+		// Error handling and parse
 		if(curl_errno($ch)) throwException(500, "curl $method error ".curl_errno($ch).': '.curl_error($ch));
+
 		curl_close($ch);
 
 		$maybeArray = json_decode($result, true);
@@ -209,17 +231,18 @@
 	// SEND ---------------------------------------------------------------------------------------
     function send_telegram($message, $bot_token = TELEGRAM_ROYRSCB_BOT_TOKEN, $chat_id = TELEGRAM_ROYRSCB_CHAT_ID, $keyboard = null){
 
-		$GLOBALS['telegram_count'] = isset($GLOBALS['telegram_count']) ? $GLOBALS['telegram_count']+1 : 0;
-		if($GLOBALS['telegram_count'] >= 10) exit();
+		if(!isset($GLOBALS['telegram_count'])) $GLOBALS['telegram_count'] = 0;
+		$GLOBALS['telegram_count']++;
+		if($GLOBALS['telegram_count'] > 10) exit();
 
 		if(empty($message)) throwError('Can not send empty message');
 
 		while(strlen($message) > 4000){
 
-			send_telegram('🧩['.$GLOBALS['telegram_count'].']<br>'.substr($message, 0, 3900), $bot_token, $chat_id, $keyboard);
+			send_telegram('🧩['.($GLOBALS['telegram_count'] -1).']<br><br>'.substr($message, 0, 3900), $bot_token, $chat_id, $keyboard);
 
 			$message = substr($message, 3900);
-			if(strlen($message) <= 4000) $message = '🧩['.$GLOBALS['telegram_count'].']<br>'.$message;
+			if(strlen($message) <= 4000) $message = '🧩['.($GLOBALS['telegram_count'] -1).']<br><br>'.$message;
 		}
 
 		if($chat_id == TELEGRAM_ROYRSCB_CHAT_ID && $bot_token != TELEGRAM_VOLANDOBOT_BOT_TOKEN){
@@ -306,7 +329,7 @@
 
 		$res = $push_notification->send($notification, $subscription);
 
-		if($res['error']){
+		if(gettype($res) == 'array' && $res['error']){
 
 			$text = '<br><b>Reason:</b><br>'.$res['reason']
 				.'<br><br><b>Notification:</b><br>'.json_encode($notification)
@@ -536,7 +559,7 @@
 	}
 
     # string --------------------------------------------------------------------------------------
-    function namifyEmail($object_or_email){
+	function namifyEmail($object_or_email){
 
         $commonEmails = ['info'];
         $email = gettype($object_or_email) == 'string' ? $object_or_email : $object_or_email['email'];
