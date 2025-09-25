@@ -2160,6 +2160,16 @@ Array.prototype['shuffle'] = function() {
     return this
 }
 
+Array.prototype['getDuplicates'] = function(predicate = el => el) {
+
+    return this.filter((element_a, index_a) => {
+
+        return index_a != this.findIndex(element_b => {
+
+            return predicate(element_a) == predicate(element_b)
+        })
+    })
+}
 Array.prototype['removeDuplicates'] = function(predicate = el => el) {
 
     return this.filter((element_a, index_a) => {
