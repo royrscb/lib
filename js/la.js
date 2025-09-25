@@ -2160,20 +2160,6 @@ Array.prototype['shuffle'] = function() {
     return this
 }
 
-/* eslint-disable no-extend-native */
-Object.defineProperty(Array.prototype, 'remDups', {
-  value: function(predicate = el => el) {
-    const arr = this;
-    return arr.filter((element_a, index_a) =>
-      index_a === arr.findIndex(element_b => predicate(element_a) === predicate(element_b))
-    );
-  },
-  writable: true,
-  configurable: true,
-  enumerable: false
-});
-
-
 Array.prototype['getDuplicates'] = function(predicate = el => el) {
 
     return this.filter((element_a, index_a) => {
