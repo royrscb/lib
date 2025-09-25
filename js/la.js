@@ -2111,198 +2111,283 @@ const TIMEFORMAT = {
 
 // JavaScript prototype extend ------------------
 // Number ---
-Number.prototype['round'] = function(decimals = 0){
+Object.defineProperty(Number.prototype, "round", {
+    value: function(decimals = 0) {
+        const factor = Math.pow(10, decimals)
+        return Math.round(this * factor) / factor
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
 
-    const factor = Math.pow(10, decimals)
+Object.defineProperty(Number.prototype, "prettyPrice", {
+    value: function() {
+        let price = parseFloat(Math.round(this*100)/100)
 
-    return Math.round(this * factor) / factor
-}
-
-Number.prototype['prettyPrice'] = function(){
-
-	let price = parseFloat(Math.round(this*100)/100)
-
-	if(Number.isNaN(price)) return NaN
-	else return Number.isInteger(price) ? price.toString() : price.toFixed(2)
-}
+        if(Number.isNaN(price)) return NaN
+        else return Number.isInteger(price) ? price.toString() : price.toFixed(2)
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
 
 // String ---
-String.prototype['round'] = Number.prototype.round
-String.prototype['prettyPrice'] = Number.prototype.prettyPrice
+Object.defineProperty(String.prototype, "round", { 
+    value: Number.prototype.round,
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+Object.defineProperty(String.prototype, "prettyPrice", { 
+    value: Number.prototype.prettyPrice,
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
 
-String.prototype['upperCaseFirst'] = function(){
-
-	if(this.length) return this[0].toUpperCase() + this.toString().slice(1)
-	else return ''
-}
-String.prototype['prettyUpperCase'] = function(minLengthToUpper = 4){
-
-	if(this.length) return this.toLowerCase().upperCaseFirst().split(' ').map(w => w.length >= minLengthToUpper ? w.upperCaseFirst() : w).join(' ')
-	else return ''
-}
+Object.defineProperty(String.prototype, "upperCaseFirst", {
+    value: function() {
+        return this.length ? this[0].toUpperCase() + this.toString().slice(1)
+            : ''
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+Object.defineProperty(String.prototype, "prettyUpperCase", {
+    value: function(minLengthToUpper = 4) {
+        return this.length 
+            ? this.toLowerCase()
+                .upperCaseFirst()
+                .split(' ')
+                .map(w => w.length >= minLengthToUpper ? w.upperCaseFirst() : w)
+                .join(' ')
+            : ''
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
 
 // Array ---
-Array.prototype['shuffle'] = function() {
-
-    let currentIndex = this.length, randomIndex
-  
-    // While there remain elements to shuffle.
-    while (currentIndex != 0) {
-  
-      // Pick a remaining element.
-      randomIndex = Math.floor(Math.random() * currentIndex)
-      currentIndex--
-  
-      // And swap it with the current element.
-      [this[currentIndex], this[randomIndex]] = [this[randomIndex], this[currentIndex]]
-    }
-  
-    return this
-}
-
-Array.prototype['getDuplicates'] = function(predicate = el => el) {
-
-    return this.filter((element_a, index_a) => {
-
-        return index_a != this.findIndex(element_b => {
-
-            return predicate(element_a) == predicate(element_b)
-        })
-    })
-}
-Array.prototype['removeDuplicates'] = function(predicate = el => el) {
-
-    return this.filter((element_a, index_a) => {
-
-        return index_a == this.findIndex(element_b => {
-
-            return predicate(element_a) == predicate(element_b)
-        })
-    })
-}
-Array.prototype['removeIndex'] = function(index){
-
-    if(index === null || index === undefined) throw Error('index is missing!')
-
-    this.splice(index, 1)
-
-    return this
-}
-Array.prototype['removeOne'] = function(predicate){
-
-    if(!predicate) throw Error('predicate function is missing!')
-
-    this.removeIndex(this.findIndex(predicate))
-
-    return this
-}
-Array.prototype['removeAll'] = function(predicate){
-
-    if(!predicate) throw Error('predicate function is missing!')
-
-    while(this.find(predicate)) this.removeOne(predicate)
-
-    return this
-}
-
-Array.prototype['swap'] = function(predicate_a, predicate_b){
-
-    if(!predicate_a) throw Error('predicate_a function is missing!')
-    if(!predicate_b) throw Error('predicate_b function is missing!')
-
-    let index_a = this.findIndex(predicate_a)
-    if(index_a == -1) throw Error('Element a not found')
+Object.defineProperty(Array.prototype, "shuffle", {
+    value: function() {
+        let currentIndex = this.length, randomIndex
     
-    let index_b = this.findIndex(predicate_b)
-    if(index_b == -1) throw Error('Element b not found')
-
-    let tmp_a = this[index_a]
-    this[index_a] = this[index_b]
-    this[index_b] = tmp_a
-
-    return this
-}
-Array.prototype['swapIndex'] = function(index_a, index_b){
-
-    if(index_a === null || index_a === undefined) throw Error('index_a is missing!')
-    if(index_b === null || index_b === undefined) throw Error('index_b is missing!')
-
-    if(!(0 <= index_a && index_a < this.length)) throw Error('index_a is out of bounds')
-    if(!(0 <= index_b && index_b < this.length)) throw Error('index_b is out of bounds')
-
-    let tmp_a = this[index_a]
-    this[index_a] = this[index_b]
-    this[index_b] = tmp_a
-
-    return this
-}
-
-Array.prototype['groupBy'] = function(getKeyCallback){
-
-    if(typeof getKeyCallback != 'function') throw Error('Parameter "getKeyCallback" must be of type "function"')
-
-    let groups = {}
-
-    this.forEach(element => {
-
-        let key = getKeyCallback(element)
-
-        if(!groups[key]) groups[key] = []
-
-        groups[key].push(element)
-    })
-
-    return groups
-}
-
-Array.prototype['sum'] = function(callbackfn = item => item, initialValue = 0){
-
-    return this.reduce((total, item) => {
-
-        total += parseFloat(callbackfn(item))
-
-        return total
-
-    }, initialValue)
-}
-Array.prototype['max'] = function(predicate = el => el){
-
-    let maxValue = -Infinity
-    let maxElement = null
-
-    this.forEach(el => {
-        var value = predicate(el)
-
-        if(value > maxValue) {
-            maxValue = value
-            maxElement = el
+        // While there remain elements to shuffle.
+        while (currentIndex != 0) {
+            // Pick a remaining element.
+            randomIndex = Math.floor(Math.random() * currentIndex)
+            currentIndex--
+        
+            // And swap it with the current element.
+            [this[currentIndex], this[randomIndex]] = [this[randomIndex], this[currentIndex]]
         }
-    })
+    
+        return this
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
 
-    return maxElement
-}
-Array.prototype['min'] = function(predicate = el => el){
+Object.defineProperty(Array.prototype, "getDuplicates", {
+    value: function(predicate = el => el) {
+        return this.filter((element_a, index_a) => {
+            return index_a != this.findIndex(element_b => {
+                return predicate(element_a) == predicate(element_b)
+            })
+        })
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+Object.defineProperty(Array.prototype, "removeDuplicates", {
+    value: function(predicate = el => el) {
+        return this.filter((element_a, index_a) => {
+            return index_a == this.findIndex(element_b => {
+                return predicate(element_a) == predicate(element_b)
+            })
+        })
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+Object.defineProperty(Array.prototype, "removeIndex", {
+    value: function(index) {
+        if(index === null || index === undefined)
+            throw Error('index is missing!')
 
-    let minValue = Infinity
-    let minElement = null
+        this.splice(index, 1)
+        return this
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+Object.defineProperty(Array.prototype, "removeOne", {
+    value: function(predicate) {
+        if(!predicate)
+            throw Error('predicate function is missing!')
 
-    this.forEach(el => {
-        var value = predicate(el)
+        this.removeIndex(this.findIndex(predicate))
+        return this
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+Object.defineProperty(Array.prototype, "removeAll", {
+    value: function(predicate) {
+        if(!predicate)
+            throw Error('predicate function is missing!')
 
-        if(value < minValue) {
-            minValue = value
-            minElement = el
+        while(this.find(predicate)) {
+            this.removeOne(predicate)
         }
-    })
 
-    return minElement
-}
+        return this
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+
+Object.defineProperty(Array.prototype, "swap", {
+    value: function(predicate_a, predicate_b) {
+        if(!predicate_a)
+            throw Error('predicate_a function is missing!')
+        if(!predicate_b)
+            throw Error('predicate_b function is missing!')
+
+        let index_a = this.findIndex(predicate_a)
+        if(index_a == -1)
+            throw Error('Element a not found')
+        
+        let index_b = this.findIndex(predicate_b)
+        if(index_b == -1)
+            throw Error('Element b not found')
+
+        let tmp_a = this[index_a]
+        this[index_a] = this[index_b]
+        this[index_b] = tmp_a
+
+        return this
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+Object.defineProperty(Array.prototype, "swapIndex", {
+    value: function(index_a, index_b) {
+        if(index_a === null || index_a === undefined)
+            throw Error('index_a is missing!')
+        if(index_b === null || index_b === undefined)
+            throw Error('index_b is missing!')
+
+        if(!(0 <= index_a && index_a < this.length))
+            throw Error('index_a is out of bounds')
+        if(!(0 <= index_b && index_b < this.length))
+            throw Error('index_b is out of bounds')
+
+        let tmp_a = this[index_a]
+        this[index_a] = this[index_b]
+        this[index_b] = tmp_a
+
+        return this
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+
+Object.defineProperty(Array.prototype, "groupBy", {
+    value: function(getKeyCallback) {
+        if(typeof getKeyCallback != 'function')
+            throw Error('Parameter "getKeyCallback" must be of type "function"')
+
+        let groups = {}
+
+        this.forEach(element => {
+
+            let key = getKeyCallback(element)
+
+            if(!groups[key]) {
+                groups[key] = []
+            }
+
+            groups[key].push(element)
+        })
+
+        return groups
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+
+Object.defineProperty(Array.prototype, "sum", {
+    value: function(callbackfn = item => item, initialValue = 0) {
+        return this.reduce((total, item) => {
+            return total += parseFloat(callbackfn(item))
+        }, initialValue)
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+Object.defineProperty(Array.prototype, "max", {
+    value: function(predicate = el => el) {
+        let maxValue = -Infinity
+        let maxElement = null
+
+        this.forEach(el => {
+            var value = predicate(el)
+            if(value > maxValue) {
+                maxValue = value
+                maxElement = el
+            }
+        })
+
+        return maxElement
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
+Object.defineProperty(Array.prototype, "min", {
+    value: function(predicate = el => el) {
+        let minValue = Infinity
+        let minElement = null
+
+        this.forEach(el => {
+            var value = predicate(el)
+            if(value < minValue) {
+                minValue = value
+                minElement = el
+            }
+        })
+
+        return minElement
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
 
 // Prototype override ---------------------------
-String.prototype['replaceAll'] = function(search, replace){
-
-    return this.split(search).join(replace)
-}
+Object.defineProperty(String.prototype, "replaceAll", {
+    value: function(search, replace) {
+        return this.split(search).join(replace)
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+})
 
 
 // JQuery Extend --------------------------------
