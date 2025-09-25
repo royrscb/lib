@@ -2125,7 +2125,7 @@ Object.defineProperty(Number.prototype, "prettyPrice", {
     value: function() {
         let price = parseFloat(Math.round(this*100)/100)
 
-        if(Number.isNaN(price)) return NaN
+        if(Number.isNaN(price)) return null
         else return Number.isInteger(price) ? price.toString() : price.toFixed(2)
     },
     writable: false,
@@ -2380,14 +2380,16 @@ Object.defineProperty(Array.prototype, "min", {
 })
 
 // Prototype override ---------------------------
-Object.defineProperty(String.prototype, "replaceAll", {
-    value: function(search, replace) {
-        return this.split(search).join(replace)
-    },
-    writable: false,
-    configurable: false,
-    enumerable: false
-})
+if (!String.prototype.replaceAll) {
+    Object.defineProperty(String.prototype, "replaceAll", {
+        value: function(search, replace) {
+            return this.split(search).join(replace)
+        },
+        writable: false,
+        configurable: false,
+        enumerable: false
+    })
+}
 
 
 // JQuery Extend --------------------------------
