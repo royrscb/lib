@@ -405,10 +405,7 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 }
 
 /* pop up ------------------------------------ */
-.pop-up-holder{
-
-	display: none;
-
+.popup-holder, .pop-up-holder {
 	position: fixed;
     top: 0;
     left: 0;
@@ -422,7 +419,7 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 
     z-index: 6;
 }
-.pop-up-container{
+.popup-container, .pop-up-container {
 
 	display: inline-block;
 	text-align: center;
@@ -444,7 +441,7 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 
 	overflow-y: scroll;
 }
-.pop-up-container > .red-cross{
+.popup-container > .red-cross, .pop-up-container > .red-cross {
 
 	position: absolute;
 	top: 0;
@@ -452,7 +449,7 @@ input:focus, textarea:focus, select:focus{ outline: 0; }
 
 	z-index: 999;
 }
-.pop-up-container > .title{
+.popup-container > .title, .pop-up-container > .title {
 
     font-size: 34px;
 
