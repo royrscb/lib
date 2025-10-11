@@ -386,7 +386,7 @@ input:focus, textarea:focus, select:focus { outline: 0; }
 
     background-color: white; 
 
-    border-radius: var(--border-radius); 
+    border-radius: 3px; 
     padding: 20px 10px 10px; 
 
     box-sizing: border-box; 
@@ -403,7 +403,12 @@ input:focus, textarea:focus, select:focus { outline: 0; }
 .popup-container > .title, .pop-up-container > .title {
     font-size: 34px; 
 
-    margin: 0 0 20px; 
+    margin-bottom: 20px; 
+}
+.popup-container > .content, .pop-up-container > .content {
+    text-align: start;
+
+    margin-bottom: 15px;
 }
 
 
@@ -520,7 +525,7 @@ input:focus, textarea:focus, select:focus { outline: 0; }
         display: none; 
     }
 
-    .pop-up-container { 
+    .popup-container, .pop-up-container { 
         width: 95vw; 
     }
 
