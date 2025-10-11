@@ -3,6 +3,12 @@ body {
     margin: 0; 
 }
 
+button {
+    border: solid 1px black;
+    border-radius: 3px;
+    padding: 5px 10px;
+}
+
 p { 
     margin: 0; 
 }
@@ -407,10 +413,21 @@ input:focus, textarea:focus, select:focus { outline: 0; }
 }
 .popup-container > .content, .pop-up-container > .content {
     text-align: start;
-
     margin-bottom: 15px;
 }
+.popup-container > .buttons {
+    display: flex;
+    justify-content: space-evenly;
 
+    padding: 5px;
+    margin-bottom: 10px;
+}
+.popup-container > .buttons > .ok-button {
+    background-color: limegreen;
+}
+.popup-container > .buttons > .cancel-button {
+    background-color: red;
+}
 
 /* Burger cross menu icon -------------------- */
 .burger-menu { 
