@@ -5,7 +5,7 @@ body {
 
 button {
     border: solid 1px black;
-    border-radius: 3px;
+    border-radius: 5px;
     padding: 5px 10px;
 }
 
@@ -392,7 +392,7 @@ input:focus, textarea:focus, select:focus { outline: 0; }
 
     background-color: white; 
 
-    border-radius: 3px; 
+    border-radius: 5px; 
     padding: 20px 10px 10px; 
 
     box-sizing: border-box; 
@@ -412,19 +412,22 @@ input:focus, textarea:focus, select:focus { outline: 0; }
     margin-bottom: 20px; 
 }
 .popup-container > .content, .pop-up-container > .content {
+    font-size: 20px;
     margin-bottom: 15px;
 }
 .popup-container > .buttons {
     display: flex;
     justify-content: space-evenly;
 
-    padding: 5px;
-    margin-bottom: 10px;
+    margin-top: 25px;
+    margin-bottom: 5px;
 }
 .popup-container > .buttons > .ok-button {
+    font-size: 1.1em;
     background-color: limegreen;
 }
 .popup-container > .buttons > .cancel-button {
+    font-size: 1.1em;
     background-color: red;
 }
 
