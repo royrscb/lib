@@ -383,7 +383,7 @@ input:focus, textarea:focus, select:focus { outline: 0; }
     text-align: center; 
 
     position: absolute; 
-    top: 50%; 
+    top: 35%; 
     left: 50%; 
     transform: translateX(-50%) translateY(-50%); 
 
@@ -409,6 +409,7 @@ input:focus, textarea:focus, select:focus { outline: 0; }
 .popup-container > .title, .pop-up-container > .title {
     font-size: 34px; 
 
+    margin-top: 10px;
     margin-bottom: 20px; 
 }
 .popup-container > .content, .pop-up-container > .content {
