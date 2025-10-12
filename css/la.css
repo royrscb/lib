@@ -31,7 +31,21 @@ h6 {
     margin: 0; 
 }
 
-input:focus, textarea:focus, select:focus { outline: 0; }
+input {
+    font-size: 0.95em;
+
+    padding: 2px 4px 3px;
+    border: solid 1px black;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    
+    outline: none;
+    box-sizing: border-box;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+}
 
 /* scroll ----------------*/
 ::-webkit-scrollbar {
