@@ -407,21 +407,26 @@ input:focus, textarea:focus, select:focus { outline: 0; }
     z-index: 999; 
 }
 .popup-container > .title, .pop-up-container > .title {
-    font-size: 34px; 
+    font-size: 40px; 
 
-    margin-top: 10px;
+    margin-top: 5px;
+    margin-bottom: 20px; 
+}
+.popup-container:has(.subtitle) > .title, .pop-up-container:has(.subtitle) > .title {
+    margin-bottom: 10px; 
+}
+.popup-container > .subtitle, .pop-up-container > .subtitle {
+    font-size: 26px; 
+
     margin-bottom: 20px; 
 }
 .popup-container > .content, .pop-up-container > .content {
     font-size: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 35px;
 }
 .popup-container > .buttons {
     display: flex;
     justify-content: space-evenly;
-
-    margin-top: 25px;
-    margin-bottom: 5px;
 }
 .popup-container > .buttons > .ok-button {
     font-size: 1.1em;
