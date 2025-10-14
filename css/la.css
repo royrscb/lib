@@ -219,16 +219,20 @@ input:focus, textarea:focus, select:focus {
 
 
 /* animations aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */
-.fade-in { animation: fadeIn 400ms forwards; }
-.fade-in-slow { animation: fadeIn 600ms forwards; }
-.fade-in-fast { animation: fadeIn 200ms forwards; }
-.fade-out { animation: fadeIn 400ms backwards; }
-.fade-out-slow { animation: fadeIn 600ms backwards; }
-.fade-out-fast { animation: fadeIn 200ms backwards; }
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+.fade-in      { animation: fadeIn 400ms forwards; }
+.fade-in-slow { animation: fadeIn 600ms forwards; }
+.fade-in-fast { animation: fadeIn 200ms forwards; }
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.fade-out      { animation: fadeOut 400ms forwards; }
+.fade-out-slow { animation: fadeOut 600ms forwards; }
+.fade-out-fast { animation: fadeOut 200ms forwards; }
 
 @keyframes rotate { 
     from { transform: rotate(0); }
