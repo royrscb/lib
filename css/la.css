@@ -1,4 +1,4 @@
-/* Pure elements ------------------------------------------------------------------------------- */
+/* Elements --------------------------------------------------------------------------------------- */
 body {
     margin: 0; 
 }
@@ -146,51 +146,37 @@ input:focus, textarea:focus, select:focus {
 .hidden { display: none; }
 .invisible { visibility: hidden; }
 
-/* Classes ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc */
-.euro::after { 
-    content: '\20AC'; 
-}
+/* Classes cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc */
+/* Before and after --- */
+.euro::after          { content: '\20AC'; }
+.colon-after::after   { content: ': '; }
+.brackets::before     { content: '('; }
+.brackets::after      { content: ')'; }
+.claudators::before   { content: '['; }
+.claudators::after    { content: ']'; }
+.euro.brackets::after { content: '\20AC)'; }
 
-.colon-after::after { 
-    content: ': '; 
-}
-.brackets::before { 
-    content: '('; 
-}
-.brackets::after { 
-    content: ')'; 
-}
-.claudators::before { 
-    content: '['; 
-}
-.claudators::after { 
-    content: ']'; 
-}
-.euro.brackets::after { 
-    content: '\20AC)'; 
-}
+/* Font --- */
+.dont-break-text { white-space: nowrap; }
+.break-word      { overflow-wrap: break-word; }
 
-.dont-break-text { 
-    white-space: nowrap; 
-}
+.non-decoration { text-decoration: none; }
+.italic         { font-style: italic; }
+.underline      { text-decoration: underline; }
+.thin           { font-weight: 100; }
+.light          { font-weight: 300; }
+.semi-bold      { font-weight: 600; }
+.bold           { font-weight: bold; }
 
-.thin {
-    font-weight: 100; 
-}
-.light {
-    font-weight: 300; 
-}
-.semi-bold {
-    font-weight: 600; 
-}
-.bold {
-    font-weight: bold; 
-}
-
+/* Misc --- */
 :disabled, .disabled { 
     filter: grayscale(1); 
     cursor: not-allowed; 
 }
+.overflow-scroll   { overflow: scroll; }
+.overflow-x-scroll { overflow-x: scroll; }
+.overflow-y-scroll { overflow-y: scroll; }
+.border-box { box-sizing: border-box; }
 
 /* ico iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii */
 .ico { 
@@ -218,10 +204,10 @@ input:focus, textarea:focus, select:focus {
 .ico.big-9 { max-width: 600px; max-height: 600px; }
 
 
-/* animations aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */
+/* Animations aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 .fade-in      { animation: fadeIn 400ms forwards; }
 .fade-in-slow { animation: fadeIn 600ms forwards; }
@@ -339,7 +325,7 @@ input:focus, textarea:focus, select:focus {
     flex-grow: 1; 
 }
 
-/* Real elements rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr */
+/* Real elements rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr */
 
 /* Red cross --------------------------------- */
 .red-cross { 
@@ -467,7 +453,31 @@ input:focus, textarea:focus, select:focus {
     background-color: red;
 }
 
-/* Burger cross menu icon -------------------- */
+/* Toast ---------------------------------------- */
+.toast {
+    text-align: center;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    max-width: 90%;
+
+    font-size: 24px;
+
+    background-color: white;
+    border-radius: 5px;
+    padding: 15px 20px;
+
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+}
+.toast-top    { top: 9%; }
+.toast-middle { top: 50%; }
+.toast-bottom { bottom: 9%; }
+.toast-info    { background-color: cadetblue; }
+.toast-success { background-color: limegreen; }
+.toast-error   { background-color: red; }
+
+/* Burger cross menu icon ----------------------- */
 .burger-menu { 
     display: block; 
     position: relative; 
@@ -574,11 +584,9 @@ input:focus, textarea:focus, select:focus {
 
 
 /* Mobile and desktop -------------------------------------------------------------------------- */
-/* mobile ----------- */
+/* Mobile --------------------------------------- */
 @media only screen and (max-width: 768px) {
-    .desktop-only { 
-        display: none; 
-    }
+    .desktop-only { display: none; }
 
     .popup-container, .pop-up-container { 
         width: 95vw; 
@@ -587,18 +595,15 @@ input:focus, textarea:focus, select:focus {
     .col-sm-1 { flex: 8.333334%; max-width: 8.333334%; } .col-sm-2 { flex: 16.666667%; max-width: 16.666667%; } .col-sm-3 { flex: 25%; max-width: 25%; } .col-sm-4 { flex: 33.333334%; max-width: 33.333334%; } .col-sm-5 { flex: 41.666667%; max-width: 41.666667%; } .col-sm-6 { flex: 50%; max-width: 50%; } .col-sm-7 { flex: 58.333334%; max-width: 58.333334%; } .col-sm-8 { flex: 66.666667%; max-width: 66.666667%; } .col-sm-9 { flex: 75%; max-width: 75%; } .col-sm-10 { flex: 83.333334%; max-width: 83.333334%; } .col-sm-11 { flex: 91.666667%; max-width: 91.666667%; } .col-sm-12 { flex: 100%; max-width: 100%; }
 }
 
-/* desktop ----------- */
+/* Desktop -------------------------------------- */
 @media only screen and (min-width: 769px) {
-    .mobile-only { 
-        display: none; 
-    }
+    .mobile-only { display: none; }
 
-    /* elements ----------------------------------- */
+    /* Elements --------------------------------- */
     button:hover { cursor: pointer; }
     a:hover { cursor: pointer; }
 
     .pointer { cursor: pointer; }
 
     .col-lg-1 { flex: 8.333334%; max-width: 8.333334%; } .col-lg-2 { flex: 16.666667%; max-width: 16.666667%; } .col-lg-3 { flex: 25%; max-width: 25%; } .col-lg-4 { flex: 33.333334%; max-width: 33.333334%; } .col-lg-5 { flex: 41.666667%; max-width: 41.666667%; } .col-lg-6 { flex: 50%; max-width: 50%; } .col-lg-7 { flex: 58.333334%; max-width: 58.333334%; } .col-lg-8 { flex: 66.666667%; max-width: 66.666667%; } .col-lg-9 { flex: 75%; max-width: 75%; } .col-lg-10 { flex: 83.333334%; max-width: 83.333334%; } .col-lg-11 { flex: 91.666667%; max-width: 91.666667%; } .col-lg-12 { flex: 100%; max-width: 100%; }
-
 }
