@@ -1,5 +1,3 @@
-import { storage } from "./storage";
-
 export const UUID_REGEX_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export const STORAGE_DEVICE_UUID_KEY: string = 'DEVICE_UUID';
 
@@ -16,11 +14,11 @@ export function generateUuid(): string {
 }
 
 export function getDeviceUuid(): string {
-    let uuid = storage.get(STORAGE_DEVICE_UUID_KEY);
+    let uuid = localStorage.get(STORAGE_DEVICE_UUID_KEY);
 
     if (typeof uuid !== 'string' || !isUuid(uuid)) {
         uuid = generateUuid();
-        storage.set(STORAGE_DEVICE_UUID_KEY, uuid);
+        localStorage.set(STORAGE_DEVICE_UUID_KEY, uuid);
     }
 
     return uuid;
