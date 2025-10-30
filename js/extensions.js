@@ -1,4 +1,5 @@
 "use strict";
+// Author: royrscb.com
 Object.defineProperty(exports, "__esModule", { value: true });
 // Number ---------------------------------------
 Object.defineProperty(Number.prototype, 'round', {

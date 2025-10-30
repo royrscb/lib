@@ -1,3 +1,4 @@
+// Author: royrscb.com
 //-*******************************************************************
 //- Build command: $tsc && sed -i '/^\/\/-/d' ../../js/extensions.js *
 //- The second part is to delete this 5 lines comment                *
