@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // Number ---------------------------------------
 Object.defineProperty(Number.prototype, 'round', {
     value: function (decimals = 0) {
@@ -120,7 +122,7 @@ Object.defineProperty(Array.prototype, 'shuffle', {
 });
 Object.defineProperty(Array.prototype, 'getDuplicates', {
     value: function (predicate) {
-        const fn = predicate !== null && predicate !== void 0 ? predicate : ((item) => item);
+        const fn = predicate ?? ((item) => item);
         return this.filter((element_a, index_a) => {
             return index_a != this.findIndex(element_b => {
                 return fn(element_a) == fn(element_b);
@@ -133,7 +135,7 @@ Object.defineProperty(Array.prototype, 'getDuplicates', {
 });
 Object.defineProperty(Array.prototype, 'removeDuplicates', {
     value: function (predicate) {
-        const fn = predicate !== null && predicate !== void 0 ? predicate : ((item) => item);
+        const fn = predicate ?? ((item) => item);
         return this.filter((element_a, index_a) => {
             return index_a == this.findIndex(element_b => {
                 return fn(element_a) == fn(element_b);
@@ -193,7 +195,7 @@ Object.defineProperty(Array.prototype, 'sum', {
             return initialValue;
         if (!predicate && typeof this[0] !== 'number')
             throw new Error("If no predicate provided. Array must be of type number[] but was " + typeof this[0] + "");
-        const fn = predicate !== null && predicate !== void 0 ? predicate : ((item) => item);
+        const fn = predicate ?? ((item) => item);
         return this.reduce((total, item, index) => {
             return total + fn(item, index);
         }, initialValue);
@@ -210,7 +212,7 @@ Object.defineProperty(Array.prototype, 'max', {
         }
         if (!predicate && typeof this[0] !== 'number')
             throw new Error("If no predicate provided. Array must be of type number[] but was " + typeof this[0] + "");
-        const fn = predicate !== null && predicate !== void 0 ? predicate : ((item) => item);
+        const fn = predicate ?? ((item) => item);
         let maxValue = -Infinity;
         let maxElement;
         this.forEach((item, index) => {
@@ -234,7 +236,7 @@ Object.defineProperty(Array.prototype, 'min', {
         }
         if (!predicate && typeof this[0] !== 'number')
             throw new Error("If no predicate provided. Array must be of type number[] but was " + typeof this[0] + "");
-        const fn = predicate !== null && predicate !== void 0 ? predicate : ((item) => item);
+        const fn = predicate ?? ((item) => item);
         let minValue = Infinity;
         let minElement;
         this.forEach((item, index) => {
