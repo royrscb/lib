@@ -1,6 +1,4 @@
-"use strict";
 // Author: royrscb.com
-Object.defineProperty(exports, "__esModule", { value: true });
 // Number ---------------------------------------
 Object.defineProperty(Number.prototype, 'round', {
     value: function (decimals = 0) {
@@ -253,3 +251,4 @@ Object.defineProperty(Array.prototype, 'min', {
     configurable: false,
     enumerable: false
 });
+export {};
