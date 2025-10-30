@@ -10,7 +10,6 @@ export interface StorageChange {
     value?: any;
 }
 
-
 export const storage = {
     EXPIRATION_TIMES_KEY: '_STORAGE_EXPIRATION_TIMES',
 
@@ -142,7 +141,6 @@ export const storage = {
     },
 };
 
-// eslint-disable-next-line no-unused-vars
 function addListener(eventName: string, callback: StorageEventCallback) {
     // wrapper que extrae detail y llama al callback
     const wrapped = (e: Event) => {
@@ -156,7 +154,6 @@ function addListener(eventName: string, callback: StorageEventCallback) {
 
     window.addEventListener(eventName, wrapped);
 }
-// eslint-disable-next-line no-unused-vars
 function removeListener(eventName: string, callback: StorageEventCallback) {
     const meta = (callback as any).__storageListeners;
     if (!meta) return;
