@@ -32,7 +32,7 @@ export interface PopupProps {
     preventCloseOnEscapeButtonPressed?: boolean;
     preventCloseOnClickOutside?: boolean;
     // eslint-disable-next-line no-unused-vars
-    onClose?: (popup: HTMLDivElement | null) => void | boolean | Promise<void | boolean>;
+    onClose?: (popup: HTMLDivElement | null) => boolean | void | Promise<boolean | void>;
 
     okButton?: PopupButtonProps;
     cancelButton?: PopupButtonProps;
