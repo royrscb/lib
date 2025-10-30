@@ -1,11 +1,15 @@
 import { TimeSpan } from "./timespan";
 
 export type StorageAction = 'set' | 'remove' | 'clear' | 'expired';
+// eslint-disable-next-line no-unused-vars
+export type StorageEventCallback = (change: StorageChange, eventName: string) => void;
+
 export interface StorageChange {
     action: StorageAction;
     key?: string;
     value?: any;
 }
+
 
 export const storage = {
     EXPIRATION_TIMES_KEY: '_STORAGE_EXPIRATION_TIMES',
@@ -105,53 +109,45 @@ export const storage = {
             eventNamesToTrigger.push(eventName(change.key));
             eventNamesToTrigger.push(eventName(change.action, change.key));
         }
-        eventNamesToTrigger.forEach(en => {
-            window.dispatchEvent(new CustomEvent<StorageChange>(en, { detail: change }));
+        eventNamesToTrigger.forEach(eventName => {
+            window.dispatchEvent(new CustomEvent<StorageChange>(eventName, { detail: change }));
         });
     },
-    // eslint-disable-next-line no-unused-vars
-    onChange(callback: (change: StorageChange) => void): void {
+    onChange(callback: StorageEventCallback): void {
         addListener(eventName(), callback);
     },
-    // eslint-disable-next-line no-unused-vars
-    offChange(callback: (change: StorageChange) => void): void {
+    offChange(callback: StorageEventCallback): void {
         removeListener(eventName(), callback);
     },
 
-    // eslint-disable-next-line no-unused-vars
-    onAction(action: StorageAction, callback: (change: StorageChange) => void): void {
+    onAction(action: StorageAction, callback: StorageEventCallback): void {
         addListener(eventName(action), callback);
     },
-    // eslint-disable-next-line no-unused-vars
-    offAction(action: StorageAction, callback: (change: StorageChange) => void): void {
+    offAction(action: StorageAction, callback: StorageEventCallback): void {
         removeListener(eventName(action), callback);
     },
 
-    // eslint-disable-next-line no-unused-vars
-    onChangeKey(key: string, callback: (change: StorageChange) => void): void {
+    onChangeKey(key: string, callback: StorageEventCallback): void {
         addListener(eventName(key), callback);
     },
-    // eslint-disable-next-line no-unused-vars
-    offChangeKey(key: string, callback: (change: StorageChange) => void): void {
+    offChangeKey(key: string, callback: StorageEventCallback): void {
         removeListener(eventName(key), callback);
     },
 
-    // eslint-disable-next-line no-unused-vars
-    onActionForKey(action: StorageAction, key: string, callback: (change: StorageChange) => void): void {
+    onActionForKey(action: StorageAction, key: string, callback: StorageEventCallback): void {
         addListener(eventName(action, key), callback);
     },
-    // eslint-disable-next-line no-unused-vars
-    offActionForKey(action: StorageAction, key: string, callback: (change: StorageChange) => void): void {
+    offActionForKey(action: StorageAction, key: string, callback: StorageEventCallback): void {
         removeListener(eventName(action, key), callback);
     },
 };
 
 // eslint-disable-next-line no-unused-vars
-function addListener(eventName: string, callback: (change: StorageChange) => void) {
+function addListener(eventName: string, callback: StorageEventCallback) {
     // wrapper que extrae detail y llama al callback
     const wrapped = (e: Event) => {
         const detail = (e as CustomEvent<StorageChange>).detail;
-        if (detail) callback(detail);
+        if (detail) callback(detail, eventName);
     };
 
     // asignamos referencia para poder quitar luego
@@ -161,7 +157,7 @@ function addListener(eventName: string, callback: (change: StorageChange) => voi
     window.addEventListener(eventName, wrapped);
 }
 // eslint-disable-next-line no-unused-vars
-function removeListener(eventName: string, callback: (change: StorageChange) => void) {
+function removeListener(eventName: string, callback: StorageEventCallback) {
     const meta = (callback as any).__storageListeners;
     if (!meta) return;
     const wrapped = meta[eventName];
