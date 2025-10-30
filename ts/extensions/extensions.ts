@@ -242,7 +242,7 @@ Object.defineProperty(Array.prototype, 'any', {
 Object.defineProperty(Array.prototype, 'first', {
     value: function<T>(this: T[]): T | undefined {
         if (this.isEmpty()) {
-            console.warn("first() called on an empty array, returning undefined")
+            console.warn("first() called on an empty array")
         }
         return this[0];
     },
@@ -253,7 +253,7 @@ Object.defineProperty(Array.prototype, 'first', {
 Object.defineProperty(Array.prototype, 'last', {
     value: function<T>(this: T[]): T | undefined {
         if (this.isEmpty()) {
-            console.warn("last() called on an empty array, returning undefined");
+            console.warn("last() called on an empty array");
         }
         return this[this.length -1];
     },
@@ -375,7 +375,7 @@ Object.defineProperty(Array.prototype, 'sum', {
 Object.defineProperty(Array.prototype, 'max', {
     value: function<T>(this: T[], predicate?: (item: T, index: number) => number): T | undefined {
         if (this.isEmpty()) {
-            console.warn("max() called on an empty array, returning undefined");
+            console.warn("max() called on an empty array");
             return undefined;
         }
         if (!predicate && typeof this[0] !== 'number')
@@ -402,7 +402,7 @@ Object.defineProperty(Array.prototype, 'max', {
 Object.defineProperty(Array.prototype, 'min', {
     value: function<T>(this: T[], predicate?: (item: T, index: number) => number): T | undefined {
         if (this.isEmpty()) {
-            console.warn("min() called on an empty array, returning undefined");
+            console.warn("min() called on an empty array");
             return undefined;
         }
         if (!predicate && typeof this[0] !== 'number')
