@@ -14,11 +14,11 @@ export function generateUuid(): string {
 }
 
 export function getDeviceUuid(): string {
-    let uuid = localStorage.get(STORAGE_DEVICE_UUID_KEY);
+    let uuid = localStorage.getItem(STORAGE_DEVICE_UUID_KEY);
 
     if (typeof uuid !== 'string' || !isUuid(uuid)) {
         uuid = generateUuid();
-        localStorage.set(STORAGE_DEVICE_UUID_KEY, uuid);
+        localStorage.setItem(STORAGE_DEVICE_UUID_KEY, uuid);
     }
 
     return uuid;
