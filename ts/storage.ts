@@ -1,26 +1,31 @@
 import { TimeSpan } from "./timespan";
 
+export type StorageAction = 'set' | 'remove' | 'clear' | 'expired';
+export interface StorageChange {
+    action: StorageAction;
+    key?: string;
+    value?: any;
+}
+
 export const storage = {
     EXPIRATION_TIMES_KEY: '_STORAGE_EXPIRATION_TIMES',
+
     cleanupExpired(key?: string): void {
         const expirationTimes = read(this.EXPIRATION_TIMES_KEY) ?? {};
 
         const keysToCheck = key !== undefined ? [key]
             : Object.keys(expirationTimes);
 
-        let expTimesChanged = false;
         keysToCheck.forEach(key => {
             const expTime = expirationTimes[key] ?? Infinity;
             if (expTime < Date.now()) {
                 localStorage.removeItem(key);
                 delete expirationTimes[key];
-                expTimesChanged = true;
+                write(this.EXPIRATION_TIMES_KEY, expirationTimes);
+
+                this.dispatchEvent({action: 'expired', key});
             }
         });
-
-        if (expTimesChanged) {
-            write(this.EXPIRATION_TIMES_KEY, expirationTimes);
-        }
     },
     getExpirationDate(key: string): Date | undefined {
         this.cleanupExpired(key);
@@ -45,6 +50,8 @@ export const storage = {
                 expirationTimes[key] = Date.now() + lifespan.totalMillis();
                 write(this.EXPIRATION_TIMES_KEY, expirationTimes);
             }
+
+            this.dispatchEvent({action: 'set', key, value});
         }
         this.cleanupExpired(key);
     },
@@ -53,6 +60,8 @@ export const storage = {
         const expirationTimes = read(this.EXPIRATION_TIMES_KEY) ?? {};
         delete expirationTimes[key];
         write(this.EXPIRATION_TIMES_KEY, expirationTimes);
+
+        this.dispatchEvent({action: 'remove', key});
     },
     exists(key: string): boolean {
         this.cleanupExpired(key);
@@ -83,12 +92,108 @@ export const storage = {
     },
     clear(): void {
         localStorage.clear();
-    }
+        this.dispatchEvent({action: 'clear'});
+    },
+
+    eventName: eventName,
+    dispatchEvent(change: StorageChange) {
+        const eventNamesToTrigger = [
+            eventName(),
+            eventName(change.action),
+        ];
+        if (change.key) {
+            eventNamesToTrigger.push(eventName(change.key));
+            eventNamesToTrigger.push(eventName(change.action, change.key));
+        }
+        eventNamesToTrigger.forEach(en => {
+            window.dispatchEvent(new CustomEvent<StorageChange>(en, { detail: change }));
+        });
+    },
+    // eslint-disable-next-line no-unused-vars
+    onChange(callback: (change: StorageChange) => void): void {
+        addListener(eventName(), callback);
+    },
+    // eslint-disable-next-line no-unused-vars
+    offChange(callback: (change: StorageChange) => void): void {
+        removeListener(eventName(), callback);
+    },
+
+    // eslint-disable-next-line no-unused-vars
+    onAction(action: StorageAction, callback: (change: StorageChange) => void): void {
+        addListener(eventName(action), callback);
+    },
+    // eslint-disable-next-line no-unused-vars
+    offAction(action: StorageAction, callback: (change: StorageChange) => void): void {
+        removeListener(eventName(action), callback);
+    },
+
+    // eslint-disable-next-line no-unused-vars
+    onChangeKey(key: string, callback: (change: StorageChange) => void): void {
+        addListener(eventName(key), callback);
+    },
+    // eslint-disable-next-line no-unused-vars
+    offChangeKey(key: string, callback: (change: StorageChange) => void): void {
+        removeListener(eventName(key), callback);
+    },
+
+    // eslint-disable-next-line no-unused-vars
+    onActionForKey(action: StorageAction, key: string, callback: (change: StorageChange) => void): void {
+        addListener(eventName(action, key), callback);
+    },
+    // eslint-disable-next-line no-unused-vars
+    offActionForKey(action: StorageAction, key: string, callback: (change: StorageChange) => void): void {
+        removeListener(eventName(action, key), callback);
+    },
 };
 
-localStorage.__proto__['list'] = function() {
-    storage.list();
-};
+// eslint-disable-next-line no-unused-vars
+function addListener(eventName: string, callback: (change: StorageChange) => void) {
+    // wrapper que extrae detail y llama al callback
+    const wrapped = (e: Event) => {
+        const detail = (e as CustomEvent<StorageChange>).detail;
+        if (detail) callback(detail);
+    };
+
+    // asignamos referencia para poder quitar luego
+    const meta = (callback as any).__storageListeners ??= {};
+    meta[eventName] = wrapped;
+
+    window.addEventListener(eventName, wrapped);
+}
+// eslint-disable-next-line no-unused-vars
+function removeListener(eventName: string, callback: (change: StorageChange) => void) {
+    const meta = (callback as any).__storageListeners;
+    if (!meta) return;
+    const wrapped = meta[eventName];
+    if (!wrapped) return;
+
+    window.removeEventListener(eventName, wrapped);
+    delete meta[eventName];
+
+    // si no quedan listeners asociados al callback, borramos la propiedad
+    if (Object.keys(meta).length === 0) delete (callback as any).__storageListeners;
+}
+
+function eventName(): string;
+// eslint-disable-next-line no-redeclare, no-unused-vars
+function eventName(action: StorageAction): string;
+// eslint-disable-next-line no-redeclare, no-unused-vars
+function eventName(key: string): string;
+// eslint-disable-next-line no-redeclare, no-unused-vars
+function eventName(action: StorageAction, key: string): string;
+// eslint-disable-next-line no-redeclare
+function eventName(arg1?: StorageAction | string, arg2?: string): string {
+    const name = 'storage-change';
+
+    if (arg1 === undefined)
+        return name;
+
+    if (arg2 === undefined)
+        return `${name}-${arg1}`;
+
+    return `${name}-${arg1}-${arg2}`;
+}
+
 
 function read(key: string): any {
     const value = localStorage.getItem(key);
@@ -105,3 +210,7 @@ function read(key: string): any {
 function write(key: string, value: any): void {
     localStorage.setItem(key, JSON.stringify(value));
 }
+
+localStorage.__proto__['list'] = function() {
+    storage.list();
+};
