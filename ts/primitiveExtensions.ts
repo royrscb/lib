@@ -1,3 +1,29 @@
+// Build command line:
+// $npx esbuild primitiveExtensions.ts --bundle --outfile=../js/primitiveExtensions.js
+
+// Declare globals to avoid self-reference errors
+export {};
+
+declare global {
+  // Number -------------------------------------
+  interface Number {
+    round(decimals?: number): number;
+    prettyPrice(): string;
+  }
+
+  // String -------------------------------------
+  interface String {
+    upperCaseFirst(): string;
+  }
+
+  // Array --------------------------------------
+  interface Array<T> {
+    isEmpty(): boolean;
+    removeIndex(index: number): T[];
+  }
+}
+
+
 // Number ---------------------------------------
 Object.defineProperty(Number.prototype, 'round', {
     value: function(this: number, decimals: number = 0): number {
