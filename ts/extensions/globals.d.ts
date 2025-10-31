@@ -77,24 +77,42 @@ declare global {
         last(): T | undefined;
 
         /**
-         * Shuffles the elements of the array in place.
-         * @returns void
+         * Shuffle the array in-place using Fisher–Yates.
+         * @returns {void}
+         * @note This mutates the array.
          */
         shuffle(): void;
 
         /**
-         * Returns all duplicate elements according to an optional predicate.
-         * @param predicate Optional function to determine the key to check for duplicates
-         * @returns Array of duplicate elements
+         * Group array elements by a key returned from predicate.
+         * @param {(item: T, index: number) => string | number} predicate - key selector
+         * @returns {Record<string, T[]>} groups keyed by predicate
          */
-        getDuplicates<T, TKey = T>(predicate?: (item: T) => T | TKey): T[];
+        groupBy<T>(predicate: (item: T, index: number) => string | number): Record<string, T[]>;
 
         /**
-         * Returns a new array with duplicates removed according to an optional predicate.
-         * @param predicate Optional function to determine the key to check for duplicates
-         * @returns New array with duplicates removed
+         * Return a single instance of each value that appears more than once.
+         * Example: [1,1,1,1,2,2,3] -> [1,2]
+         * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
+         * @returns {T[]} array of one item per duplicated key
          */
-        removeDuplicates<T, TKey = T>(predicate?: (item: T) => TKey): T[];
+        getDuplicates<T>(predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
+        
+        /**
+         * Return all elements that belong to duplicated keys (keep original order,
+         * include each duplicate occurrence except the first one of each key).
+         * Example: [1,1,1,1,2,2,3] -> [1,1,1,1,2,2]
+         * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
+         * @returns {T[]} array with all duplicate occurrences (predicate called once per element)
+         */
+        getDuplicatesAll<T>(predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
+
+        /**
+         * Return array with first occurrence of each key (keeps first item for each key).
+         * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
+         * @returns {T[]} array with unique items by key (first wins)
+         */
+        removeDuplicates<T>(predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
 
         /**
          * Removes the element at the specified index.
@@ -116,13 +134,6 @@ declare global {
          * @returns New array with elements removed
          */
         removeAll(predicate: (item: T, index: number) => boolean): T[];
-
-        /**
-         * Groups elements by a key returned by the predicate.
-         * @param predicate Function that returns a string key for each element
-         * @returns Object where keys are group names and values are arrays of elements
-         */
-        groupBy<T>(predicate: (item: T, index: number) => string): Record<string, T[]>;
 
         /**
          * Returns the sum of elements according to an optional predicate.

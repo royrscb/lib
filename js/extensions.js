@@ -1,3 +1,4 @@
+"use strict";
 // Author: royrscb.com
 // Number ---------------------------------------
 Object.defineProperty(Number.prototype, 'round', {
@@ -119,14 +120,72 @@ Object.defineProperty(Array.prototype, 'shuffle', {
     configurable: false,
     enumerable: false
 });
+Object.defineProperty(Array.prototype, 'groupBy', {
+    value: function (predicate) {
+        const groups = {};
+        this.forEach((item, index) => {
+            let key = predicate(item, index);
+            if (!groups[key]) {
+                groups[key] = [];
+            }
+            groups[key].push(item);
+        });
+        return groups;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 Object.defineProperty(Array.prototype, 'getDuplicates', {
     value: function (predicate) {
-        const fn = predicate ?? ((item) => item);
-        return this.filter((element_a, index_a) => {
-            return index_a != this.findIndex(element_b => {
-                return fn(element_a) == fn(element_b);
-            });
+        if (this.isEmpty())
+            return [];
+        if (!predicate && typeof this[0] != 'boolean' && typeof this[0] != 'number' && typeof this[0] != 'string' && this[0] !== null && this[0] !== undefined)
+            throw new Error("If no predicate provided. Array must be of type (string | null | undefined)[] or (number | null | undefined)[] or (boolean | null | undefined)[] but was " + typeof this[0] + "");
+        const fn = predicate ?? ((item, index) => item === null ? null : item === undefined ? undefined : String(item));
+        const seen = new Set();
+        const duplicates = new Set();
+        return this.filter((item, index) => {
+            const key = fn(item, index);
+            if (seen.has(key)) {
+                if (!duplicates.has(key)) {
+                    duplicates.add(key);
+                    return true;
+                }
+            }
+            else {
+                seen.add(key);
+                return false;
+            }
         });
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Array.prototype, 'getDuplicatesAll', {
+    value: function (predicate) {
+        if (this.isEmpty())
+            return [];
+        if (!predicate && typeof this[0] != 'boolean' && typeof this[0] != 'number' && typeof this[0] != 'string' && this[0] !== null && this[0] !== undefined)
+            throw new Error("If no predicate provided. Array must be of type (string | null | undefined)[] or (number | null | undefined)[] or (boolean | null | undefined)[] but was " + typeof this[0] + "");
+        const fn = predicate ?? ((item, index) => item === null ? null : item === undefined ? undefined : String(item));
+        const seen = new Set();
+        const duplicates = new Set();
+        const entries = this.map((item, index) => {
+            const key = fn(item, index);
+            if (seen.has(key)) {
+                if (!duplicates.has(key)) {
+                    duplicates.add(key);
+                }
+            }
+            else
+                seen.add(key);
+            return { item, key };
+        });
+        return entries
+            .filter(e => duplicates.has(e.key))
+            .map(e => e.item);
     },
     writable: false,
     configurable: false,
@@ -134,11 +193,18 @@ Object.defineProperty(Array.prototype, 'getDuplicates', {
 });
 Object.defineProperty(Array.prototype, 'removeDuplicates', {
     value: function (predicate) {
-        const fn = predicate ?? ((item) => item);
-        return this.filter((element_a, index_a) => {
-            return index_a == this.findIndex(element_b => {
-                return fn(element_a) == fn(element_b);
-            });
+        if (this.isEmpty())
+            return [];
+        if (!predicate && typeof this[0] != 'boolean' && typeof this[0] != 'number' && typeof this[0] != 'string' && this[0] !== null && this[0] !== undefined)
+            throw new Error("If no predicate provided. Array must be of type (string | null | undefined)[] or (number | null | undefined)[] or (boolean | null | undefined)[] but was " + typeof this[0] + "");
+        const fn = predicate ?? ((item, index) => item === null ? null : item === undefined ? undefined : String(item));
+        const seen = new Set();
+        return this.filter((item, index) => {
+            const key = fn(item, index);
+            if (seen.has(key))
+                return false;
+            seen.add(key);
+            return true;
         });
     },
     writable: false,
@@ -167,22 +233,6 @@ Object.defineProperty(Array.prototype, 'removeOne', {
 Object.defineProperty(Array.prototype, 'removeAll', {
     value: function (predicate) {
         return this.filter((item, index) => !predicate(item, index));
-    },
-    writable: false,
-    configurable: false,
-    enumerable: false
-});
-Object.defineProperty(Array.prototype, 'groupBy', {
-    value: function (predicate) {
-        const groups = {};
-        this.forEach((item, index) => {
-            let key = predicate(item, index);
-            if (!groups[key]) {
-                groups[key] = [];
-            }
-            groups[key].push(item);
-        });
-        return groups;
     },
     writable: false,
     configurable: false,
