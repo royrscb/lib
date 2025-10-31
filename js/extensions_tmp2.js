@@ -256,4 +256,3 @@ Object.defineProperty(Array.prototype, 'min', {
     configurable: false,
     enumerable: false
 });
-export {};
