@@ -35,13 +35,6 @@ declare global {
         round(decimals?: number): number;
 
         /**
-         * Converts the string to a number and formats it as a price string.
-         * @throws Error if the string cannot be parsed to a number
-         * @returns Price string
-         */
-        prettyPrice(): string;
-
-        /**
          * Capitalizes the first letter of the string.
          * @returns String with the first character uppercase
          */
@@ -54,6 +47,13 @@ declare global {
          * @returns String with words capitalized according to rule
          */
         prettyUpperCase(minLengthToUpperCaseFirst?: number): string;
+
+        /**
+         * Formats the number as a price string, showing 2 decimals if needed.
+         * @throws Error if the string cannot be parsed to a number
+         * @returns Price string, e.g. "10" or "10.50"
+         */
+        prettyPrice(): string;
     }
 
     // Array --------------------------------------
