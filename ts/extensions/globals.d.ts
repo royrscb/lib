@@ -39,7 +39,6 @@ declare global {
          * @returns String with the first character uppercase
          */
         upperCaseFirst(): string;
-
         /**
          * Capitalizes words conditionally.
          * Words with length >= minLengthToUpperCaseFirst are capitalized.
@@ -47,7 +46,6 @@ declare global {
          * @returns String with words capitalized according to rule
          */
         prettyUpperCase(minLengthToUpperCaseFirst?: number): string;
-
         /**
          * Formats the number as a price string, showing 2 decimals if needed.
          * @throws Error if the string cannot be parsed to a number
@@ -63,19 +61,16 @@ declare global {
          * @returns true if array has no elements, false otherwise
          */
         isEmpty(): boolean;
-
         /**
          * Checks if the array has any elements.
          * @returns true if array has at least one element
          */
         any(): boolean;
-
         /**
          * Returns the first element of the array.
          * @returns The first element, or undefined if the array is empty
          */
         first(): T | undefined;
-
         /**
          * Returns the last element of the array.
          * @returns The last element, or undefined if the array is empty
@@ -119,7 +114,6 @@ declare global {
          * @note This mutates the array.
          */
         sortBy<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): void;
-
         /**
          * Shuffle the array in-place using Fisher–Yates.
          * @returns {void}
@@ -141,7 +135,6 @@ declare global {
          * @returns {T[]} array of one item per duplicated key
          */
         getDuplicates<T>(predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
-        
         /**
          * Return all elements that belong to duplicated keys (keep original order,
          * include each duplicate occurrence except the first one of each key).
@@ -150,7 +143,6 @@ declare global {
          * @returns {T[]} array with all duplicate occurrences (predicate called once per element)
          */
         getDuplicatesAll<T>(predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
-
         /**
          * Return array with first occurrence of each key (keeps first item for each key).
          * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
@@ -164,14 +156,12 @@ declare global {
          * @returns New array with the element removed
          */
         removeIndex(index: number): T[];
-
         /**
          * Removes one element matching the predicate.
          * @param predicate Function to determine which element to remove
          * @returns New array with the element removed
          */
         removeOne(predicate: (item: T, index: number) => boolean): T[];
-
         /**
          * Removes all elements matching the predicate.
          * @param predicate Function to determine which elements to remove
@@ -186,14 +176,12 @@ declare global {
          * @returns Sum of elements
          */
         sum(predicate?: (item: T, index: number) => number, initialValue?: number): number;
-
         /**
          * Returns the element with the maximum value according to an optional predicate.
          * @param predicate Optional function to extract numeric value from element
          * @returns Element with maximum value, or undefined if array is empty
          */
         max(predicate?: (item: T, index: number) => number): T | undefined;
-
         /**
          * Returns the element with the minimum value according to an optional predicate.
          * @param predicate Optional function to extract numeric value from element
