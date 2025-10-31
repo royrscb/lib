@@ -1,6 +1,11 @@
 "use strict";
 // Author: royrscb.com
 // Number ---------------------------------------
+/**
+ * Rounds the number to the given number of decimals.
+ * @param decimals Number of decimal places (default 0)
+ * @returns Rounded number
+ */
 Object.defineProperty(Number.prototype, 'round', {
     value: function (decimals = 0) {
         const factor = Math.pow(10, decimals);
@@ -10,6 +15,10 @@ Object.defineProperty(Number.prototype, 'round', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Formats the number as a price string, showing 2 decimals if needed.
+ * @returns Price string, e.g. "10" or "10.50"
+ */
 Object.defineProperty(Number.prototype, 'prettyPrice', {
     value: function () {
         const price = Math.round(this * 100) / 100;
@@ -20,6 +29,24 @@ Object.defineProperty(Number.prototype, 'prettyPrice', {
     enumerable: false
 });
 // String ---------------------------------------
+/**
+ * Checks if the string is empty.
+ * @returns true if string has no length, false otherwise
+ */
+Object.defineProperty(String.prototype, 'isEmpty', {
+    value: function () {
+        return this.length == 0;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts the string to a number and rounds it.
+ * @param decimals Number of decimal places (default 0)
+ * @throws Error if the string cannot be parsed to a number
+ * @returns Rounded number
+ */
 Object.defineProperty(String.prototype, 'round', {
     value: function (decimals = 0) {
         const floatNumber = parseFloat(this);
@@ -31,17 +58,10 @@ Object.defineProperty(String.prototype, 'round', {
     configurable: false,
     enumerable: false
 });
-Object.defineProperty(String.prototype, 'prettyPrice', {
-    value: function () {
-        const floatNumber = parseFloat(this);
-        if (Number.isNaN(floatNumber))
-            throw new Error(`String "${this}" can not be parsed into a float`);
-        return floatNumber.prettyPrice();
-    },
-    writable: false,
-    configurable: false,
-    enumerable: false
-});
+/**
+ * Capitalizes the first letter of the string.
+ * @returns String with the first character uppercase
+ */
 Object.defineProperty(String.prototype, 'upperCaseFirst', {
     value: function () {
         return this.length == 0 ? ''
@@ -51,6 +71,12 @@ Object.defineProperty(String.prototype, 'upperCaseFirst', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Capitalizes words conditionally.
+ * Words with length >= minLengthToUpperCaseFirst are capitalized.
+ * @param minLengthToUpperCaseFirst Minimum length for words to capitalize (default 4)
+ * @returns String with words capitalized according to rule
+ */
 Object.defineProperty(String.prototype, 'prettyUpperCase', {
     value: function (minLengthToUpperCaseFirst = 4) {
         return this
@@ -64,7 +90,27 @@ Object.defineProperty(String.prototype, 'prettyUpperCase', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Formats the number as a price string, showing 2 decimals if needed.
+ * @throws Error if the string cannot be parsed to a number
+ * @returns Price string, e.g. "10" or "10.50"
+ */
+Object.defineProperty(String.prototype, 'prettyPrice', {
+    value: function () {
+        const floatNumber = parseFloat(this);
+        if (Number.isNaN(floatNumber))
+            throw new Error(`String "${this}" can not be parsed into a float`);
+        return floatNumber.prettyPrice();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 // Array ----------------------------------------
+/**
+ * Checks if the array is empty.
+ * @returns true if array has no elements, false otherwise
+ */
 Object.defineProperty(Array.prototype, 'isEmpty', {
     value: function () {
         return this.length == 0;
@@ -73,6 +119,10 @@ Object.defineProperty(Array.prototype, 'isEmpty', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Checks if the array has any elements.
+ * @returns true if array has at least one element
+ */
 Object.defineProperty(Array.prototype, 'any', {
     value: function () {
         return this.length > 0;
@@ -81,6 +131,10 @@ Object.defineProperty(Array.prototype, 'any', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns the first element of the array.
+ * @returns The first element, or undefined if the array is empty
+ */
 Object.defineProperty(Array.prototype, 'first', {
     value: function () {
         if (this.isEmpty()) {
@@ -92,6 +146,10 @@ Object.defineProperty(Array.prototype, 'first', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns the last element of the array.
+ * @returns The last element, or undefined if the array is empty
+ */
 Object.defineProperty(Array.prototype, 'last', {
     value: function () {
         if (this.isEmpty()) {
@@ -103,6 +161,94 @@ Object.defineProperty(Array.prototype, 'last', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns a new array skipping the first `count` elements.
+ * @param {number} count - Number of elements to skip from the start.
+ * @return {T[]} A new array without the first `count` elements.
+ */
+Object.defineProperty(Array.prototype, 'skip', {
+    value: function (count) {
+        return this.slice(count);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns a new array skipping the last `count` elements.
+ * @param {number} count - Number of elements to skip from the end.
+ * @return {T[]} A new array without the last `count` elements.
+ */
+Object.defineProperty(Array.prototype, 'skipLast', {
+    value: function (count) {
+        return this.slice(0, -count);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns a new array containing the first `count` elements.
+ * @param {number} count - Number of elements to take from the start.
+ * @return {T[]} A new array with the first `count` elements.
+ */
+Object.defineProperty(Array.prototype, 'take', {
+    value: function (count) {
+        return this.slice(0, count);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns a new array containing the last `count` elements.
+ * @param {number} count - Number of elements to take from the end.
+ * @return {T[]} A new array with the last `count` elements.
+ */
+Object.defineProperty(Array.prototype, 'takeLast', {
+    value: function (count) {
+        return this.slice(-count);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Sorts the array in place based on the value returned by the provided predicate.
+ * Special ordering rules:
+ * - `undefined` values come first.
+ * - `null` values come after `undefined`.
+ * - All other values are sorted normally (ascending).
+ * @param predicate A function that returns the value used for sorting each element.
+ * @returns {void}
+ * @note This mutates the array.
+ */
+Object.defineProperty(Array.prototype, 'sortBy', {
+    value: function (predicate) {
+        this.sort((a, b) => {
+            const itemA = predicate(a);
+            const itemB = predicate(b);
+            if (itemA === undefined && itemB !== undefined)
+                return -1;
+            if (itemB === undefined && itemA !== undefined)
+                return 1;
+            if (itemA === null && itemB !== null)
+                return -1;
+            if (itemB === null && itemA !== null)
+                return 1;
+            return typeof itemA == 'string' && typeof itemB == 'string' ? itemA.localeCompare(itemB)
+                : itemA - itemB;
+        });
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Shuffle the array in-place using Fisher–Yates.
+ * @returns {void}
+ * @note This mutates the array.
+ */
 Object.defineProperty(Array.prototype, 'shuffle', {
     value: function () {
         let currentIndex = this.length;
@@ -120,6 +266,11 @@ Object.defineProperty(Array.prototype, 'shuffle', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Group array elements by a key returned from predicate.
+ * @param {(item: T, index: number) => string | number} predicate - key selector
+ * @returns {Record<string, T[]>} groups keyed by predicate
+ */
 Object.defineProperty(Array.prototype, 'groupBy', {
     value: function (predicate) {
         const groups = {};
@@ -136,6 +287,12 @@ Object.defineProperty(Array.prototype, 'groupBy', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Return a single instance of each value that appears more than once.
+ * Example: [1,1,1,1,2,2,3] -> [1,2]
+ * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
+ * @returns {T[]} array of one item per duplicated key
+ */
 Object.defineProperty(Array.prototype, 'getDuplicates', {
     value: function (predicate) {
         if (this.isEmpty())
@@ -163,6 +320,13 @@ Object.defineProperty(Array.prototype, 'getDuplicates', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Return all elements that belong to duplicated keys (keep original order,
+ * include each duplicate occurrence except the first one of each key).
+ * Example: [1,1,1,1,2,2,3] -> [1,1,1,1,2,2]
+ * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
+ * @returns {T[]} array with all duplicate occurrences (predicate called once per element)
+ */
 Object.defineProperty(Array.prototype, 'getDuplicatesAll', {
     value: function (predicate) {
         if (this.isEmpty())
@@ -191,6 +355,11 @@ Object.defineProperty(Array.prototype, 'getDuplicatesAll', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Return array with first occurrence of each key (keeps first item for each key).
+ * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
+ * @returns {T[]} array with unique items by key (first wins)
+ */
 Object.defineProperty(Array.prototype, 'removeDuplicates', {
     value: function (predicate) {
         if (this.isEmpty())
@@ -211,6 +380,11 @@ Object.defineProperty(Array.prototype, 'removeDuplicates', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Removes the element at the specified index.
+ * @param index Index to remove
+ * @returns New array with the element removed
+ */
 Object.defineProperty(Array.prototype, 'removeIndex', {
     value: function (indexToRemove) {
         if (indexToRemove < 0 || this.length <= indexToRemove) {
@@ -222,6 +396,11 @@ Object.defineProperty(Array.prototype, 'removeIndex', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Removes one element matching the predicate.
+ * @param predicate Function to determine which element to remove
+ * @returns New array with the element removed
+ */
 Object.defineProperty(Array.prototype, 'removeOne', {
     value: function (predicate) {
         return this.removeIndex(this.findIndex(predicate));
@@ -230,6 +409,11 @@ Object.defineProperty(Array.prototype, 'removeOne', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Removes all elements matching the predicate.
+ * @param predicate Function to determine which elements to remove
+ * @returns New array with elements removed
+ */
 Object.defineProperty(Array.prototype, 'removeAll', {
     value: function (predicate) {
         return this.filter((item, index) => !predicate(item, index));
@@ -238,6 +422,12 @@ Object.defineProperty(Array.prototype, 'removeAll', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns the sum of elements according to an optional predicate.
+ * @param predicate Optional function to extract numeric value from element
+ * @param initialValue Optional initial value for sum (default 0)
+ * @returns Sum of elements
+ */
 Object.defineProperty(Array.prototype, 'sum', {
     value: function (predicate, initialValue = 0) {
         if (this.isEmpty())
@@ -253,6 +443,11 @@ Object.defineProperty(Array.prototype, 'sum', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns the element with the maximum value according to an optional predicate.
+ * @param predicate Optional function to extract numeric value from element
+ * @returns Element with maximum value, or undefined if array is empty
+ */
 Object.defineProperty(Array.prototype, 'max', {
     value: function (predicate) {
         if (this.isEmpty()) {
@@ -277,6 +472,11 @@ Object.defineProperty(Array.prototype, 'max', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns the element with the minimum value according to an optional predicate.
+ * @param predicate Optional function to extract numeric value from element
+ * @returns Element with minimum value, or undefined if array is empty
+ */
 Object.defineProperty(Array.prototype, 'min', {
     value: function (predicate) {
         if (this.isEmpty()) {
