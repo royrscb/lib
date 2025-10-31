@@ -225,7 +225,7 @@ Object.defineProperty(String.prototype, 'prettyUpperCase', {
 
 // Array ----------------------------------------
 Object.defineProperty(Array.prototype, 'isEmpty', {
-    value: function<T>(this: T[]) {
+    value: function<T>(this: readonly T[]) {
         return this.length == 0;
     },
     writable: false,
@@ -233,7 +233,7 @@ Object.defineProperty(Array.prototype, 'isEmpty', {
     enumerable: false
 });
 Object.defineProperty(Array.prototype, 'any', {
-    value: function<T>(this: T[]) {
+    value: function<T>(this: readonly T[]) {
         return this.length > 0;
     },
     writable: false,
@@ -241,7 +241,7 @@ Object.defineProperty(Array.prototype, 'any', {
     enumerable: false
 });
 Object.defineProperty(Array.prototype, 'first', {
-    value: function<T>(this: T[]): T | undefined {
+    value: function<T>(this: readonly T[]): T | undefined {
         if (this.isEmpty()) {
             console.warn("first() called on an empty array")
         }
@@ -252,7 +252,7 @@ Object.defineProperty(Array.prototype, 'first', {
     enumerable: false
 });
 Object.defineProperty(Array.prototype, 'last', {
-    value: function<T>(this: T[]): T | undefined {
+    value: function<T>(this: readonly T[]): T | undefined {
         if (this.isEmpty()) {
             console.warn("last() called on an empty array");
         }
@@ -284,7 +284,7 @@ Object.defineProperty(Array.prototype, 'shuffle', {
 });
 
 Object.defineProperty(Array.prototype, 'getDuplicates', {
-    value: function<T, TKey = T>(this: T[], predicate?: (item: T) => TKey): T[] {
+    value: function<T, TKey = T>(this: readonly T[], predicate?: (item: T) => TKey): T[] {
         const fn = predicate ?? ((item: T) => item as unknown as TKey);
         return this.filter((element_a, index_a) => {
             return index_a != this.findIndex(element_b => {
@@ -297,7 +297,7 @@ Object.defineProperty(Array.prototype, 'getDuplicates', {
     enumerable: false
 });
 Object.defineProperty(Array.prototype, 'removeDuplicates', {
-    value: function<T, TKey = T>(this: T[], predicate?: (item: T) => TKey): T[] {
+    value: function<T, TKey = T>(this: readonly T[], predicate?: (item: T) => TKey): T[] {
         const fn = predicate ?? ((item: T) => item as unknown as TKey);
         return this.filter((element_a, index_a) => {
             return index_a == this.findIndex(element_b => {
@@ -310,7 +310,7 @@ Object.defineProperty(Array.prototype, 'removeDuplicates', {
     enumerable: false
 });
 Object.defineProperty(Array.prototype, 'removeIndex', {
-    value: function<T>(this: T[], indexToRemove: number): T[] {
+    value: function<T>(this: readonly T[], indexToRemove: number): T[] {
         if (indexToRemove < 0 || this.length <= indexToRemove) {
             console.warn(`IndexToRemove: [${indexToRemove}] out of range. Array has ${this.length} elements`);
         }
@@ -321,7 +321,7 @@ Object.defineProperty(Array.prototype, 'removeIndex', {
     enumerable: false
 });
 Object.defineProperty(Array.prototype, 'removeOne', {
-    value: function<T>(this: T[], predicate: (item: T, index: number) => boolean): T[] {
+    value: function<T>(this: readonly T[], predicate: (item: T, index: number) => boolean): T[] {
         return this.removeIndex(this.findIndex(predicate));
     },
     writable: false,
@@ -329,7 +329,7 @@ Object.defineProperty(Array.prototype, 'removeOne', {
     enumerable: false
 });
 Object.defineProperty(Array.prototype, 'removeAll', {
-    value: function<T>(this: T[], predicate: (item: T, index: number) => boolean): T[] {
+    value: function<T>(this: readonly T[], predicate: (item: T, index: number) => boolean): T[] {
         return this.filter((item, index) => !predicate(item, index));
     },
     writable: false,
@@ -338,7 +338,7 @@ Object.defineProperty(Array.prototype, 'removeAll', {
 });
 
 Object.defineProperty(Array.prototype, 'groupBy', {
-    value: function<T>(this: T[], predicate: (item: T, index: number) => string): Record<string, T[]> {
+    value: function<T>(this: readonly T[], predicate: (item: T, index: number) => string): Record<string, T[]> {
         const groups: Record<string, T[]> = {};
 
         this.forEach((item, index) => {
@@ -357,7 +357,7 @@ Object.defineProperty(Array.prototype, 'groupBy', {
 });
 
 Object.defineProperty(Array.prototype, 'sum', {
-    value: function<T>(this: T[], predicate?: (item: T, index: number) => number, initialValue: number = 0): number {
+    value: function<T>(this: readonly T[], predicate?: (item: T, index: number) => number, initialValue: number = 0): number {
         if (this.isEmpty())
             return initialValue;
         if (!predicate && typeof this[0] !== 'number')
@@ -374,7 +374,7 @@ Object.defineProperty(Array.prototype, 'sum', {
     enumerable: false
 });
 Object.defineProperty(Array.prototype, 'max', {
-    value: function<T>(this: T[], predicate?: (item: T, index: number) => number): T | undefined {
+    value: function<T>(this: readonly T[], predicate?: (item: T, index: number) => number): T | undefined {
         if (this.isEmpty()) {
             console.warn("max() called on an empty array");
             return undefined;
@@ -401,7 +401,7 @@ Object.defineProperty(Array.prototype, 'max', {
     enumerable: false
 });
 Object.defineProperty(Array.prototype, 'min', {
-    value: function<T>(this: T[], predicate?: (item: T, index: number) => number): T | undefined {
+    value: function<T>(this: readonly T[], predicate?: (item: T, index: number) => number): T | undefined {
         if (this.isEmpty()) {
             console.warn("min() called on an empty array");
             return undefined;
