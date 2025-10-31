@@ -21,6 +21,12 @@ declare global {
     // String -------------------------------------
     interface String {
         /**
+         * Checks if the string is empty.
+         * @returns true if string has no length, false otherwise
+         */
+        isEmpty(): boolean;
+
+        /**
          * Converts the string to a number and rounds it.
          * @param decimals Number of decimal places (default 0)
          * @throws Error if the string cannot be parsed to a number
@@ -75,6 +81,44 @@ declare global {
          * @returns The last element, or undefined if the array is empty
          */
         last(): T | undefined;
+
+        /**
+         * Returns a new array skipping the first `count` elements.
+         * @param {number} count - Number of elements to skip from the start.
+         * @return {T[]} A new array without the first `count` elements.
+         */
+        skip<T>(this: T[], count: number): T[];
+        /**
+         * Returns a new array skipping the last `count` elements.
+         * @param {number} count - Number of elements to skip from the end.
+         * @return {T[]} A new array without the last `count` elements.
+         */
+        skipLast<T>(this: T[], count: number): T[];
+
+        /**
+         * Returns a new array containing the first `count` elements.
+         * @param {number} count - Number of elements to take from the start.
+         * @return {T[]} A new array with the first `count` elements.
+         */
+        take<T>(this: T[], count: number): T[];
+        /**
+         * Returns a new array containing the last `count` elements.
+         * @param {number} count - Number of elements to take from the end.
+         * @return {T[]} A new array with the last `count` elements.
+         */
+        takeLast<T>(this: T[], count: number): T[];
+
+        /**
+         * Sorts the array in place based on the value returned by the provided predicate.
+         * Special ordering rules:
+         * - `undefined` values come first.
+         * - `null` values come after `undefined`.
+         * - All other values are sorted normally (ascending).
+         * @param predicate A function that returns the value used for sorting each element.
+         * @returns {void}
+         * @note This mutates the array.
+         */
+        sortBy<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): void;
 
         /**
          * Shuffle the array in-place using Fisher–Yates.

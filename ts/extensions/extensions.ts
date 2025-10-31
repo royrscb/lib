@@ -27,6 +27,14 @@ Object.defineProperty(Number.prototype, 'prettyPrice', {
 });
 
 // String ---------------------------------------
+Object.defineProperty(String.prototype, 'isEmpty', {
+    value: function<T>(this: T[]) {
+        return this.length == 0;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 Object.defineProperty(String.prototype, 'round', { 
     value: function(this: string, decimals: number = 0): number {
         const floatNumber = parseFloat(this);
@@ -113,6 +121,59 @@ Object.defineProperty(Array.prototype, 'last', {
     enumerable: false
 });
 
+Object.defineProperty(Array.prototype, 'skip', {
+    value: function<T>(this: T[], count: number): T[] {
+        return this.slice(count);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Array.prototype, 'skipLast', {
+    value: function<T>(this: T[], count: number): T[] {
+        return this.slice(0, -count);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+
+Object.defineProperty(Array.prototype, 'take', {
+    value: function<T>(this: T[], count: number): T[] {
+        return this.slice(0, count);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Array.prototype, 'takeLast', {
+    value: function<T>(this: T[], count: number): T[] {
+        return this.slice(-count);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+
+Object.defineProperty(Array.prototype, 'sortBy', {
+    value: function<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): void {
+        this.sort((a, b) => {
+            const itemA = predicate(a);
+            const itemB = predicate(b);
+
+            if (itemA === undefined && itemB !== undefined) return -1;
+            if (itemB === undefined && itemA !== undefined) return 1;
+            if (itemA === null && itemB !== null) return -1;
+            if (itemB === null && itemA !== null) return 1;
+
+            return typeof itemA == 'string' && typeof itemB == 'string' ? itemA.localeCompare(itemB)
+                : (itemA as any) - (itemB as any);
+        });
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 Object.defineProperty(Array.prototype, 'shuffle', {
     value: function<T>(this: T[]): void {
         let currentIndex = this.length
@@ -151,6 +212,7 @@ Object.defineProperty(Array.prototype, 'groupBy', {
     configurable: false,
     enumerable: false
 });
+
 Object.defineProperty(Array.prototype, 'getDuplicates', {
     value: function<T>(this: T[], predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[] {
         if (this.isEmpty())
