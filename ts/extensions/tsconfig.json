@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "module": "es2020",
+    "module": "preserve",
     "outDir": "../../js",
     "removeComments": false,
     "strict": true,
     "noEmitOnError": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "isolatedModules": false,
+    "noEmitHelpers": true
   },
   "files": ["./extensions.ts", "./globals.d.ts"]
 }
