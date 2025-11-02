@@ -54,7 +54,7 @@ export function createPopup(props: PopupProps | void): PopupHandler {
 
         // Classes
         container.classList.add('popup', 'fade-in');
-        if (props?.className) container.classList.add(props.className);
+        props?.className?.split(' ').forEach(c => container?.classList.add(c));
         setTimeout(() => container?.classList.remove('fade-in'), 400);
 
         // Render
