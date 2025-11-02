@@ -233,12 +233,12 @@ Object.defineProperty(Array.prototype, 'takeLast', {
  * - `null` values come after `undefined`.
  * - All other values are sorted normally (ascending).
  * @param predicate A function that returns the value used for sorting each element.
- * @returns {void}
+ * @returns {T[]} array sorted by predicate return value
  * @note This mutates the array.
  */
 Object.defineProperty(Array.prototype, 'sortBy', {
-    value: function<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): void {
-        this.sort((a, b) => {
+    value: function<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): T[] {
+        return this.sort((a, b) => {
             const itemA = predicate(a);
             const itemB = predicate(b);
 
@@ -257,11 +257,11 @@ Object.defineProperty(Array.prototype, 'sortBy', {
 });
 /**
  * Shuffle the array in-place using Fisher–Yates.
- * @returns {void}
+ * @returns {T[]} shuffled array
  * @note This mutates the array.
  */
 Object.defineProperty(Array.prototype, 'shuffle', {
-    value: function<T>(this: T[]): void {
+    value: function<T>(this: T[]): T[] {
         let currentIndex = this.length
         let randomIndex
     
@@ -274,6 +274,8 @@ Object.defineProperty(Array.prototype, 'shuffle', {
             // And swap it with the current element.
             [this[currentIndex], this[randomIndex]] = [this[randomIndex], this[currentIndex]]
         }
+
+        return this;
     },
     writable: false,
     configurable: false,

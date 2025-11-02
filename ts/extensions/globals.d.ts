@@ -110,16 +110,16 @@ declare global {
          * - `null` values come after `undefined`.
          * - All other values are sorted normally (ascending).
          * @param predicate A function that returns the value used for sorting each element.
-         * @returns {void}
+         * @returns {T[]} array sorted by predicate return value
          * @note This mutates the array.
          */
-        sortBy<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): void;
+        sortBy<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): T[];
         /**
          * Shuffle the array in-place using Fisher–Yates.
-         * @returns {void}
+         * @returns {T[]} shuffled array
          * @note This mutates the array.
          */
-        shuffle(): void;
+        shuffle(): T[];
 
         /**
          * Group array elements by a key returned from predicate.
