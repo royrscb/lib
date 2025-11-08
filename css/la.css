@@ -168,6 +168,16 @@ input:focus, textarea:focus, select:focus {
 .semi-bold      { font-weight: 600; }
 .bold           { font-weight: bold; }
 
+/* Colors --- */
+.color-white     { color: white; }     .bg-color-white     { background-color: white; }
+.color-gray      { color: gray; }      .bg-color-gray      { background-color: gray; }
+.color-black     { color: black; }     .bg-color-black     { background-color: black; }
+.color-red       { color: red; }       .bg-color-red       { background-color: red; }
+.color-green     { color: green; }     .bg-color-green     { background-color: green; }
+.color-limegreen { color: limegreen; } .bg-color-limegreen { background-color: limegreen; }
+.color-blue      { color: blue; }      .bg-color-blue      { background-color: blue; }
+.color-yellow    { color: yellow; }    .bg-color-yellow    { background-color: yellow; }
+
 /* Misc --- */
 :disabled, .disabled { 
     filter: grayscale(1); 
