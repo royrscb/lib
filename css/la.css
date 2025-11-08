@@ -7,6 +7,8 @@ button {
     border: solid 1px black;
     border-radius: 5px;
     padding: 5px 10px;
+
+    cursor: pointer;
 }
 
 p { 
@@ -179,6 +181,7 @@ input:focus, textarea:focus, select:focus {
 .color-yellow    { color: yellow; }    .bg-color-yellow    { background-color: yellow; }
 
 /* Misc --- */
+.pointer { cursor: pointer; }
 :disabled, .disabled { 
     filter: grayscale(1); 
     cursor: not-allowed; 
