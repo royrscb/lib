@@ -18,8 +18,12 @@ export class TimeSpan {
 
     // Constructor ------------------------------
     constructor(milliseconds: number = 0) {
-        if (!Number.isFinite(milliseconds) && milliseconds !== Infinity && milliseconds !== -Infinity) {
-            throw new Error("Invalid milliseconds TimeSpan value: " + milliseconds);
+        if (milliseconds !== Infinity && milliseconds !== -Infinity) {
+            if (Number.isFinite(milliseconds)) {
+                if (!Number.isSafeInteger(milliseconds))
+                    throw new Error("Timespan does not have a safe value: " + milliseconds);
+            }
+            else throw new Error("Invalid TimeSpan value: " + milliseconds);
         }
         this.ms = milliseconds;
     }
