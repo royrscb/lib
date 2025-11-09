@@ -42,7 +42,7 @@ export class TimeSpan {
     static untilNow(arg1: number | Date): TimeSpan {
         const millisUnixTime = typeof arg1 === 'number'
             ? arg1 : arg1.getTime();
-        return TimeSpan.fromMillis(millisUnixTime - Date.now());
+        return TimeSpan.fromMillis(Math.abs(millisUnixTime - Date.now()));
     }
 
     // Sort ---
@@ -86,8 +86,8 @@ export class TimeSpan {
 
     // Comparison ---
     public equals(other: TimeSpan): boolean { return this.ms === other.ms; }
-    public greaterThan(other: TimeSpan): boolean { return this.ms > other.ms; }
-    public lessThan(other: TimeSpan): boolean { return this.ms < other.ms; }
+    public isGreaterThan(other: TimeSpan): boolean { return this.ms > other.ms; }
+    public isLessThan(other: TimeSpan): boolean { return this.ms < other.ms; }
 
     // Sort ---
     public sortByAscending(other: TimeSpan): number {
@@ -132,6 +132,5 @@ export class TimeSpan {
 
             return `${signStr}${daysStr}${timeStr}`;
         }
-
     }
 }
