@@ -189,4 +189,14 @@ declare global {
          */
         min(predicate?: (item: T, index: number) => number): T | undefined;
     }
+
+    // Date -------------------------------------
+    interface DateConstructor {
+        /**
+         * Creates a Date from a Unix timestamp in seconds.
+         * @param unixTime - Timestamp in seconds
+         * @returns Date object
+         */
+        fromUnixTime(unixTime: number): Date;
+    }
 }

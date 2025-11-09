@@ -502,3 +502,12 @@ Object.defineProperty(Array.prototype, 'min', {
     configurable: false,
     enumerable: false
 });
+// Date -----------------------------------------
+/**
+ * Converts a Unix timestamp (seconds) to a Date.
+ * @param {number} unixTime - Timestamp in seconds.
+ * @returns {Date} Date object for the given Unix time.
+ */
+Date.fromUnixTime = function (unixTime) {
+    return new Date(unixTime * 1000);
+};
