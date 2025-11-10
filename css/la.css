@@ -164,6 +164,7 @@ input:focus, textarea:focus, select:focus {
 
 .non-decoration { text-decoration: none; }
 .italic         { font-style: italic; }
+.line-through   { font-style: line-through; }
 .underline      { text-decoration: underline; }
 .thin           { font-weight: 100; }
 .light          { font-weight: 300; }
