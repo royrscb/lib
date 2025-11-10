@@ -152,11 +152,10 @@ input:focus, textarea:focus, select:focus {
 /* Before and after --- */
 .euro::after          { content: '\20AC'; }
 .colon-after::after   { content: ': '; }
-.brackets::before     { content: '('; }
-.brackets::after      { content: ')'; }
-.claudators::before   { content: '['; }
-.claudators::after    { content: ']'; }
+.brackets::before     { content: '('; } .brackets::after   { content: ')'; }
+.claudators::before   { content: '['; } .claudators::after { content: ']'; }
 .euro.brackets::after { content: '\20AC)'; }
+.euro.claudators::after { content: '\20AC]'; }
 
 /* Font --- */
 .dont-break-text { white-space: nowrap; }
