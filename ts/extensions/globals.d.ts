@@ -191,6 +191,7 @@ declare global {
     }
 
     // Date -------------------------------------
+    // Static ---
     interface DateConstructor {
         // Static ---
         /**
@@ -199,5 +200,15 @@ declare global {
          * @returns Date object
          */
         fromUnixTime(unixTime: number): Date;
+    }
+
+    // Instance ---
+    interface Date {
+        /**
+         * Returns the Unix timestamp (in seconds) for this Date.
+         * Equivalent to Math.trunc(date.getTime() / 1000).
+         * @returns Number of seconds since Unix epoch (January 1, 1970 UTC)
+         */
+        unixTime(this: Date): number;
     }
 }

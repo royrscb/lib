@@ -544,3 +544,16 @@ Object.defineProperty(Array.prototype, 'min', {
 Date.fromUnixTime = function(unixTime: number): Date {
     return new Date(unixTime * 1000);
 };
+/**
+ * Returns the Unix timestamp (in seconds) for this Date.
+ * Equivalent to Math.trunc(date.getTime() / 1000).
+ * @returns Number of seconds since Unix epoch (January 1, 1970 UTC)
+ */
+Object.defineProperty(Date.prototype, 'unixTime', {
+    value: function(this: Date): number {
+        return Math.trunc(this.getTime() / 1000);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
