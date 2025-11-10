@@ -9,13 +9,13 @@ declare global {
          * @param decimals Number of decimal places (default 0)
          * @returns Rounded number
          */
-        round(decimals?: number): number;
+        round(this: number, decimals?: number): number;
 
         /**
          * Formats the number as a price string, showing 2 decimals if needed.
          * @returns Price string, e.g. "10" or "10.50"
          */
-        prettyPrice(): string;
+        prettyPrice(this: number): string;
     }
 
     // String -------------------------------------
@@ -24,7 +24,7 @@ declare global {
          * Checks if the string is empty.
          * @returns true if string has no length, false otherwise
          */
-        isEmpty(): boolean;
+        isEmpty(this: string): boolean;
 
         /**
          * Converts the string to a number and rounds it.
@@ -32,26 +32,26 @@ declare global {
          * @throws Error if the string cannot be parsed to a number
          * @returns Rounded number
          */
-        round(decimals?: number): number;
+        round(this: string, decimals?: number): number;
 
         /**
          * Capitalizes the first letter of the string.
          * @returns String with the first character uppercase
          */
-        upperCaseFirst(): string;
+        upperCaseFirst(this: string): string;
         /**
          * Capitalizes words conditionally.
          * Words with length >= minLengthToUpperCaseFirst are capitalized.
          * @param minLengthToUpperCaseFirst Minimum length for words to capitalize (default 4)
          * @returns String with words capitalized according to rule
          */
-        prettyUpperCase(minLengthToUpperCaseFirst?: number): string;
+        prettyUpperCase(this: string, minLengthToUpperCaseFirst?: number): string;
         /**
          * Formats the number as a price string, showing 2 decimals if needed.
          * @throws Error if the string cannot be parsed to a number
          * @returns Price string, e.g. "10" or "10.50"
          */
-        prettyPrice(): string;
+        prettyPrice(this: string): string;
     }
 
     // Array --------------------------------------
@@ -60,22 +60,22 @@ declare global {
          * Checks if the array is empty.
          * @returns true if array has no elements, false otherwise
          */
-        isEmpty(): boolean;
+        isEmpty(this: T[]): boolean;
         /**
          * Checks if the array has any elements.
          * @returns true if array has at least one element
          */
-        any(): boolean;
+        any(this: T[]): boolean;
         /**
          * Returns the first element of the array.
          * @returns The first element, or undefined if the array is empty
          */
-        first(): T | undefined;
+        first(this: T[]): T | undefined;
         /**
          * Returns the last element of the array.
          * @returns The last element, or undefined if the array is empty
          */
-        last(): T | undefined;
+        last(this: T[]): T | undefined;
 
         /**
          * Returns a new array skipping the first `count` elements.
@@ -119,14 +119,14 @@ declare global {
          * @returns {T[]} shuffled array
          * @note This mutates the array.
          */
-        shuffle(): T[];
+        shuffle(this: T[]): T[];
 
         /**
          * Group array elements by a key returned from predicate.
          * @param {(item: T, index: number) => string | number} predicate - key selector
          * @returns {Record<string, T[]>} groups keyed by predicate
          */
-        groupBy<T>(predicate: (item: T, index: number) => string | number): Record<string, T[]>;
+        groupBy(this: T[], predicate: (item: T, index: number) => string | number): Record<string, T[]>;
 
         /**
          * Return a single instance of each value that appears more than once.
@@ -134,7 +134,7 @@ declare global {
          * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
          * @returns {T[]} array of one item per duplicated key
          */
-        getDuplicates<T>(predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
+        getDuplicates(this: T[], predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
         /**
          * Return all elements that belong to duplicated keys (keep original order,
          * include each duplicate occurrence except the first one of each key).
@@ -142,32 +142,32 @@ declare global {
          * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
          * @returns {T[]} array with all duplicate occurrences (predicate called once per element)
          */
-        getDuplicatesAll<T>(predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
+        getDuplicatesAll(this: T[], predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
         /**
          * Return array with first occurrence of each key (keeps first item for each key).
          * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
          * @returns {T[]} array with unique items by key (first wins)
          */
-        removeDuplicates<T>(predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
+        removeDuplicates(this: T[], predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
 
         /**
          * Removes the element at the specified index.
          * @param index Index to remove
          * @returns New array with the element removed
          */
-        removeIndex(index: number): T[];
+        removeIndex(this: T[], index: number): T[];
         /**
          * Removes one element matching the predicate.
          * @param predicate Function to determine which element to remove
          * @returns New array with the element removed
          */
-        removeOne(predicate: (item: T, index: number) => boolean): T[];
+        removeOne(this: T[], predicate: (item: T, index: number) => boolean): T[];
         /**
          * Removes all elements matching the predicate.
          * @param predicate Function to determine which elements to remove
          * @returns New array with elements removed
          */
-        removeAll(predicate: (item: T, index: number) => boolean): T[];
+        removeAll(this: T[], predicate: (item: T, index: number) => boolean): T[];
 
         /**
          * Returns the sum of elements according to an optional predicate.
@@ -175,23 +175,24 @@ declare global {
          * @param initialValue Optional initial value for sum (default 0)
          * @returns Sum of elements
          */
-        sum(predicate?: (item: T, index: number) => number, initialValue?: number): number;
+        sum(this: T[], predicate?: (item: T, index: number) => number, initialValue?: number): number;
         /**
          * Returns the element with the maximum value according to an optional predicate.
          * @param predicate Optional function to extract numeric value from element
          * @returns Element with maximum value, or undefined if array is empty
          */
-        max(predicate?: (item: T, index: number) => number): T | undefined;
+        max(this: T[], predicate?: (item: T, index: number) => number): T | undefined;
         /**
          * Returns the element with the minimum value according to an optional predicate.
          * @param predicate Optional function to extract numeric value from element
          * @returns Element with minimum value, or undefined if array is empty
          */
-        min(predicate?: (item: T, index: number) => number): T | undefined;
+        min(this: T[], predicate?: (item: T, index: number) => number): T | undefined;
     }
 
     // Date -------------------------------------
     interface DateConstructor {
+        // Static ---
         /**
          * Creates a Date from a Unix timestamp in seconds.
          * @param unixTime - Timestamp in seconds
