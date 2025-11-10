@@ -9,12 +9,12 @@ import { TimeSpan } from "./timespan";
  */
 export type StorageAction = 'set' | 'remove' | 'clear' | 'expired';
 
-// eslint-disable-next-line no-unused-vars
 /**
  * Callback for storage events.
  * @param change - Describes the change (action, key, value).
  * @param eventName - Name of the event triggered.
- */
+*/
+// eslint-disable-next-line no-unused-vars
 export type StorageEventCallback = (change: StorageChange, eventName: string) => void;
 
 /**
