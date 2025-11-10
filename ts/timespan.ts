@@ -46,7 +46,7 @@ export class TimeSpan {
     static untilNow(arg1: number | Date): TimeSpan {
         const millisUnixTime = typeof arg1 === 'number'
             ? arg1 : arg1.getTime();
-        return TimeSpan.fromMillis(Math.abs(Date.now() - millisUnixTime));
+        return TimeSpan.fromMillis(Date.now() - millisUnixTime);
     }
 
     // Sort ---
