@@ -200,6 +200,21 @@ declare global {
          * @returns Date object
          */
         fromUnixTime(unixTime: number): Date;
+
+        /**
+         * Calculates the number of whole months between two dates.
+         * Positive if `b` is after `a`, negative if `b` is before `a`.
+         * Ignores days and times; only year and month fields are used.
+         *
+         * @param a The starting date.
+         * @param b The ending date.
+         * @returns The signed number of months between `a` and `b`.
+         *
+         * @example
+         * Date.monthsBetween(new Date(2025, 1, 25), new Date(2025, 2, 1)); // → 1
+         * Date.monthsBetween(new Date(2025, 6, 10), new Date(2025, 4, 5)); // → -2
+         */
+        monthsBetween(a: Date, b: Date): number;
     }
 
     // Instance ---

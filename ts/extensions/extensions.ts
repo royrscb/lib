@@ -5,7 +5,7 @@
 //- Output will go to "./tsconfig.json".compilerOptions.outDir       *
 //-*******************************************************************
 
-// Number ---------------------------------------
+// Number -----------------------------------------------------------------------------------------
 /**
  * Rounds the number to the given number of decimals.
  * @param decimals Number of decimal places (default 0)
@@ -35,7 +35,7 @@ Object.defineProperty(Number.prototype, 'prettyPrice', {
     enumerable: false
 });
 
-// String ---------------------------------------
+// String -----------------------------------------------------------------------------------------
 /**
  * Checks if the string is empty.
  * @returns true if string has no length, false otherwise
@@ -116,7 +116,7 @@ Object.defineProperty(String.prototype, 'prettyPrice', {
     enumerable: false
 });
 
-// Array ----------------------------------------
+// Array ------------------------------------------------------------------------------------------
 /**
  * Checks if the array is empty.
  * @returns true if array has no elements, false otherwise
@@ -535,8 +535,8 @@ Object.defineProperty(Array.prototype, 'min', {
     enumerable: false
 });
 
-// Date -----------------------------------------
-// Static ---
+// Date -------------------------------------------------------------------------------------------
+// Static ---------------------------------------
 /**
  * Converts a Unix timestamp (seconds) to a Date.
  * @param {number} unixTime - Timestamp in seconds.
@@ -546,7 +546,26 @@ Date.fromUnixTime = function(unixTime: number): Date {
     return new Date(unixTime * 1000);
 };
 
-// Instance ---
+/**
+ * Calculates the number of whole months between two dates.
+ * Positive if `b` is after `a`, negative if `b` is before `a`.
+ * Ignores days and times; only year and month fields are used.
+ *
+ * @param a The starting date.
+ * @param b The ending date.
+ * @returns The signed number of months between `a` and `b`.
+ *
+ * @example
+ * Date.monthsBetween(new Date(2025, 1, 25), new Date(2025, 2, 1)); // → 1
+ * Date.monthsBetween(new Date(2025, 6, 10), new Date(2025, 4, 5)); // → -2
+ */
+Date.monthsBetween = function(a: Date, b: Date): number {
+    const years = b.getFullYear() - a.getFullYear();
+    const months = b.getMonth() - a.getMonth();
+    return years * 12 + months;
+}
+
+// Instance -------------------------------------
 /**
  * Returns the Unix timestamp (in seconds) for this Date.
  * Equivalent to Math.trunc(date.getTime() / 1000).
@@ -575,9 +594,7 @@ Object.defineProperty(Date.prototype, 'unixTime', {
  */
 Object.defineProperty(Date.prototype, 'monthsUntil', {
     value: function(this: Date, other: Date): number {
-        const years = other.getFullYear() - this.getFullYear();
-        const months = other.getMonth() - this.getMonth();
-        return years * 12 + months;
+        return Date.monthsBetween(this, other);
     },
     writable: false,
     configurable: false,
