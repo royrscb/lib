@@ -210,5 +210,19 @@ declare global {
          * @returns Number of seconds since Unix epoch (January 1, 1970 UTC)
          */
         unixTime(this: Date): number;
+
+        /**
+         * Calculates the number of whole months between this date and another date.
+         * Positive if the other date is in the future, negative if it is in the past.
+         * Day and time components are ignored; only year and month differences are considered.
+         *
+         * @param other The target date to compare with.
+         * @returns The signed number of months from this date until the given date.
+         *
+         * @example
+         * new Date(2025, 1, 25).monthsUntil(new Date(2025, 2, 1)); // → 1
+         * new Date(2025, 6, 10).monthsUntil(new Date(2025, 4, 5)); // → -2
+         */
+        monthsUntil(this: Date, other: Date): number;
     }
 }

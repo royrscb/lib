@@ -503,6 +503,7 @@ Object.defineProperty(Array.prototype, 'min', {
     enumerable: false
 });
 // Date -----------------------------------------
+// Static ---
 /**
  * Converts a Unix timestamp (seconds) to a Date.
  * @param {number} unixTime - Timestamp in seconds.
@@ -511,6 +512,7 @@ Object.defineProperty(Array.prototype, 'min', {
 Date.fromUnixTime = function (unixTime) {
     return new Date(unixTime * 1000);
 };
+// Instance ---
 /**
  * Returns the Unix timestamp (in seconds) for this Date.
  * Equivalent to Math.trunc(date.getTime() / 1000).
@@ -519,6 +521,28 @@ Date.fromUnixTime = function (unixTime) {
 Object.defineProperty(Date.prototype, 'unixTime', {
     value: function () {
         return Math.trunc(this.getTime() / 1000);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Calculates the number of whole months between this date and another date.
+ * Positive if the other date is in the future, negative if it is in the past.
+ * Day and time components are ignored; only year and month differences are considered.
+ *
+ * @param other The target date to compare with.
+ * @returns The signed number of months from this date until the given date.
+ *
+ * @example
+ * new Date(2025, 1, 25).monthsUntil(new Date(2025, 2, 1)); // → 1
+ * new Date(2025, 6, 10).monthsUntil(new Date(2025, 4, 5)); // → -2
+ */
+Object.defineProperty(Date.prototype, 'monthsUntil', {
+    value: function (other) {
+        const years = other.getFullYear() - this.getFullYear();
+        const months = other.getMonth() - this.getMonth();
+        return years * 12 + months;
     },
     writable: false,
     configurable: false,
