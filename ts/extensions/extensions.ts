@@ -5,7 +5,8 @@
 //- Output will go to "./tsconfig.json".compilerOptions.outDir       *
 //-*******************************************************************
 
-// Number -----------------------------------------------------------------------------------------
+//#region Number ----------------------------------------------------------------------------------
+
 /**
  * Rounds the number to the given number of decimals.
  * @param decimals Number of decimal places (default 0)
@@ -35,7 +36,10 @@ Object.defineProperty(Number.prototype, 'prettyPrice', {
     enumerable: false
 });
 
-// String -----------------------------------------------------------------------------------------
+//#endregion
+
+//#region String ----------------------------------------------------------------------------------
+
 /**
  * Checks if the string is empty.
  * @returns true if string has no length, false otherwise
@@ -116,7 +120,10 @@ Object.defineProperty(String.prototype, 'prettyPrice', {
     enumerable: false
 });
 
-// Array ------------------------------------------------------------------------------------------
+//#endregion
+
+//#region Array -----------------------------------------------------------------------------------
+
 /**
  * Checks if the array is empty.
  * @returns true if array has no elements, false otherwise
@@ -535,7 +542,10 @@ Object.defineProperty(Array.prototype, 'min', {
     enumerable: false
 });
 
-// Date -------------------------------------------------------------------------------------------
+//#endregion
+
+//#region Date ------------------------------------------------------------------------------------
+
 // Static ---------------------------------------
 /**
  * Converts a Unix timestamp (seconds) to a Date.
@@ -600,3 +610,5 @@ Object.defineProperty(Date.prototype, 'monthsUntil', {
     configurable: false,
     enumerable: false
 });
+
+//#endregion

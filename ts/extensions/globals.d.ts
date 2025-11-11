@@ -2,7 +2,6 @@
 export {};
 
 declare global {
-    // Number -------------------------------------
     interface Number {
         /**
          * Rounds the number to the given number of decimals.
@@ -18,7 +17,6 @@ declare global {
         prettyPrice(this: number): string;
     }
 
-    // String -------------------------------------
     interface String {
         /**
          * Checks if the string is empty.
@@ -54,7 +52,6 @@ declare global {
         prettyPrice(this: string): string;
     }
 
-    // Array --------------------------------------
     interface Array<T> {
         /**
          * Checks if the array is empty.
@@ -190,10 +187,7 @@ declare global {
         min(this: T[], predicate?: (item: T, index: number) => number): T | undefined;
     }
 
-    // Date -------------------------------------
-    // Static ---
     interface DateConstructor {
-        // Static ---
         /**
          * Creates a Date from a Unix timestamp in seconds.
          * @param unixTime - Timestamp in seconds
@@ -216,8 +210,6 @@ declare global {
          */
         monthsBetween(a: Date, b: Date): number;
     }
-
-    // Instance ---
     interface Date {
         /**
          * Returns the Unix timestamp (in seconds) for this Date.
