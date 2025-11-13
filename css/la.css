@@ -173,6 +173,7 @@ input:focus, textarea:focus, select:focus {
 /* Colors --- */
 .color-white     { color: white; }     .bg-color-white     { background-color: white; }
 .color-gray      { color: gray; }      .bg-color-gray      { background-color: gray; }
+.color-lightgray { color: lightgray; } .bg-color-lightgray { background-color: lightgray; }
 .color-black     { color: black; }     .bg-color-black     { background-color: black; }
 .color-red       { color: red; }       .bg-color-red       { background-color: red; }
 .color-green     { color: green; }     .bg-color-green     { background-color: green; }
