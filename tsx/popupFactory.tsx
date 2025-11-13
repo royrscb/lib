@@ -22,6 +22,7 @@ export interface PopupButtonProps {
 export interface PopupProps {
     className?: string;
     holderClassName?: string;
+    titleClassName?: string;
     containerClassName?: string;
 
     title?: ReactNode | null;
@@ -112,18 +113,18 @@ function Popup(props:
         {/* Container */}
         <div className={clsx('popup-container', props.containerClassName)} onClick={e => e.stopPropagation()}>
             {!props.preventClose &&
-                <button className="red-cross" onClick={props.close}>
+                <button className='red-cross' onClick={props.close}>
                     <div className='red-cross-line-a'></div>
                     <div className='red-cross-line-b'></div>
                 </button>
             }
 
             {/* Title and Subtitle */}
-            {props.title !== null && <div className="title">{props.title ?? 'Popup'}</div>}
-            {props.subtitle && <div className="subtitle">{props.subtitle}</div>}
+            {props.title !== null && <div className={clsx('title', props.titleClassName)}>{props.title ?? 'Popup'}</div>}
+            {props.subtitle && <div className='subtitle'>{props.subtitle}</div>}
 
             {/* Content */}
-            {props.content && <div className="content">{props.content}</div>}
+            {props.content && <div className='content'>{props.content}</div>}
 
             {/* Ok and Cancel button */}
             {(props.okButton || props.cancelButton) &&
@@ -232,7 +233,7 @@ export const Toaster = {
         const container = document.createElement('div');
         const root = createRoot(container);
         const toastElement = <p className='toast-text'>
-            {text ?? (type ? type+" toast" : "Toast")}
+            {text ?? (type ? type+' toast' : 'Toast')}
         </p>;
 
         container.classList.add('toast', 'toast-'+position);
