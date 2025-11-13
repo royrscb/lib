@@ -2,7 +2,8 @@ import React, { type JSX, type ReactNode } from 'react';
 import clsx from 'clsx';
 import { createRoot, type Root } from 'react-dom/client';
 
-// Popup ----------------------------------------
+//#region Popup
+
 export interface PopupButtonOnClickParams {
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>;
     button: HTMLButtonElement | null;
@@ -209,7 +210,10 @@ function PopupButton(props:
     </button>;
 }
 
-// Toaster --------------------------------------
+//#endregion
+
+//#region Toaster
+
 export enum ToastType {
     // eslint-disable-next-line no-unused-vars
     Error = 'error',
@@ -322,3 +326,5 @@ function Toaster_popSuccess(text?: ReactNode, arg1?: ToastPosition | number, arg
 
     return Toaster.pop(text, ToastType.Success, position, duration_ms);
 }
+
+//#endregion
