@@ -1,9 +1,15 @@
 import React, { type JSX, type ReactNode } from 'react';
+import ReactDOM from 'react-dom';
 import clsx from 'clsx';
 import { createRoot, type Root } from 'react-dom/client';
 
 //#region Popup
 
+// Types ---
+// eslint-disable-next-line no-unused-vars
+export type PopupPortalHandler = [portal: React.JSX.Element, setPortalVisible: (isPortalVisible: boolean) => void];
+
+// Props ---
 export interface PopupButtonOnClickParams {
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>;
     button: HTMLButtonElement | null;
@@ -19,7 +25,6 @@ export interface PopupButtonProps {
     formId?: string;
     preventClose?: boolean
 }
-
 export interface PopupProps {
     className?: string;
     holderClassName?: string;
@@ -46,42 +51,82 @@ export interface PopupHandler {
     getPopup: () => HTMLDivElement | null;
 }
 
+// Create popup imperative ---
 export function createPopup(props: PopupProps | void): PopupHandler {
     let container: HTMLDivElement | null = null;
-    let root: Root | null;
-    let popupElement: JSX.Element | null;
+    let root: Root | null = null;
 
-    const pop = () => {
+    function pop() {
+        if (container) return;
+
         container = document.createElement('div');
 
-        // Classes
         container.classList.add('popup', 'fade-in');
-        props?.className?.split(' ').forEach(c => container?.classList.add(c));
+        props?.className?.split(' ').forEach(c => c && container?.classList.add(c));
         setTimeout(() => container?.classList.remove('fade-in'), 400);
 
-        // Render
         document.body.appendChild(container);
+
         root = createRoot(container);
-        popupElement = <Popup {...props} close={close} />;
-        root.render(popupElement);
-    };
+        root.render(<Popup {...props} close={close} />);
+    }
 
-    const close = async () => {
-        const closeBackRes = await props?.onClose?.(container) ?? true;
+    async function close() {
+        const closeBackRes = (await props?.onClose?.(container)) ?? true;
 
-        if (closeBackRes !== false && root && container) {
-            container.classList.add('fade-out-fast');
-            setTimeout(() => {
-                root?.unmount();
-                container?.remove();
+        if (closeBackRes !== false) {
+            if (root) {
+                try { root.unmount(); } catch { /* empty */ }
                 root = null;
+            }
+
+            if (container) {
+                container.classList.add('fade-out-fast');
+                await new Promise(resolve => setTimeout(resolve, 200));
+                container.remove();
                 container = null;
-                popupElement = null;
-            }, 200);
+            }
         }
-    };
+    }
 
     return { pop, close, getPopup: () => container };
+}
+
+// Use popup declarative ---
+export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
+    const [isPortalVisible, setIsPortalVisible] = React.useState<boolean>(false);
+    const portalRef = React.useRef<HTMLDivElement | null>(null);
+
+    // Remove fade-in
+    React.useEffect(() => {
+        if (isPortalVisible) {
+            const timeoutId = setTimeout(() => portalRef.current?.classList.remove('fade-in'), 400);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [isPortalVisible]);
+
+    async function close() {
+        const closeBackRes = (await props?.onClose?.(portalRef.current)) ?? true;
+
+        if (closeBackRes !== false) {
+            if (portalRef.current) {
+                portalRef.current?.classList.add('fade-out-fast');
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            setIsPortalVisible(false);
+        }
+    }
+
+    const portalElement = isPortalVisible ? (
+        <div ref={portalRef} className={clsx('popup', 'fade-in', props?.className)}>
+            <Popup {...props} close={close} />
+        </div>
+    ) : null;
+
+    return [
+        ReactDOM.createPortal(portalElement, document.body),
+        setIsPortalVisible,
+    ];
 }
 
 function Popup(props:
@@ -246,6 +291,7 @@ export const Toaster = {
         document.body.appendChild(container);
         root.render(toastElement);
 
+        // Destroy toast
         setTimeout(() => {
             root?.unmount();
             container?.remove();
