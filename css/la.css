@@ -38,12 +38,17 @@ input, textarea {
 
     padding: 2px 4px 3px;
     border: solid 1px black;
-    border-radius: 3px;
     margin-top: 1px;
     margin-bottom: 5px;
     
     outline: none;
     box-sizing: border-box;
+}
+input {
+    border-radius: 7px;
+}
+textarea {
+    border-radius: 10px;
 }
 
 input:focus, textarea:focus, select:focus {
