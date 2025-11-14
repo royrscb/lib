@@ -95,22 +95,22 @@ export function createPopup(props: PopupProps | void): PopupHandler {
 // Use popup declarative ---
 export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
     const [isPortalVisible, setIsPortalVisible] = React.useState<boolean>(false);
-    const portalRef = React.useRef<HTMLDivElement | null>(null);
+    const popupRef = React.useRef<HTMLDivElement | null>(null);
 
     // Remove fade-in
     React.useEffect(() => {
         if (isPortalVisible) {
-            const timeoutId = setTimeout(() => portalRef.current?.classList.remove('fade-in'), 400);
+            const timeoutId = setTimeout(() => popupRef.current?.classList.remove('fade-in'), 400);
             return () => clearTimeout(timeoutId);
         }
     }, [isPortalVisible]);
 
     async function close() {
-        const closeBackRes = (await props?.onClose?.(portalRef.current)) ?? true;
+        const closeBackRes = (await props?.onClose?.(popupRef.current)) ?? true;
 
         if (closeBackRes !== false) {
-            if (portalRef.current) {
-                portalRef.current?.classList.add('fade-out-fast');
+            if (popupRef.current) {
+                popupRef.current?.classList.add('fade-out-fast');
                 await new Promise(resolve => setTimeout(resolve, 200));
             }
             setIsPortalVisible(false);
@@ -118,7 +118,7 @@ export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
     }
 
     const portalElement = isPortalVisible ? (
-        <div ref={portalRef} className={clsx('popup', 'fade-in', props?.className)}>
+        <div ref={popupRef} className={clsx('popup', 'fade-in', props?.className)}>
             <Popup {...props} close={close} />
         </div>
     ) : null;
