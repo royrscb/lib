@@ -6,8 +6,11 @@ import { createRoot, type Root } from 'react-dom/client';
 //#region Popup
 
 // Types ---
-// eslint-disable-next-line no-unused-vars
-export type PopupPortalHandler = [portal: React.JSX.Element, setPortalVisible: (isPortalVisible: boolean) => void];
+export type PopupPortalHandler = [
+    portal: React.JSX.Element,
+    pop: () => void,
+    close: () => void,
+];
 
 // Props ---
 export interface PopupButtonOnClickParams {
@@ -97,35 +100,33 @@ export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
     const [isPortalVisible, setIsPortalVisible] = React.useState<boolean>(false);
     const popupRef = React.useRef<HTMLDivElement | null>(null);
 
-    // Remove fade-in
-    React.useEffect(() => {
-        if (isPortalVisible) {
-            const timeoutId = setTimeout(() => popupRef.current?.classList.remove('fade-in'), 400);
-            return () => clearTimeout(timeoutId);
-        }
-    }, [isPortalVisible]);
+    async function pop(): Promise<void> {
+        popupRef.current?.classList.add('fade-in');
+        setIsPortalVisible(true);
+        await new Promise(resolve => setTimeout(resolve, 400));
+        popupRef.current?.classList.remove('fade-in');
+    }
 
     async function close() {
         const closeBackRes = (await props?.onClose?.(popupRef.current)) ?? true;
 
         if (closeBackRes !== false) {
-            if (popupRef.current) {
-                popupRef.current?.classList.add('fade-out-fast');
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
+            popupRef.current?.classList.add('fade-out-fast');
+            await new Promise(resolve => setTimeout(resolve, 200));
             setIsPortalVisible(false);
         }
     }
 
     const portalElement = isPortalVisible ? (
-        <div ref={popupRef} className={clsx('popup', 'fade-in', props?.className)}>
+        <div ref={popupRef} className={clsx('popup', props?.className)}>
             <Popup {...props} close={close} />
         </div>
     ) : null;
 
     return [
         ReactDOM.createPortal(portalElement, document.body),
-        setIsPortalVisible,
+        pop,
+        close,
     ];
 }
 
