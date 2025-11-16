@@ -59,14 +59,17 @@ export function createPopup(props: PopupProps | void): PopupHandler {
     let container: HTMLDivElement | null = null;
     let root: Root | null = null;
 
+    const getPopupHolder = () => container?.querySelector('.popup-holder');
+
     function pop() {
         if (container) return;
 
         container = document.createElement('div');
 
-        container.classList.add('popup', 'fade-in');
+        container.classList.add('popup');
+        getPopupHolder()?.classList.add('fade-in');
         props?.className?.split(' ').forEach(c => c && container?.classList.add(c));
-        setTimeout(() => container?.classList.remove('fade-in'), 400);
+        setTimeout(() => getPopupHolder()?.classList.remove('fade-in'), 400);
 
         document.body.appendChild(container);
 
@@ -84,7 +87,7 @@ export function createPopup(props: PopupProps | void): PopupHandler {
             }
 
             if (container) {
-                container.classList.add('fade-out-fast');
+                getPopupHolder()?.classList.add('fade-out-fast');
                 await new Promise(resolve => setTimeout(resolve, 200));
                 container.remove();
                 container = null;
@@ -102,12 +105,13 @@ export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
 
     const [isPortalVisible, setIsPortalVisible] = React.useState<boolean>(false);
     const popupRef = React.useRef<HTMLDivElement | null>(null);
+    const getPopupHolder = () => popupRef.current?.querySelector('.popup-holder');
 
     React.useEffect(() => {
-        if (isPortalVisible && popupRef.current) {
-            popupRef.current.classList.add('fade-in');
+        if (isPortalVisible && popupRef.current?.firstChild) {
+            getPopupHolder()?.classList.add('fade-in');
             setTimeout(() => {
-                popupRef.current?.classList.remove('fade-in');
+                getPopupHolder()?.classList.remove('fade-in');
             }, popAnimationDuration);
         }
     }, [isPortalVisible]);
@@ -120,7 +124,7 @@ export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
     async function close() {
         const closeBackRes = (await props?.onClose?.(popupRef.current)) ?? true;
         if (closeBackRes !== false) {
-            popupRef.current?.classList.add('fade-out-fast');
+            getPopupHolder()?.classList.add('fade-out-fast');
             await new Promise(resolve => setTimeout(resolve, closeAnimationDuration));
             setIsPortalVisible(false);
         }
