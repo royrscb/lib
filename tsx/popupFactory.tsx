@@ -1,6 +1,7 @@
 import React, { type JSX, type ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import clsx from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 import { createRoot, type Root } from 'react-dom/client';
 
 //#region Popup
@@ -97,31 +98,42 @@ export function createPopup(props: PopupProps | void): PopupHandler {
 
 // Use popup declarative ---
 export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
+    const popAnimationDuration = 400;
+    const closeAnimationDuration = 200;
+
     const [isPortalVisible, setIsPortalVisible] = React.useState<boolean>(false);
     const popupRef = React.useRef<HTMLDivElement | null>(null);
 
     async function pop(): Promise<void> {
-        popupRef.current?.classList.add('fade-in');
         setIsPortalVisible(true);
-        await new Promise(resolve => setTimeout(resolve, 400));
-        popupRef.current?.classList.remove('fade-in');
+        await new Promise(resolve => setTimeout(resolve, popAnimationDuration));
     }
 
     async function close() {
         const closeBackRes = (await props?.onClose?.(popupRef.current)) ?? true;
-
         if (closeBackRes !== false) {
-            popupRef.current?.classList.add('fade-out-fast');
-            await new Promise(resolve => setTimeout(resolve, 200));
             setIsPortalVisible(false);
+            await new Promise(resolve => setTimeout(resolve, closeAnimationDuration));
         }
     }
 
-    const portalElement = isPortalVisible ? (
-        <div ref={popupRef} className={clsx('popup', props?.className)}>
-            <Popup {...props} close={close} />
-        </div>
-    ) : null;
+    const portalElement = (
+        <AnimatePresence>
+            {isPortalVisible && (
+                <motion.div
+                    key="portal-popup"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: popAnimationDuration/1000 }}
+                    exit={{ opacity: 0, transition: { duration: closeAnimationDuration/1000 } }}
+                >
+                    <div ref={popupRef} className={clsx('popup', props?.className)}>
+                        <Popup {...props} close={close} />
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
 
     return [
         ReactDOM.createPortal(portalElement, document.body),
