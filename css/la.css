@@ -453,7 +453,7 @@ input:focus, textarea:focus, select:focus {
 .popup-container > .subtitle, .pop-up-container > .subtitle {
     font-size: 26px; 
 
-    margin-bottom: 20px; 
+    margin-bottom: 15px; 
 }
 .popup-container > .content, .pop-up-container > .content {
     font-size: 20px;
