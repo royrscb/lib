@@ -295,7 +295,7 @@ export const Toaster = {
     pop: (text?: ReactNode, type?: ToastType, position: ToastPosition = ToastPosition.Bottom, duration_ms: number = 3000) : HTMLDivElement => {
         const container = document.createElement('div');
         const root = createRoot(container);
-        const toastElement = <p className='toast-text'>
+        const toastElement = <p className='toast-text' onClick={destroy}>
             {text ?? (type ? type+' toast' : 'Toast')}
         </p>;
 
@@ -305,11 +305,12 @@ export const Toaster = {
         document.body.appendChild(container);
         root.render(toastElement);
 
-        // Destroy toast
-        setTimeout(() => {
+        function destroy() {
             root?.unmount();
             container?.remove();
-        }, duration_ms);
+        }
+
+        setTimeout(destroy, duration_ms);
 
         return container;
     },
