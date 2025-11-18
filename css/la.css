@@ -462,12 +462,11 @@ input:focus, textarea:focus, select:focus {
 }
 .popup-container > .inner > .subtitle, .pop-up-container > .inner > .subtitle {
     font-size: 26px; 
-
     margin-bottom: 15px; 
 }
 .popup-container > .inner > .content, .pop-up-container > .inner > .content {
     font-size: 20px;
-    margin-bottom: 35px;
+    margin-bottom: 15px;
 }
 .popup-container > .inner > .buttons {
     display: flex;
