@@ -36,6 +36,7 @@ export interface PopupProps {
 
     title?: ReactNode | null;
     subtitle?: ReactNode;
+    fixedTitleAndSubtitle?: boolean;
     content?: ReactNode;
 
     preventClose?: boolean;
@@ -160,6 +161,11 @@ function Popup(props:
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const titleAndSubtitle = <div className='title-and-subtitle'>
+        {props.title !== null && <div className={clsx('title', props.titleClassName)}>{props.title ?? 'Popup'}</div>}
+        {props.subtitle && <div className='subtitle'>{props.subtitle}</div>}
+    </div>;
+
     return <div
         ref={thisPopupRef}
         className={clsx('popup-holder', props.holderClassName)}
@@ -178,10 +184,9 @@ function Popup(props:
                     <div className='red-cross-line-b'></div>
                 </button>
             }
+            {props.fixedTitleAndSubtitle && titleAndSubtitle}
             <div className='inner'>
-                {/* Title and Subtitle */}
-                {props.title !== null && <div className={clsx('title', props.titleClassName)}>{props.title ?? 'Popup'}</div>}
-                {props.subtitle && <div className='subtitle'>{props.subtitle}</div>}
+                {!props.fixedTitleAndSubtitle && titleAndSubtitle}
 
                 {/* Content */}
                 {props.content && <div className='content'>{props.content}</div>}
