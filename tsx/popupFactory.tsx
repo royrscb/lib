@@ -178,35 +178,36 @@ function Popup(props:
                     <div className='red-cross-line-b'></div>
                 </button>
             }
+            <div className='inner'>
+                {/* Title and Subtitle */}
+                {props.title !== null && <div className={clsx('title', props.titleClassName)}>{props.title ?? 'Popup'}</div>}
+                {props.subtitle && <div className='subtitle'>{props.subtitle}</div>}
 
-            {/* Title and Subtitle */}
-            {props.title !== null && <div className={clsx('title', props.titleClassName)}>{props.title ?? 'Popup'}</div>}
-            {props.subtitle && <div className='subtitle'>{props.subtitle}</div>}
+                {/* Content */}
+                {props.content && <div className='content'>{props.content}</div>}
 
-            {/* Content */}
-            {props.content && <div className='content'>{props.content}</div>}
-
-            {/* Ok and Cancel button */}
-            {(props.okButton || props.cancelButton) &&
-                <div className='buttons'>
-                    {props.cancelButton &&
-                        <PopupButton
-                            {...props.cancelButton}
-                            className={clsx(props.cancelButton.className, 'cancel-button')}
-                            popupRef={thisPopupRef}
-                            close={props.close}
-                        />
-                    }
-                    {props.okButton &&
-                        <PopupButton
-                            {...props.okButton}
-                            className={clsx(props.okButton.className, 'ok-button')}
-                            popupRef={thisPopupRef}
-                            close={props.close}
-                        />
-                    }
-                </div>
-            }
+                {/* Ok and Cancel button */}
+                {(props.okButton || props.cancelButton) &&
+                    <div className='buttons'>
+                        {props.cancelButton &&
+                            <PopupButton
+                                {...props.cancelButton}
+                                className={clsx(props.cancelButton.className, 'cancel-button')}
+                                popupRef={thisPopupRef}
+                                close={props.close}
+                            />
+                        }
+                        {props.okButton &&
+                            <PopupButton
+                                {...props.okButton}
+                                className={clsx(props.okButton.className, 'ok-button')}
+                                popupRef={thisPopupRef}
+                                close={props.close}
+                            />
+                        }
+                    </div>
+                }
+            </div>
         </div>
     </div>;
 }
