@@ -185,6 +185,8 @@ input:focus, textarea:focus, select:focus {
 .color-limegreen { color: limegreen; } .bg-color-limegreen { background-color: limegreen; }
 .color-blue      { color: blue; }      .bg-color-blue      { background-color: blue; }
 .color-yellow    { color: yellow; }    .bg-color-yellow    { background-color: yellow; }
+.color-orange    { color: orange; }    .bg-color-orange    { background-color: orange; }
+.color-teal      { color: teal; }      .bg-color-teal      { background-color: teal; }
 
 /* Misc --- */
 .pointer { cursor: pointer; }
