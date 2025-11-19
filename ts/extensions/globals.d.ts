@@ -231,5 +231,14 @@ declare global {
          * new Date(2025, 6, 10).monthsUntil(new Date(2025, 4, 5)); // → -2
          */
         monthsUntil(this: Date, other: Date): number;
+
+        addMillis(this: Date, milliseconds: number): Date;
+        addSeconds(this: Date, seconds: number): Date;
+        addMinutes(this: Date, minutes: number): Date;
+        addHours(this: Date, hours: number): Date;
+        addDays(this: Date, days: number): Date;
+        addWeeks(this: Date, weeks: number): Date;
+        addMonths(this: Date, months: number): Date;
+        addYears(this: Date, years: number): Date;
     }
 }

@@ -1,9 +1,9 @@
 // Author: royrscb.com
-//-*******************************************************************
-//- Build command: $tsc && sed -i '/^\/\/-/d' ../../js/extensions.js *
-//- The second part is to delete this 5 lines comment                *
-//- Output will go to "./tsconfig.json".compilerOptions.outDir       *
-//-*******************************************************************
+//-***********************************************************************************
+//- Build command in this file dir: tsc && sed -i '/^\/\/-/d' ../../js/extensions.js *
+//- The second part is to delete this 5 lines comment                                *
+//- Output will go to "./tsconfig.json".compilerOptions.outDir                       *
+//-***********************************************************************************
 
 //#region Number ----------------------------------------------------------------------------------
 
@@ -605,6 +605,76 @@ Object.defineProperty(Date.prototype, 'unixTime', {
 Object.defineProperty(Date.prototype, 'monthsUntil', {
     value: function(this: Date, other: Date): number {
         return Date.monthsBetween(this, other);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+
+// AddTime ---
+Object.defineProperty(Date.prototype, 'addMillis', {
+    value: function(this: Date, milliseconds: number): Date {
+        return new Date(this.getTime() + milliseconds);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addSeconds', {
+    value: function(this: Date, seconds: number): Date {
+        return this.addMillis(seconds * 1000);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addMinutes', {
+    value: function(this: Date, minutes: number): Date {
+        return this.addSeconds(minutes * 60);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addHours', {
+    value: function(this: Date, hours: number): Date {
+        return this.addMinutes(hours * 60);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addDays', {
+    value: function(this: Date, days: number): Date {
+        return this.addHours(days * 24);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addWeeks', {
+    value: function(this: Date, weeks: number): Date {
+        return this.addDays(weeks * 7);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addMonths', {
+    value: function(this: Date, months: number): Date {
+        const d = new Date(this.getTime());
+        d.setMonth(d.getMonth() + months);
+        return d;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addYears', {
+    value: function(this: Date, years: number): Date {
+        const d = new Date(this.getTime());
+        d.setFullYear(d.getFullYear() + years);
+        return d;
     },
     writable: false,
     configurable: false,

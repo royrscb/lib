@@ -567,4 +567,73 @@ Object.defineProperty(Date.prototype, 'monthsUntil', {
     configurable: false,
     enumerable: false
 });
+// AddTime ---
+Object.defineProperty(Date.prototype, 'addMillis', {
+    value: function (milliseconds) {
+        return new Date(this.getTime() + milliseconds);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addSeconds', {
+    value: function (seconds) {
+        return this.addMillis(seconds * 1000);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addMinutes', {
+    value: function (minutes) {
+        return this.addSeconds(minutes * 60);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addHours', {
+    value: function (hours) {
+        return this.addMinutes(hours * 60);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addDays', {
+    value: function (days) {
+        return this.addHours(days * 24);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addWeeks', {
+    value: function (weeks) {
+        return this.addDays(weeks * 7);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addMonths', {
+    value: function (months) {
+        const d = new Date(this.getTime());
+        d.setMonth(d.getMonth() + months);
+        return d;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'addYears', {
+    value: function (years) {
+        const d = new Date(this.getTime());
+        d.setFullYear(d.getFullYear() + years);
+        return d;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 //#endregion
