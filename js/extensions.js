@@ -508,6 +508,13 @@ Object.defineProperty(Array.prototype, 'min', {
 //#region Date ------------------------------------------------------------------------------------
 // Static ---------------------------------------
 /**
+ * Returns the Unix timestamp (in seconds).
+ * @returns Number of seconds since Unix epoch (January 1, 1970 UTC)
+ */
+Date.nowUnixTime = function () {
+    return Math.trunc(Date.now() / 1000);
+};
+/**
  * Converts a Unix timestamp (seconds) to a Date.
  * @param {number} unixTime - Timestamp in seconds.
  * @returns {Date} Date object for the given Unix time.
@@ -536,10 +543,9 @@ Date.monthsBetween = function (a, b) {
 // Instance -------------------------------------
 /**
  * Returns the Unix timestamp (in seconds) for this Date.
- * Equivalent to Math.trunc(date.getTime() / 1000).
  * @returns Number of seconds since Unix epoch (January 1, 1970 UTC)
  */
-Object.defineProperty(Date.prototype, 'unixTime', {
+Object.defineProperty(Date.prototype, 'getUnixTime', {
     value: function () {
         return Math.trunc(this.getTime() / 1000);
     },

@@ -189,6 +189,12 @@ declare global {
 
     interface DateConstructor {
         /**
+         * Returns the Unix timestamp (in seconds).
+         * @returns Number of seconds since Unix epoch (January 1, 1970 UTC)
+         */
+        nowUnixTime(): number;
+
+        /**
          * Creates a Date from a Unix timestamp in seconds.
          * @param unixTime - Timestamp in seconds
          * @returns Date object
@@ -213,10 +219,9 @@ declare global {
     interface Date {
         /**
          * Returns the Unix timestamp (in seconds) for this Date.
-         * Equivalent to Math.trunc(date.getTime() / 1000).
          * @returns Number of seconds since Unix epoch (January 1, 1970 UTC)
          */
-        unixTime(this: Date): number;
+        getUnixTime(this: Date): number;
 
         /**
          * Calculates the number of whole months between this date and another date.
