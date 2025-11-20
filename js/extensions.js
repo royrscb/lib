@@ -816,12 +816,12 @@ Object.defineProperty(Date.prototype, 'isFuture', {
     enumerable: false
 });
 /**
- * Checks if two dates are on the same day.
- * @param other - The date to compare with.
- * @returns True if the dates are on the same day, false otherwise.
+ * Checks whether this date occurs on the same calendar day as another date.
+ * @param other - The date to compare against. Defaults to the current date.
+ * @returns True if both dates share the same year, month, and day; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameDay', {
-    value: function (other) {
+    value: function (other = new Date()) {
         return this.getFullYear() === other.getFullYear()
             && this.getMonth() === other.getMonth()
             && this.getDate() === other.getDate();
@@ -831,12 +831,12 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
     enumerable: false
 });
 /**
- * Checks if two dates are in the same month and year.
- * @param other - The date to compare with.
- * @returns True if the dates are in the same month and year, false otherwise.
+ * Checks whether this date occurs on the same calendar month as another date.
+ * @param other - The date to compare against. Defaults to the current date.
+ * @returns True if both dates share the same year and month; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameMonth', {
-    value: function (other) {
+    value: function (other = new Date()) {
         return this.getFullYear() === other.getFullYear()
             && this.getMonth() === other.getMonth();
     },
@@ -845,12 +845,12 @@ Object.defineProperty(Date.prototype, 'isSameMonth', {
     enumerable: false
 });
 /**
- * Checks if two dates are in the same year.
- * @param other - The date to compare with.
- * @returns True if the dates are in the same year, false otherwise.
+ * Checks whether this date occurs on the same year as another date.
+ * @param other - The date to compare against. Defaults to the current date.
+ * @returns True if both dates share the same year; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameYear', {
-    value: function (other) {
+    value: function (other = new Date()) {
         return this.getFullYear() === other.getFullYear();
     },
     writable: false,
