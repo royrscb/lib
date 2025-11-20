@@ -816,7 +816,7 @@ Object.defineProperty(Date.prototype, 'isFuture', {
     enumerable: false
 });
 /**
- * Checks whether this date occurs on the same calendar day as another date.
+ * Checks if two dates are on the same day.
  * @param other - The date to compare against. Defaults to the current date.
  * @returns True if both dates share the same year, month, and day; otherwise false.
  */
@@ -831,7 +831,7 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
     enumerable: false
 });
 /**
- * Checks whether this date occurs on the same calendar month as another date.
+ * Checks if two dates are on the same month.
  * @param other - The date to compare against. Defaults to the current date.
  * @returns True if both dates share the same year and month; otherwise false.
  */
@@ -845,7 +845,7 @@ Object.defineProperty(Date.prototype, 'isSameMonth', {
     enumerable: false
 });
 /**
- * Checks whether this date occurs on the same year as another date.
+ * Checks if two dates are on the same year.
  * @param other - The date to compare against. Defaults to the current date.
  * @returns True if both dates share the same year; otherwise false.
  */
