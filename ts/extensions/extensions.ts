@@ -755,7 +755,12 @@ Object.defineProperty(Date.prototype, 'toMonthKey', {
  * @returns A string in YYYY-MM-DD format.
  */
 Object.defineProperty(Date.prototype, 'toInputDateValue', {
-    value: Date.prototype.toDayKey,
+    value: function(this: Date): string {
+        const year = this.getFullYear();
+        const month = String(this.getMonth() + 1).padStart(2, '0');
+        const day = String(this.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
     writable: false,
     configurable: false,
     enumerable: false
