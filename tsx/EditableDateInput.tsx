@@ -1,6 +1,6 @@
 import React from 'react';
-import * as icons from './icons';
 import clsx from 'clsx';
+import * as icons from './icons';
 
 export function EditableDateInput(props: {
     defaultDate?: Date;
@@ -37,7 +37,7 @@ export function EditableDateInput(props: {
                 <input
                     className='w-100 fs-20 mt-3'
                     type='date'
-                    value={date.toISOString().slice(0, 10)}
+                    value={date.toInputDateValue()}
                     onChange={e => setDate(new Date(e.currentTarget.value))}
                 />
                 <div className='d-flex'>
