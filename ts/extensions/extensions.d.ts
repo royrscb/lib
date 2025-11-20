@@ -326,6 +326,11 @@ declare global {
          * @returns A string in YYYY-MM-DD format.
          */
         toInputDateValue(this: Date): string;
+        /**
+         * Returns the date formatted for input[type="datetime-local"] value.
+         * @returns A string in YYYY-MM-DDTHH:MM format.
+         */
+        toInputDatetimeLocalValue(this: Date): string;
 
         // Comparation ---
         /**
