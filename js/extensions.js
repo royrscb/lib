@@ -676,6 +676,54 @@ Object.defineProperty(Date.prototype, 'addYears', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns a new Date representing the first day of the month at 00:00:00.
+ * @returns A new Date at the start of the month.
+ */
+Object.defineProperty(Date.prototype, 'startOfMonth', {
+    value: function () {
+        return new Date(this.getFullYear(), this.getMonth());
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns a new Date representing January 1st of the year at 00:00:00.
+ * @returns A new Date at the start of the year.
+ */
+Object.defineProperty(Date.prototype, 'startOfYear', {
+    value: function () {
+        return new Date(this.getFullYear(), 0);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns a new Date representing the last day of the month at 23:59:59.999.
+ * @returns A new Date at the end of the month.
+ */
+Object.defineProperty(Date.prototype, 'endOfMonth', {
+    value: function () {
+        return new Date(this.addMonths(1).getTime() - 1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns a new Date representing December 31st of the year at 23:59:59.999.
+ * @returns A new Date at the end of the year.
+ */
+Object.defineProperty(Date.prototype, 'endOfYear', {
+    value: function () {
+        return new Date(this.addYears(1).getTime() - 1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 // To X format ---
 /**
  * Returns the date formatted as YYYY-MM-DD.

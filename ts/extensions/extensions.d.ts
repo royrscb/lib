@@ -282,6 +282,28 @@ declare global {
          */
         addYears(this: Date, years: number): Date;
 
+        /**
+         * Returns a new Date representing the first day of the month at 00:00:00.
+         * @returns A new Date at the start of the month.
+         */
+        startOfMonth(this: Date): Date;
+        /**
+         * Returns a new Date representing January 1st of the year at 00:00:00.
+         * @returns A new Date at the start of the year.
+         */
+        startOfYear(this: Date): Date;
+
+        /**
+         * Returns a new Date representing the last day of the month at 23:59:59.999.
+         * @returns A new Date at the end of the month.
+         */
+        endOfMonth(this: Date): Date;
+        /**
+         * Returns a new Date representing December 31st of the year at 23:59:59.999.
+         * @returns A new Date at the end of the year.
+         */
+        endOfYear(this: Date): Date;
+
         // To X format ---
         /**
          * Returns the date formatted as YYYY-MM-DD.
