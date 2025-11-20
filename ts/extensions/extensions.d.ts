@@ -232,6 +232,7 @@ declare global {
          */
         monthsUntil(this: Date, other: Date): number;
 
+        // Add time ---
         addMillis(this: Date, milliseconds: number): Date;
         addSeconds(this: Date, seconds: number): Date;
         addMinutes(this: Date, minutes: number): Date;
@@ -240,5 +241,16 @@ declare global {
         addWeeks(this: Date, weeks: number): Date;
         addMonths(this: Date, months: number): Date;
         addYears(this: Date, years: number): Date;
+
+        // To X format ---
+        toDayKey(this: Date): string;
+        toMonthKey(this: Date): string;
+
+        toInputDateValue(this: Date): string;
+
+        // Comparation
+        isSameDay(this: Date, other: Date): boolean;
+        isSameMonth(this: Date, other: Date): boolean;
+        isSameYear(this: Date, other: Date): boolean;
     }
 }

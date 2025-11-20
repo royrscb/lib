@@ -636,4 +636,56 @@ Object.defineProperty(Date.prototype, 'addYears', {
     configurable: false,
     enumerable: false
 });
+Object.defineProperty(Date.prototype, 'toDayKey', {
+    value: function () {
+        const year = this.getFullYear();
+        const month = String(this.getMonth() + 1).padStart(2, '0');
+        const day = String(this.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'toMonthKey', {
+    value: function () {
+        return this.toDayKey().slice(0, 7);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'toInputDateValue', {
+    value: Date.prototype.toDayKey,
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'isSameDay', {
+    value: function (other) {
+        return this.getFullYear() === other.getFullYear()
+            && this.getMonth() === other.getMonth()
+            && this.getDate() === other.getDate();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'isSameMonth', {
+    value: function (other) {
+        return this.getFullYear() === other.getFullYear()
+            && this.getMonth() === other.getMonth();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+Object.defineProperty(Date.prototype, 'isSameYear', {
+    value: function (other) {
+        return this.getFullYear() === other.getFullYear();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 //#endregion
