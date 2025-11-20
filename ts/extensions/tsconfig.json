@@ -10,5 +10,5 @@
     "isolatedModules": false,
     "noEmitHelpers": true
   },
-  "files": ["./extensions.ts", "./globals.d.ts"]
+  "files": ["./extensions.ts", "extensions.d.ts"]
 }
