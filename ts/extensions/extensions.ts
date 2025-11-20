@@ -825,6 +825,31 @@ Object.defineProperty(Date.prototype, 'toInputDateValue', {
 
 // Comparation ---
 /**
+ * Checks if the date is in the past compared to now.
+ * @returns True if the date is earlier than the current time, false otherwise.
+ */
+Object.defineProperty(Date.prototype, 'isPast', {
+    value: function(this: Date): boolean {
+        return this.getTime() < Date.now();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Checks if the date is in the future compared to now.
+ * @returns True if the date is later than the current time, false otherwise.
+ */
+Object.defineProperty(Date.prototype, 'isFuture', {
+    value: function(this: Date): boolean {
+        return Date.now() < this.getTime();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+
+/**
  * Checks if two dates are on the same day.
  * @param other - The date to compare with.
  * @returns True if the dates are on the same day, false otherwise.
