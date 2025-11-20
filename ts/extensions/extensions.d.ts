@@ -233,24 +233,91 @@ declare global {
         monthsUntil(this: Date, other: Date): number;
 
         // Add time ---
+        /**
+         * Adds the specified number of milliseconds to the date and returns a new Date instance.
+         * @param milliseconds - Number of milliseconds to add.
+         * @returns A new Date instance with the milliseconds added.
+         */
         addMillis(this: Date, milliseconds: number): Date;
+        /**
+         * Adds the specified number of seconds to the date and returns a new Date instance.
+         * @param seconds - Number of seconds to add.
+         * @returns A new Date instance with the seconds added.
+         */
         addSeconds(this: Date, seconds: number): Date;
+        /**
+         * Adds the specified number of minutes to the date and returns a new Date instance.
+         * @param minutes - Number of minutes to add.
+         * @returns A new Date instance with the minutes added.
+         */
         addMinutes(this: Date, minutes: number): Date;
+        /**
+         * Adds the specified number of hours to the date and returns a new Date instance.
+         * @param hours - Number of hours to add.
+         * @returns A new Date instance with the hours added.
+         */
         addHours(this: Date, hours: number): Date;
+        /**
+         * Adds the specified number of days to the date and returns a new Date instance.
+         * @param days - Number of days to add.
+         * @returns A new Date instance with the days added.
+         */
         addDays(this: Date, days: number): Date;
+        /**
+         * Adds the specified number of weeks to the date and returns a new Date instance.
+         * @param weeks - Number of weeks to add.
+         * @returns A new Date instance with the weeks added.
+         */
         addWeeks(this: Date, weeks: number): Date;
+        /**
+         * Adds the specified number of months to the date and returns a new Date instance.
+         * @param months - Number of months to add.
+         * @returns A new Date instance with the months added.
+         */
         addMonths(this: Date, months: number): Date;
+        /**
+         * Adds the specified number of years to the date and returns a new Date instance.
+         * @param years - Number of years to add.
+         * @returns A new Date instance with the years added.
+         */
         addYears(this: Date, years: number): Date;
 
         // To X format ---
+        /**
+         * Returns the date formatted as YYYY-MM-DD.
+         * @returns A string representing the date in YYYY-MM-DD format.
+         */
         toDayKey(this: Date): string;
+        /**
+         * Returns the month and year formatted as YYYY-MM.
+         * @returns A string representing the month in YYYY-MM format.
+         */
         toMonthKey(this: Date): string;
 
+        /**
+         * Returns the date formatted for input[type="date"] value.
+         * @returns A string in YYYY-MM-DD format.
+         */
         toInputDateValue(this: Date): string;
 
-        // Comparation
+        // Comparation ---
+        /**
+         * Checks if two dates are on the same day.
+         * @param other - The date to compare with.
+         * @returns True if the dates are on the same day, false otherwise.
+         */
         isSameDay(this: Date, other: Date): boolean;
+        /**
+         * Checks if two dates are in the same month and year.
+         * @param other - The date to compare with.
+         * @returns True if the dates are in the same month and year, false otherwise.
+         */
         isSameMonth(this: Date, other: Date): boolean;
+        /**
+         * Checks if two dates are in the same year.
+         * @param other - The date to compare with.
+         * @returns True if the dates are in the same year, false otherwise.
+         */
         isSameYear(this: Date, other: Date): boolean;
     }
 }

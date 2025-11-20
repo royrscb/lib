@@ -568,6 +568,11 @@ Object.defineProperty(Date.prototype, 'monthsUntil', {
     enumerable: false
 });
 // AddTime ---
+/**
+ * Adds the specified number of milliseconds to the date and returns a new Date instance.
+ * @param milliseconds - Number of milliseconds to add.
+ * @returns A new Date instance with the milliseconds added.
+ */
 Object.defineProperty(Date.prototype, 'addMillis', {
     value: function (milliseconds) {
         return new Date(this.getTime() + milliseconds);
@@ -576,6 +581,11 @@ Object.defineProperty(Date.prototype, 'addMillis', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Adds the specified number of seconds to the date and returns a new Date instance.
+ * @param seconds - Number of seconds to add.
+ * @returns A new Date instance with the seconds added.
+ */
 Object.defineProperty(Date.prototype, 'addSeconds', {
     value: function (seconds) {
         return this.addMillis(seconds * 1000);
@@ -584,6 +594,11 @@ Object.defineProperty(Date.prototype, 'addSeconds', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Adds the specified number of minutes to the date and returns a new Date instance.
+ * @param minutes - Number of minutes to add.
+ * @returns A new Date instance with the minutes added.
+ */
 Object.defineProperty(Date.prototype, 'addMinutes', {
     value: function (minutes) {
         return this.addSeconds(minutes * 60);
@@ -592,6 +607,11 @@ Object.defineProperty(Date.prototype, 'addMinutes', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Adds the specified number of hours to the date and returns a new Date instance.
+ * @param hours - Number of hours to add.
+ * @returns A new Date instance with the hours added.
+ */
 Object.defineProperty(Date.prototype, 'addHours', {
     value: function (hours) {
         return this.addMinutes(hours * 60);
@@ -600,6 +620,11 @@ Object.defineProperty(Date.prototype, 'addHours', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Adds the specified number of days to the date and returns a new Date instance.
+ * @param days - Number of days to add.
+ * @returns A new Date instance with the days added.
+ */
 Object.defineProperty(Date.prototype, 'addDays', {
     value: function (days) {
         return this.addHours(days * 24);
@@ -608,6 +633,11 @@ Object.defineProperty(Date.prototype, 'addDays', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Adds the specified number of weeks to the date and returns a new Date instance.
+ * @param weeks - Number of weeks to add.
+ * @returns A new Date instance with the weeks added.
+ */
 Object.defineProperty(Date.prototype, 'addWeeks', {
     value: function (weeks) {
         return this.addDays(weeks * 7);
@@ -616,6 +646,11 @@ Object.defineProperty(Date.prototype, 'addWeeks', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Adds the specified number of months to the date and returns a new Date instance.
+ * @param months - Number of months to add.
+ * @returns A new Date instance with the months added.
+ */
 Object.defineProperty(Date.prototype, 'addMonths', {
     value: function (months) {
         const d = new Date(this.getTime());
@@ -626,6 +661,11 @@ Object.defineProperty(Date.prototype, 'addMonths', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Adds the specified number of years to the date and returns a new Date instance.
+ * @param years - Number of years to add.
+ * @returns A new Date instance with the years added.
+ */
 Object.defineProperty(Date.prototype, 'addYears', {
     value: function (years) {
         const d = new Date(this.getTime());
@@ -636,6 +676,11 @@ Object.defineProperty(Date.prototype, 'addYears', {
     configurable: false,
     enumerable: false
 });
+// To X format ---
+/**
+ * Returns the date formatted as YYYY-MM-DD.
+ * @returns A string representing the date in YYYY-MM-DD format.
+ */
 Object.defineProperty(Date.prototype, 'toDayKey', {
     value: function () {
         const year = this.getFullYear();
@@ -647,6 +692,10 @@ Object.defineProperty(Date.prototype, 'toDayKey', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns the month and year formatted as YYYY-MM.
+ * @returns A string representing the month in YYYY-MM format.
+ */
 Object.defineProperty(Date.prototype, 'toMonthKey', {
     value: function () {
         return this.toDayKey().slice(0, 7);
@@ -655,12 +704,22 @@ Object.defineProperty(Date.prototype, 'toMonthKey', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns the date formatted for input[type="date"] value.
+ * @returns A string in YYYY-MM-DD format.
+ */
 Object.defineProperty(Date.prototype, 'toInputDateValue', {
     value: Date.prototype.toDayKey,
     writable: false,
     configurable: false,
     enumerable: false
 });
+// Comparation ---
+/**
+ * Checks if two dates are on the same day.
+ * @param other - The date to compare with.
+ * @returns True if the dates are on the same day, false otherwise.
+ */
 Object.defineProperty(Date.prototype, 'isSameDay', {
     value: function (other) {
         return this.getFullYear() === other.getFullYear()
@@ -671,6 +730,11 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Checks if two dates are in the same month and year.
+ * @param other - The date to compare with.
+ * @returns True if the dates are in the same month and year, false otherwise.
+ */
 Object.defineProperty(Date.prototype, 'isSameMonth', {
     value: function (other) {
         return this.getFullYear() === other.getFullYear()
@@ -680,6 +744,11 @@ Object.defineProperty(Date.prototype, 'isSameMonth', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Checks if two dates are in the same year.
+ * @param other - The date to compare with.
+ * @returns True if the dates are in the same year, false otherwise.
+ */
 Object.defineProperty(Date.prototype, 'isSameYear', {
     value: function (other) {
         return this.getFullYear() === other.getFullYear();
