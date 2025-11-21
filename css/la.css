@@ -419,6 +419,7 @@ input:focus, textarea:focus, select:focus {
 
     z-index: 6; 
 }
+
 .popup-container, .pop-up-container {
     display: flex;
     flex-direction: column;
@@ -441,6 +442,7 @@ input:focus, textarea:focus, select:focus {
 
     overflow-y: auto; 
 }
+
 .popup-container > .red-cross, .pop-up-container > .red-cross {
     position: absolute; 
     top: 5px; 
@@ -448,9 +450,11 @@ input:focus, textarea:focus, select:focus {
 
     z-index: 999; 
 }
+
 .popup-container > .inner, .pop-up-container > .inner {
     overflow-y: scroll;
 }
+
 .popup-container .title, .pop-up-container .title {
     font-size: 40px; 
 
@@ -464,10 +468,12 @@ input:focus, textarea:focus, select:focus {
     font-size: 26px; 
     margin-bottom: 15px; 
 }
+
 .popup-container > .inner > .content, .pop-up-container > .inner > .content {
     font-size: 20px;
     margin-bottom: 15px;
 }
+
 .popup-container > .inner > .buttons {
     display: flex;
     justify-content: space-evenly;
