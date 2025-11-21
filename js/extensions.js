@@ -683,6 +683,34 @@ Object.defineProperty(Date.prototype, 'addYears', {
     enumerable: false
 });
 /**
+ * Returns a new Date representing the first hour of the day at 00:00:00.
+ * @returns A new Date at the start of the day.
+ */
+Object.defineProperty(Date.prototype, 'startOfDay', {
+    value: function () {
+        return new Date(this.getFullYear(), this.getMonth(), this.getDate());
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns a new Date representing the first day of the week at 00:00:00.
+ * @param weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @returns A new Date at the start of the week.
+ */
+Object.defineProperty(Date.prototype, 'startOfWeek', {
+    value: function (weekStartsOnMonday = false) {
+        const day = this.getDay();
+        const diff = weekStartsOnMonday ? (day == 0 ? -6 : 1 - day)
+            : -day;
+        return new Date(this.getFullYear(), this.getMonth(), this.getDate() + diff);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing the first day of the month at 00:00:00.
  * @returns A new Date at the start of the month.
  */
@@ -707,12 +735,37 @@ Object.defineProperty(Date.prototype, 'startOfYear', {
     enumerable: false
 });
 /**
+ * Returns a new Date representing the last hour of the day at 23:59:59.999.
+ * @returns A new Date at the end of the day.
+ */
+Object.defineProperty(Date.prototype, 'endOfDay', {
+    value: function () {
+        return new Date(this.addDays(1).startOfDay().getTime() - 1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns a new Date representing the last day of the week at 23:59:59.999.
+ * @param weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @returns A new Date at the end of the week.
+ */
+Object.defineProperty(Date.prototype, 'endOfWeek', {
+    value: function (weekStartsOnMonday = false) {
+        return new Date(this.addWeeks(1).startOfWeek(weekStartsOnMonday).getTime() - 1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing the last day of the month at 23:59:59.999.
  * @returns A new Date at the end of the month.
  */
 Object.defineProperty(Date.prototype, 'endOfMonth', {
     value: function () {
-        return new Date(this.addMonths(1).getTime() - 1);
+        return new Date(this.addMonths(1).startOfMonth().getTime() - 1);
     },
     writable: false,
     configurable: false,
@@ -724,7 +777,7 @@ Object.defineProperty(Date.prototype, 'endOfMonth', {
  */
 Object.defineProperty(Date.prototype, 'endOfYear', {
     value: function () {
-        return new Date(this.addYears(1).getTime() - 1);
+        return new Date(this.addYears(1).startOfYear().getTime() - 1);
     },
     writable: false,
     configurable: false,
@@ -827,6 +880,23 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
         return this.getFullYear() === otherDate.getFullYear()
             && this.getMonth() === otherDate.getMonth()
             && this.getDate() === otherDate.getDate();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Checks if two dates are on the same week.
+ * @param other - The date to compare against.
+ * @param weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @returns True if both dates are in the same week; otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isSameWeek', {
+    value: function (other, weekStartsOnMonday = false) {
+        const otherDate = typeof other == 'number'
+            ? new Date(other) : new Date();
+        return this.startOfWeek(weekStartsOnMonday).getTime()
+            == otherDate.startOfWeek(weekStartsOnMonday).getTime();
     },
     writable: false,
     configurable: false,

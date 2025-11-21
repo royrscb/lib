@@ -288,6 +288,17 @@ declare global {
         addYears(this: Date, years: number): Date;
 
         /**
+         * Returns a new Date representing the first hour of the day at 00:00:00.
+         * @returns A new Date at the start of the day.
+         */
+        startOfDay(this: Date): Date;
+        /**
+         * Returns a new Date representing the first day of the week at 00:00:00.
+         * @param weekStartsOnMonday - The day of the week to start. Default on sunday.
+         * @returns A new Date at the start of the week.
+         */
+        startOfWeek(this: Date, weekStartsOnMonday: boolean = false): Date;
+        /**
          * Returns a new Date representing the first day of the month at 00:00:00.
          * @returns A new Date at the start of the month.
          */
@@ -298,6 +309,17 @@ declare global {
          */
         startOfYear(this: Date): Date;
 
+        /**
+         * Returns a new Date representing the last hour of the day at 23:59:59.999.
+         * @returns A new Date at the end of the day.
+         */
+        endOfDay(this: Date): Date;
+        /**
+         * Returns a new Date representing the last day of the week at 23:59:59.999.
+         * @param weekStartsOnMonday - The day of the week to start. Default on sunday.
+         * @returns A new Date at the end of the week.
+         */
+        endOfWeek(this: Date, weekStartsOnMonday: boolean = false): Date;
         /**
          * Returns a new Date representing the last day of the month at 23:59:59.999.
          * @returns A new Date at the end of the month.
@@ -350,6 +372,13 @@ declare global {
          * @returns True if both dates share the same year, month, and day; otherwise false.
          */
         isSameDay(this: Date, other: Date | number): boolean;
+        /**
+         * Checks if two dates are on the same week.
+         * @param other - The date to compare against.
+         * @param weekStartsOnMonday - The day of the week to start. Default on sunday.
+         * @returns True if both dates are in the same week; otherwise false.
+         */
+        isSameWeek(this: Date, other: Date | number, weekStartsOnMonday: boolean = false): boolean;
         /**
          * Checks if two dates are on the same month.
          * @param other - The date to compare against.
