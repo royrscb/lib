@@ -821,10 +821,12 @@ Object.defineProperty(Date.prototype, 'isFuture', {
  * @returns True if both dates share the same year, month, and day; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameDay', {
-    value: function (other = new Date()) {
-        return this.getFullYear() === other.getFullYear()
-            && this.getMonth() === other.getMonth()
-            && this.getDate() === other.getDate();
+    value: function (other = Date.now()) {
+        const otherDate = typeof other == 'number'
+            ? new Date(other) : new Date();
+        return this.getFullYear() === otherDate.getFullYear()
+            && this.getMonth() === otherDate.getMonth()
+            && this.getDate() === otherDate.getDate();
     },
     writable: false,
     configurable: false,
@@ -836,9 +838,11 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
  * @returns True if both dates share the same year and month; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameMonth', {
-    value: function (other = new Date()) {
-        return this.getFullYear() === other.getFullYear()
-            && this.getMonth() === other.getMonth();
+    value: function (other = Date.now()) {
+        const otherDate = typeof other == 'number'
+            ? new Date(other) : new Date();
+        return this.getFullYear() === otherDate.getFullYear()
+            && this.getMonth() === otherDate.getMonth();
     },
     writable: false,
     configurable: false,
@@ -850,8 +854,10 @@ Object.defineProperty(Date.prototype, 'isSameMonth', {
  * @returns True if both dates share the same year; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameYear', {
-    value: function (other = new Date()) {
-        return this.getFullYear() === other.getFullYear();
+    value: function (other = Date.now()) {
+        const otherDate = typeof other == 'number'
+            ? new Date(other) : new Date();
+        return this.getFullYear() === otherDate.getFullYear();
     },
     writable: false,
     configurable: false,

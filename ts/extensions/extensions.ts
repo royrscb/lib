@@ -875,10 +875,13 @@ Object.defineProperty(Date.prototype, 'isFuture', {
  * @returns True if both dates share the same year, month, and day; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameDay', {
-    value: function(this: Date, other: Date = new Date()): boolean {
-        return this.getFullYear() === other.getFullYear()
-            && this.getMonth() === other.getMonth()
-            && this.getDate() === other.getDate();
+    value: function(this: Date, other: Date | number = Date.now()): boolean {
+        const otherDate = typeof other == 'number'
+            ? new Date(other) : new Date();
+        
+        return this.getFullYear() === otherDate.getFullYear()
+            && this.getMonth() === otherDate.getMonth()
+            && this.getDate() === otherDate.getDate();
     },
     writable: false,
     configurable: false,
@@ -890,9 +893,12 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
  * @returns True if both dates share the same year and month; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameMonth', {
-    value: function(this: Date, other: Date = new Date()): boolean {
-        return this.getFullYear() === other.getFullYear()
-            && this.getMonth() === other.getMonth();
+    value: function(this: Date, other: Date | number = Date.now()): boolean {
+        const otherDate = typeof other == 'number'
+            ? new Date(other) : new Date();
+        
+        return this.getFullYear() === otherDate.getFullYear()
+            && this.getMonth() === otherDate.getMonth();
     },
     writable: false,
     configurable: false,
@@ -904,8 +910,11 @@ Object.defineProperty(Date.prototype, 'isSameMonth', {
  * @returns True if both dates share the same year; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameYear', {
-    value: function(this: Date, other: Date = new Date()): boolean {
-        return this.getFullYear() === other.getFullYear();
+    value: function(this: Date, other: Date | number = Date.now()): boolean {
+        const otherDate = typeof other == 'number'
+            ? new Date(other) : new Date();
+        
+        return this.getFullYear() === otherDate.getFullYear();
     },
     writable: false,
     configurable: false,

@@ -349,18 +349,18 @@ declare global {
          * @param other - The date to compare against. Defaults to the current date.
          * @returns True if both dates share the same year, month, and day; otherwise false.
          */
-        isSameDay(this: Date, other: Date = new Date()): boolean;
+        isSameDay(this: Date, other: Date | number = Date.now()): boolean;
         /**
          * Checks if two dates are on the same month.
          * @param other - The date to compare against. Defaults to the current date.
          * @returns True if both dates share the same year and month; otherwise false.
          */
-        isSameMonth(this: Date, other: Date = new Date()): boolean;
+        isSameMonth(this: Date, other: Date | number = Date.now()): boolean;
         /**
          * Checks if two dates are on the same year.
          * @param other - The date to compare against. Defaults to the current date.
          * @returns True if both dates share the same year; otherwise false.
          */
-        isSameYear(this: Date, other: Date = new Date()): boolean;
+        isSameYear(this: Date, other: Date | number = Date.now()): boolean;
     }
 }
