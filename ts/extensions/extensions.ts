@@ -871,11 +871,11 @@ Object.defineProperty(Date.prototype, 'isFuture', {
 
 /**
  * Checks if two dates are on the same day.
- * @param other - The date to compare against. Defaults to the current date.
+ * @param other - The date to compare against.
  * @returns True if both dates share the same year, month, and day; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameDay', {
-    value: function(this: Date, other: Date | number = Date.now()): boolean {
+    value: function(this: Date, other: Date | number): boolean {
         const otherDate = typeof other == 'number'
             ? new Date(other) : new Date();
         
@@ -889,11 +889,11 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
 });
 /**
  * Checks if two dates are on the same month.
- * @param other - The date to compare against. Defaults to the current date.
+ * @param other - The date to compare against.
  * @returns True if both dates share the same year and month; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameMonth', {
-    value: function(this: Date, other: Date | number = Date.now()): boolean {
+    value: function(this: Date, other: Date | number): boolean {
         const otherDate = typeof other == 'number'
             ? new Date(other) : new Date();
         
@@ -906,11 +906,11 @@ Object.defineProperty(Date.prototype, 'isSameMonth', {
 });
 /**
  * Checks if two dates are on the same year.
- * @param other - The date to compare against. Defaults to the current date.
+ * @param other - The date to compare against.
  * @returns True if both dates share the same year; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameYear', {
-    value: function(this: Date, other: Date | number = Date.now()): boolean {
+    value: function(this: Date, other: Date | number): boolean {
         const otherDate = typeof other == 'number'
             ? new Date(other) : new Date();
         
