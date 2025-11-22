@@ -944,11 +944,12 @@ Object.defineProperty(Date.prototype, 'endOfYear', {
  *  - MM   : month number (01–12)
  *  - DD   : day of month (01–31)
  *  - HH   : hours (00–23)
+ *  - hh   : hours (01-12)
  *  - mm   : minutes (00–59)
  *  - ss   : seconds (00–59)
- *  - MMM  : short month name (localized)
+ *  - MMM  : short month name (localized) (max 3 letters)
  *  - MMMM : full month name (localized)
- *  - ddd  : short weekday name (localized)
+ *  - ddd  : short weekday name (localized) (max 2 letters)
  *  - dddd : full weekday name (localized)
  *  - z    : short timezone name (e.g. "CET")
  *  - zz   : long timezone name  (e.g. "Central European Standard Time")
@@ -959,66 +960,46 @@ Object.defineProperty(Date.prototype, 'endOfYear', {
  */
 Object.defineProperty(Date.prototype, 'format', {
     value: function(this: Date, pattern: string, lang: string = 'en'): string {
-        const pad = (n: number, size: number = 2) => String(n).padStart(size, '0');
+        const pad = (n: number) => String(n).padStart(2, '0');
 
-        const needed = {
-            YYYY: pattern.includes('YYYY'),
-            MM:   pattern.includes('MM'),
-            DD:   pattern.includes('DD'),
-            HH:   pattern.includes('HH'),
-            mm:   pattern.includes('mm'),
-            ss:   pattern.includes('ss'),
-            MMMM: pattern.includes('MMMM'),
-            MMM:  pattern.includes('MMM'),
-            dddd: pattern.includes('dddd'),
-            ddd:  pattern.includes('ddd'),
-            z:    pattern.includes('z'),
-            zz:   pattern.includes('zz'),
-            Z:    pattern.includes('Z'),
-        };
+        const rep = {
+            // Numeric
+            'YYYY': String(this.getFullYear()),
+            'MM':   pad(this.getMonth() + 1),
+            'DD':   pad(this.getDate()),
+            'HH':   pad(this.getHours()),
+            'hh':   pad(this.getHours() % 12 || 12),
+            'mm':   pad(this.getMinutes()),
+            'ss':   pad(this.getSeconds()),
 
-        const rep: Record<string, string> = {};
-
-        // Numeric
-        if (needed.YYYY) rep['YYYY'] = String(this.getFullYear());
-        if (needed.MM)   rep['MM']   = pad(this.getMonth() + 1);
-        if (needed.DD)   rep['DD']   = pad(this.getDate());
-        if (needed.HH)   rep['HH']   = pad(this.getHours());
-        if (needed.mm)   rep['mm']   = pad(this.getMinutes());
-        if (needed.ss)   rep['ss']   = pad(this.getSeconds());
-
-        // Month names
-        if (needed.MMMM) rep['MMMM'] = new Intl.DateTimeFormat(lang, { month: 'long' }).format(this).upperCaseFirst();
-        if (needed.MMM)  rep['MMM']  = new Intl.DateTimeFormat(lang, { month: 'short' }).format(this).upperCaseFirst();
-
-        // Weekday names
-        if (needed.dddd) rep['dddd'] = new Intl.DateTimeFormat(lang, { weekday: 'long' }).format(this).upperCaseFirst();
-        if (needed.ddd)  rep['ddd']  = new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(this).upperCaseFirst();
-
-        // Timezone names
-        if (needed.z || needed.zz) {
-            const formatShort = new Intl.DateTimeFormat(lang, { timeZoneName: 'short' });
-            const formatLong  = new Intl.DateTimeFormat(lang, { timeZoneName: 'long' });
-
-            if (needed.z) {
-                rep['z'] = formatShort.formatToParts(this)
-                    .find(p => p.type === 'timeZoneName')?.value || '';
-            }
-            if (needed.zz) {
-                rep['zz'] = formatLong.formatToParts(this)
-                    .find(p => p.type === 'timeZoneName')?.value || '';
-            }
-        }
+            // Month names
+            'MMMM': new Intl.DateTimeFormat(lang, { month: 'long' }).format(this)
+                .upperCaseFirst(),
+            'MMM':  new Intl.DateTimeFormat(lang, { month: 'short' }).format(this)
+                .slice(0, 3).replace('.', '').upperCaseFirst(),
+    
+            // Weekday names
+            'dddd': new Intl.DateTimeFormat(lang, { weekday: 'long' }).format(this)
+                .upperCaseFirst(),
+            'ddd':  new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(this)
+                .slice(0, 2).replace('.', '').upperCaseFirst(),
+    
+            // Timezone names
+            'z':  new Intl.DateTimeFormat(lang, { timeZoneName: 'short' }).formatToParts(this)
+                .find(p => p.type === 'timeZoneName')?.value || '',
+            'zz': new Intl.DateTimeFormat(lang, { timeZoneName: 'long' }).formatToParts(this)
+                .find(p => p.type === 'timeZoneName')?.value || '',
+        } as Record<string, string>;
 
         // Numeric timezone offset
-        if (needed.Z) {
+        if (pattern.includes('Z')) {
             const offsetMin = -this.getTimezoneOffset();
             const sign = offsetMin >= 0 ? '+' : '-';
             const abs = Math.abs(offsetMin);
             rep['Z'] = `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
         }
 
-        return pattern.replace(/YYYY|DD|HH|mm|ss|MMMM|MMM|MM|dddd|ddd|zz|z|Z/g, t => rep[t]);
+        return pattern.replace(/YYYY|DD|HH|hh|mm|ss|MMMM|MMM|MM|dddd|ddd|zz|z|Z/g, t => rep[t]);
     },
     writable: false,
     configurable: false,
