@@ -960,7 +960,6 @@ Object.defineProperty(Date.prototype, 'endOfYear', {
 Object.defineProperty(Date.prototype, 'format', {
     value: function(this: Date, pattern: string, lang: string = 'en'): string {
         const pad = (n: number, size: number = 2) => String(n).padStart(size, '0');
-        const locale = lang || 'es';
 
         const needed = {
             YYYY: pattern.includes('YYYY'),
@@ -989,17 +988,17 @@ Object.defineProperty(Date.prototype, 'format', {
         if (needed.ss)   rep['ss']   = pad(this.getSeconds());
 
         // Month names
-        if (needed.MMMM) rep['MMMM'] = new Intl.DateTimeFormat(locale, { month: 'long' }).format(this);
-        if (needed.MMM)  rep['MMM']  = new Intl.DateTimeFormat(locale, { month: 'short' }).format(this);
+        if (needed.MMMM) rep['MMMM'] = new Intl.DateTimeFormat(lang, { month: 'long' }).format(this).upperCaseFirst();
+        if (needed.MMM)  rep['MMM']  = new Intl.DateTimeFormat(lang, { month: 'short' }).format(this).upperCaseFirst();
 
         // Weekday names
-        if (needed.dddd) rep['dddd'] = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(this);
-        if (needed.ddd)  rep['ddd']  = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(this);
+        if (needed.dddd) rep['dddd'] = new Intl.DateTimeFormat(lang, { weekday: 'long' }).format(this).upperCaseFirst();
+        if (needed.ddd)  rep['ddd']  = new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(this).upperCaseFirst();
 
         // Timezone names
         if (needed.z || needed.zz) {
-            const formatShort = new Intl.DateTimeFormat(locale, { timeZoneName: 'short' });
-            const formatLong  = new Intl.DateTimeFormat(locale, { timeZoneName: 'long' });
+            const formatShort = new Intl.DateTimeFormat(lang, { timeZoneName: 'short' });
+            const formatLong  = new Intl.DateTimeFormat(lang, { timeZoneName: 'long' });
 
             if (needed.z) {
                 rep['z'] = formatShort.formatToParts(this)
@@ -1019,7 +1018,7 @@ Object.defineProperty(Date.prototype, 'format', {
             rep['Z'] = `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
         }
 
-        return pattern.replace(/YYYY|MM|DD|HH|mm|ss|MMMM|MMM|dddd|ddd|zz|z|Z/g, t => rep[t]);
+        return pattern.replace(/YYYY|DD|HH|mm|ss|MMMM|MMM|MM|dddd|ddd|zz|z|Z/g, t => rep[t]);
     },
     writable: false,
     configurable: false,
