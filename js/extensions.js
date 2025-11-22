@@ -2,9 +2,21 @@
 // Author: royrscb.com
 //#region Number ----------------------------------------------------------------------------------
 /**
+ * Returns the largest integer less than or equal to the number.
+ * @return {number} The value of Math.floor(this)
+ */
+Object.defineProperty(Number.prototype, 'floor', {
+    value: function () {
+        return Math.floor(this);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Rounds the number to the given number of decimals.
- * @param decimals Number of decimal places (default 0)
- * @returns Rounded number
+ * @param {number} decimals Number of decimal places (default 0)
+ * @return {number} Rounded number
  */
 Object.defineProperty(Number.prototype, 'round', {
     value: function (decimals = 0) {
@@ -16,8 +28,60 @@ Object.defineProperty(Number.prototype, 'round', {
     enumerable: false
 });
 /**
+ * Returns the smallest integer greater than or equal to the number.
+ * @return {number} The value of Math.ceil(this)
+ */
+Object.defineProperty(Number.prototype, 'ceil', {
+    value: function () {
+        return Math.ceil(this);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Clamps the number between min and max (inclusive).
+ * @param {number} min Minimum allowed value.
+ * @param {number} max Maximum allowed value.
+ * @return {number} The number constrained to the range [min, max].
+ */
+Object.defineProperty(Number.prototype, 'clamp', {
+    value: function (min, max) {
+        return Math.min(Math.max(this, min), max);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Calculates the given percent of this number.
+ * @param {number} percent Percentage to calculate (e.g. 10 for 10%).
+ * @return {number} The value corresponding to `percent` percent of this number.
+ */
+Object.defineProperty(Number.prototype, 'getPercent', {
+    value: function (percent) {
+        return (this * percent) / 100;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Calculates what percent this number is of the provided total.
+ * @param {number} total The total value used as denominator.
+ * @return {number} The percentage (0-100) that this number represents of total.
+ */
+Object.defineProperty(Number.prototype, 'percentOf', {
+    value: function (total) {
+        return (this / total) * 100;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Formats the number as a price string, showing 2 decimals if needed.
- * @returns Price string, e.g. "10" or "10.50"
+ * @return {string} Price string, e.g. "10" or "10.50"
  */
 Object.defineProperty(Number.prototype, 'prettyPrice', {
     value: function () {
@@ -32,7 +96,7 @@ Object.defineProperty(Number.prototype, 'prettyPrice', {
 //#region String ----------------------------------------------------------------------------------
 /**
  * Checks if the string is empty.
- * @returns true if string has no length, false otherwise
+ * @return {boolean} true if string has no length, false otherwise
  */
 Object.defineProperty(String.prototype, 'isEmpty', {
     value: function () {
@@ -43,10 +107,26 @@ Object.defineProperty(String.prototype, 'isEmpty', {
     enumerable: false
 });
 /**
+ * Checks if the string represents a numeric value.
+ * Returns false for empty or whitespace-only strings.
+ * @return {boolean} true if the string can be parsed to a finite number, false otherwise.
+ */
+Object.defineProperty(String.prototype, 'isNumeric', {
+    value: function () {
+        if (this.trim().isEmpty())
+            return false;
+        const n = Number(this);
+        return !Number.isNaN(n) && Number.isFinite(n);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Converts the string to a number and rounds it.
- * @param decimals Number of decimal places (default 0)
+ * @param {number} decimals Number of decimal places (default 0)
+ * @return {number} Rounded number
  * @throws Error if the string cannot be parsed to a number
- * @returns Rounded number
  */
 Object.defineProperty(String.prototype, 'round', {
     value: function (decimals = 0) {
@@ -61,7 +141,7 @@ Object.defineProperty(String.prototype, 'round', {
 });
 /**
  * Capitalizes the first letter of the string.
- * @returns String with the first character uppercase
+ * @return {string} String with the first character uppercase
  */
 Object.defineProperty(String.prototype, 'upperCaseFirst', {
     value: function () {
@@ -75,8 +155,8 @@ Object.defineProperty(String.prototype, 'upperCaseFirst', {
 /**
  * Capitalizes words conditionally.
  * Words with length >= minLengthToUpperCaseFirst are capitalized.
- * @param minLengthToUpperCaseFirst Minimum length for words to capitalize (default 4)
- * @returns String with words capitalized according to rule
+ * @param {number} minLengthToUpperCaseFirst Minimum length for words to capitalize (default 4)
+ * @return {string} String with words capitalized according to rule
  */
 Object.defineProperty(String.prototype, 'prettyUpperCase', {
     value: function (minLengthToUpperCaseFirst = 4) {
@@ -93,8 +173,8 @@ Object.defineProperty(String.prototype, 'prettyUpperCase', {
 });
 /**
  * Formats the number as a price string, showing 2 decimals if needed.
+ * @return {string} Price string, e.g. "10" or "10.50"
  * @throws Error if the string cannot be parsed to a number
- * @returns Price string, e.g. "10" or "10.50"
  */
 Object.defineProperty(String.prototype, 'prettyPrice', {
     value: function () {
@@ -111,7 +191,7 @@ Object.defineProperty(String.prototype, 'prettyPrice', {
 //#region Array -----------------------------------------------------------------------------------
 /**
  * Checks if the array is empty.
- * @returns true if array has no elements, false otherwise
+ * @return {boolean} true if array has no elements, false otherwise
  */
 Object.defineProperty(Array.prototype, 'isEmpty', {
     value: function () {
@@ -123,7 +203,7 @@ Object.defineProperty(Array.prototype, 'isEmpty', {
 });
 /**
  * Checks if the array has any elements.
- * @returns true if array has at least one element
+ * @return {boolean} true if array has at least one element
  */
 Object.defineProperty(Array.prototype, 'any', {
     value: function () {
@@ -135,7 +215,7 @@ Object.defineProperty(Array.prototype, 'any', {
 });
 /**
  * Returns the first element of the array.
- * @returns The first element, or undefined if the array is empty
+ * @return {T | undefined} The first element, or undefined if the array is empty
  */
 Object.defineProperty(Array.prototype, 'first', {
     value: function () {
@@ -150,7 +230,7 @@ Object.defineProperty(Array.prototype, 'first', {
 });
 /**
  * Returns the last element of the array.
- * @returns The last element, or undefined if the array is empty
+ * @return {T | undefined} The last element, or undefined if the array is empty
  */
 Object.defineProperty(Array.prototype, 'last', {
     value: function () {
@@ -221,8 +301,8 @@ Object.defineProperty(Array.prototype, 'takeLast', {
  * - `undefined` values come first.
  * - `null` values come after `undefined`.
  * - All other values are sorted normally (ascending).
- * @param predicate A function that returns the value used for sorting each element.
- * @returns {T[]} array sorted by predicate return value
+ * @param {(item: T) => boolean | number | string | null | undefined} predicate A function that returns the value used for sorting each element.
+ * @return {T[]} array sorted by predicate return value
  * @note This mutates the array.
  */
 Object.defineProperty(Array.prototype, 'sortBy', {
@@ -248,7 +328,7 @@ Object.defineProperty(Array.prototype, 'sortBy', {
 });
 /**
  * Shuffle the array in-place using Fisher–Yates.
- * @returns {T[]} shuffled array
+ * @return {T[]} shuffled array
  * @note This mutates the array.
  */
 Object.defineProperty(Array.prototype, 'shuffle', {
@@ -272,7 +352,7 @@ Object.defineProperty(Array.prototype, 'shuffle', {
 /**
  * Group array elements by a key returned from predicate.
  * @param {(item: T, index: number) => string | number} predicate - key selector
- * @returns {Record<string, T[]>} groups keyed by predicate
+ * @return {Record<string, T[]>} groups keyed by predicate
  */
 Object.defineProperty(Array.prototype, 'groupBy', {
     value: function (predicate) {
@@ -291,10 +371,30 @@ Object.defineProperty(Array.prototype, 'groupBy', {
     enumerable: false
 });
 /**
+ * Splits the array into chunks of given size.
+ * @param {number} size - Size of each chunk (must be > 0).
+ * @return {T[][]} An array of chunks (arrays) each of length <= size.
+ * @throws Error if size <= 0.
+ */
+Object.defineProperty(Array.prototype, 'chunk', {
+    value: function (size) {
+        if (size <= 0)
+            throw new Error("Chunk size must be greater than 0");
+        const chunks = [];
+        for (let i = 0; i < this.length; i += size) {
+            chunks.push(this.slice(i, i + size));
+        }
+        return chunks;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Return a single instance of each value that appears more than once.
  * Example: [1,1,1,1,2,2,3] -> [1,2]
  * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
- * @returns {T[]} array of one item per duplicated key
+ * @return {T[]} array of one item per duplicated key
  */
 Object.defineProperty(Array.prototype, 'getDuplicates', {
     value: function (predicate) {
@@ -328,7 +428,7 @@ Object.defineProperty(Array.prototype, 'getDuplicates', {
  * include each duplicate occurrence except the first one of each key).
  * Example: [1,1,1,1,2,2,3] -> [1,1,1,1,2,2]
  * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
- * @returns {T[]} array with all duplicate occurrences (predicate called once per element)
+ * @return {T[]} array with all duplicate occurrences (predicate called once per element)
  */
 Object.defineProperty(Array.prototype, 'getDuplicatesAll', {
     value: function (predicate) {
@@ -361,7 +461,7 @@ Object.defineProperty(Array.prototype, 'getDuplicatesAll', {
 /**
  * Return array with first occurrence of each key (keeps first item for each key).
  * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
- * @returns {T[]} array with unique items by key (first wins)
+ * @return {T[]} array with unique items by key (first wins)
  */
 Object.defineProperty(Array.prototype, 'removeDuplicates', {
     value: function (predicate) {
@@ -385,8 +485,8 @@ Object.defineProperty(Array.prototype, 'removeDuplicates', {
 });
 /**
  * Removes the element at the specified index.
- * @param index Index to remove
- * @returns New array with the element removed
+ * @param {number} indexToRemove Index to remove
+ * @return {T[]} New array with the element removed
  */
 Object.defineProperty(Array.prototype, 'removeIndex', {
     value: function (indexToRemove) {
@@ -401,8 +501,8 @@ Object.defineProperty(Array.prototype, 'removeIndex', {
 });
 /**
  * Removes one element matching the predicate.
- * @param predicate Function to determine which element to remove
- * @returns New array with the element removed
+ * @param {(item: T, index: number) => boolean} predicate Function to determine which element to remove
+ * @return {T[]} New array with the element removed
  */
 Object.defineProperty(Array.prototype, 'removeOne', {
     value: function (predicate) {
@@ -414,8 +514,8 @@ Object.defineProperty(Array.prototype, 'removeOne', {
 });
 /**
  * Removes all elements matching the predicate.
- * @param predicate Function to determine which elements to remove
- * @returns New array with elements removed
+ * @param {(item: T, index: number) => boolean} predicate Function to determine which elements to remove
+ * @return {T[]} New array with elements removed
  */
 Object.defineProperty(Array.prototype, 'removeAll', {
     value: function (predicate) {
@@ -427,9 +527,9 @@ Object.defineProperty(Array.prototype, 'removeAll', {
 });
 /**
  * Returns the sum of elements according to an optional predicate.
- * @param predicate Optional function to extract numeric value from element
- * @param initialValue Optional initial value for sum (default 0)
- * @returns Sum of elements
+ * @param {(item: T, index: number) => number} predicate Optional function to extract numeric value from element
+ * @param {number} initialValue Optional initial value for sum (default 0)
+ * @return {number} Sum of elements
  */
 Object.defineProperty(Array.prototype, 'sum', {
     value: function (predicate, initialValue = 0) {
@@ -448,8 +548,8 @@ Object.defineProperty(Array.prototype, 'sum', {
 });
 /**
  * Returns the element with the maximum value according to an optional predicate.
- * @param predicate Optional function to extract numeric value from element
- * @returns Element with maximum value, or undefined if array is empty
+ * @param {(item: T, index: number) => number} predicate Optional function to extract numeric value from element
+ * @return {T | undefined} Element with maximum value, or undefined if array is empty
  */
 Object.defineProperty(Array.prototype, 'max', {
     value: function (predicate) {
@@ -477,8 +577,8 @@ Object.defineProperty(Array.prototype, 'max', {
 });
 /**
  * Returns the element with the minimum value according to an optional predicate.
- * @param predicate Optional function to extract numeric value from element
- * @returns Element with minimum value, or undefined if array is empty
+ * @param {(item: T, index: number) => number} predicate Optional function to extract numeric value from element
+ * @return {T | undefined} Element with minimum value, or undefined if array is empty
  */
 Object.defineProperty(Array.prototype, 'min', {
     value: function (predicate) {
@@ -504,12 +604,32 @@ Object.defineProperty(Array.prototype, 'min', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns the average of elements, optionally using a selector predicate.
+ * @param {(item: T, index: number) => number} predicate Optional function to extract numeric value from element.
+ * @return {number | undefined} The average value or undefined if the array is empty.
+ * @throws Error if no predicate provided and array elements are not numbers.
+ */
+Object.defineProperty(Array.prototype, 'average', {
+    value: function (predicate) {
+        if (this.isEmpty()) {
+            console.warn("average() called on an empty array");
+            return undefined;
+        }
+        if (!predicate && typeof this[0] !== 'number')
+            throw new Error("If no predicate provided. Array must be of type number[] but was " + typeof this[0] + "");
+        return this.sum(predicate) / this.length;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 //#endregion
 //#region Date ------------------------------------------------------------------------------------
 // Static ---------------------------------------
 /**
  * Returns the Unix timestamp (in seconds).
- * @returns Number of seconds since Unix epoch (January 1, 1970 UTC)
+ * @return {number} Number of seconds since Unix epoch (January 1, 1970 UTC)
  */
 Date.nowUnixTime = function () {
     return Math.trunc(Date.now() / 1000);
@@ -517,7 +637,7 @@ Date.nowUnixTime = function () {
 /**
  * Converts a Unix timestamp (seconds) to a Date.
  * @param {number} unixTime - Timestamp in seconds.
- * @returns {Date} Date object for the given Unix time.
+ * @return {Date} Date object for the given Unix time.
  */
 Date.fromUnixTime = function (unixTime) {
     return new Date(unixTime * 1000);
@@ -527,57 +647,31 @@ Date.fromUnixTime = function (unixTime) {
  * Positive if `b` is after `a`, negative if `b` is before `a`.
  * Ignores days and times; only year and month fields are used.
  *
- * @param a The starting date.
- * @param b The ending date.
- * @returns The signed number of months between `a` and `b`.
+ * @param {Date} a The starting date.
+ * @param {Date} b The ending date.
+ * @return {number} The signed number of months between `a` and `b`.
  *
  * @example
  * Date.monthsBetween(new Date(2025, 1, 25), new Date(2025, 2, 1)); // → 1
  * Date.monthsBetween(new Date(2025, 6, 10), new Date(2025, 4, 5)); // → -2
  */
 Date.monthsBetween = function (a, b) {
-    const years = b.getFullYear() - a.getFullYear();
-    const months = b.getMonth() - a.getMonth();
+    if (!(a instanceof Date) && typeof a !== 'number')
+        throw new Error(`a must be Date or number. Was ${typeof a}`);
+    if (!(b instanceof Date) && typeof b !== 'number')
+        throw new Error(`b must be Date or number. Was ${typeof b}`);
+    const aDate = a instanceof Date ? a : new Date(a);
+    const bDate = b instanceof Date ? b : new Date(b);
+    const years = bDate.getFullYear() - aDate.getFullYear();
+    const months = bDate.getMonth() - aDate.getMonth();
     return years * 12 + months;
 };
 // Instance -------------------------------------
-/**
- * Returns the Unix timestamp (in seconds) for this Date.
- * @returns Number of seconds since Unix epoch (January 1, 1970 UTC)
- */
-Object.defineProperty(Date.prototype, 'getUnixTime', {
-    value: function () {
-        return Math.trunc(this.getTime() / 1000);
-    },
-    writable: false,
-    configurable: false,
-    enumerable: false
-});
-/**
- * Calculates the number of whole months between this date and another date.
- * Positive if the other date is in the future, negative if it is in the past.
- * Day and time components are ignored; only year and month differences are considered.
- *
- * @param other The target date to compare with.
- * @returns The signed number of months from this date until the given date.
- *
- * @example
- * new Date(2025, 1, 25).monthsUntil(new Date(2025, 2, 1)); // → 1
- * new Date(2025, 6, 10).monthsUntil(new Date(2025, 4, 5)); // → -2
- */
-Object.defineProperty(Date.prototype, 'monthsUntil', {
-    value: function (other) {
-        return Date.monthsBetween(this, other);
-    },
-    writable: false,
-    configurable: false,
-    enumerable: false
-});
-// AddTime ---
+// Time change ---
 /**
  * Adds the specified number of milliseconds to the date and returns a new Date instance.
- * @param milliseconds - Number of milliseconds to add.
- * @returns A new Date instance with the milliseconds added.
+ * @param {number} milliseconds - Number of milliseconds to add.
+ * @return {Date} A new Date instance with the milliseconds added.
  */
 Object.defineProperty(Date.prototype, 'addMillis', {
     value: function (milliseconds) {
@@ -589,8 +683,8 @@ Object.defineProperty(Date.prototype, 'addMillis', {
 });
 /**
  * Adds the specified number of seconds to the date and returns a new Date instance.
- * @param seconds - Number of seconds to add.
- * @returns A new Date instance with the seconds added.
+ * @param {number} seconds - Number of seconds to add.
+ * @return {Date} A new Date instance with the seconds added.
  */
 Object.defineProperty(Date.prototype, 'addSeconds', {
     value: function (seconds) {
@@ -602,8 +696,8 @@ Object.defineProperty(Date.prototype, 'addSeconds', {
 });
 /**
  * Adds the specified number of minutes to the date and returns a new Date instance.
- * @param minutes - Number of minutes to add.
- * @returns A new Date instance with the minutes added.
+ * @param {number} minutes - Number of minutes to add.
+ * @return {Date} A new Date instance with the minutes added.
  */
 Object.defineProperty(Date.prototype, 'addMinutes', {
     value: function (minutes) {
@@ -615,8 +709,8 @@ Object.defineProperty(Date.prototype, 'addMinutes', {
 });
 /**
  * Adds the specified number of hours to the date and returns a new Date instance.
- * @param hours - Number of hours to add.
- * @returns A new Date instance with the hours added.
+ * @param {number} hours - Number of hours to add.
+ * @return {Date} A new Date instance with the hours added.
  */
 Object.defineProperty(Date.prototype, 'addHours', {
     value: function (hours) {
@@ -628,8 +722,8 @@ Object.defineProperty(Date.prototype, 'addHours', {
 });
 /**
  * Adds the specified number of days to the date and returns a new Date instance.
- * @param days - Number of days to add.
- * @returns A new Date instance with the days added.
+ * @param {number} days - Number of days to add.
+ * @return {Date} A new Date instance with the days added.
  */
 Object.defineProperty(Date.prototype, 'addDays', {
     value: function (days) {
@@ -641,8 +735,8 @@ Object.defineProperty(Date.prototype, 'addDays', {
 });
 /**
  * Adds the specified number of weeks to the date and returns a new Date instance.
- * @param weeks - Number of weeks to add.
- * @returns A new Date instance with the weeks added.
+ * @param {number} weeks - Number of weeks to add.
+ * @return {Date} A new Date instance with the weeks added.
  */
 Object.defineProperty(Date.prototype, 'addWeeks', {
     value: function (weeks) {
@@ -654,8 +748,8 @@ Object.defineProperty(Date.prototype, 'addWeeks', {
 });
 /**
  * Adds the specified number of months to the date and returns a new Date instance.
- * @param months - Number of months to add.
- * @returns A new Date instance with the months added.
+ * @param {number} months - Number of months to add.
+ * @return {Date} A new Date instance with the months added.
  */
 Object.defineProperty(Date.prototype, 'addMonths', {
     value: function (months) {
@@ -669,8 +763,8 @@ Object.defineProperty(Date.prototype, 'addMonths', {
 });
 /**
  * Adds the specified number of years to the date and returns a new Date instance.
- * @param years - Number of years to add.
- * @returns A new Date instance with the years added.
+ * @param {number} years - Number of years to add.
+ * @return {Date} A new Date instance with the years added.
  */
 Object.defineProperty(Date.prototype, 'addYears', {
     value: function (years) {
@@ -684,7 +778,7 @@ Object.defineProperty(Date.prototype, 'addYears', {
 });
 /**
  * Returns a new Date representing the first hour of the day at 00:00:00.
- * @returns A new Date at the start of the day.
+ * @return {Date} A new Date at the start of the day.
  */
 Object.defineProperty(Date.prototype, 'startOfDay', {
     value: function () {
@@ -696,8 +790,8 @@ Object.defineProperty(Date.prototype, 'startOfDay', {
 });
 /**
  * Returns a new Date representing the first day of the week at 00:00:00.
- * @param weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @returns A new Date at the start of the week.
+ * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @return {Date} A new Date at the start of the week.
  */
 Object.defineProperty(Date.prototype, 'startOfWeek', {
     value: function (weekStartsOnMonday = false) {
@@ -712,7 +806,7 @@ Object.defineProperty(Date.prototype, 'startOfWeek', {
 });
 /**
  * Returns a new Date representing the first day of the month at 00:00:00.
- * @returns A new Date at the start of the month.
+ * @return {Date} A new Date at the start of the month.
  */
 Object.defineProperty(Date.prototype, 'startOfMonth', {
     value: function () {
@@ -724,7 +818,7 @@ Object.defineProperty(Date.prototype, 'startOfMonth', {
 });
 /**
  * Returns a new Date representing January 1st of the year at 00:00:00.
- * @returns A new Date at the start of the year.
+ * @return {Date} A new Date at the start of the year.
  */
 Object.defineProperty(Date.prototype, 'startOfYear', {
     value: function () {
@@ -736,7 +830,7 @@ Object.defineProperty(Date.prototype, 'startOfYear', {
 });
 /**
  * Returns a new Date representing the last hour of the day at 23:59:59.999.
- * @returns A new Date at the end of the day.
+ * @return {Date} A new Date at the end of the day.
  */
 Object.defineProperty(Date.prototype, 'endOfDay', {
     value: function () {
@@ -748,8 +842,8 @@ Object.defineProperty(Date.prototype, 'endOfDay', {
 });
 /**
  * Returns a new Date representing the last day of the week at 23:59:59.999.
- * @param weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @returns A new Date at the end of the week.
+ * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @return {Date} A new Date at the end of the week.
  */
 Object.defineProperty(Date.prototype, 'endOfWeek', {
     value: function (weekStartsOnMonday = false) {
@@ -761,7 +855,7 @@ Object.defineProperty(Date.prototype, 'endOfWeek', {
 });
 /**
  * Returns a new Date representing the last day of the month at 23:59:59.999.
- * @returns A new Date at the end of the month.
+ * @return {Date} A new Date at the end of the month.
  */
 Object.defineProperty(Date.prototype, 'endOfMonth', {
     value: function () {
@@ -773,7 +867,7 @@ Object.defineProperty(Date.prototype, 'endOfMonth', {
 });
 /**
  * Returns a new Date representing December 31st of the year at 23:59:59.999.
- * @returns A new Date at the end of the year.
+ * @return {Date} A new Date at the end of the year.
  */
 Object.defineProperty(Date.prototype, 'endOfYear', {
     value: function () {
@@ -783,10 +877,100 @@ Object.defineProperty(Date.prototype, 'endOfYear', {
     configurable: false,
     enumerable: false
 });
-// To X format ---
+// Format ---
+/**
+ * Formats a Date instance into a custom string pattern with locale support.
+ *
+ * Supported tokens:
+ *  - YYYY : full year
+ *  - MM   : month number (01–12)
+ *  - DD   : day of month (01–31)
+ *  - HH   : hours (00–23)
+ *  - mm   : minutes (00–59)
+ *  - ss   : seconds (00–59)
+ *  - MMM  : short month name (localized)
+ *  - MMMM : full month name (localized)
+ *  - ddd  : short weekday name (localized)
+ *  - dddd : full weekday name (localized)
+ *  - z    : short timezone name (e.g. "CET")
+ *  - zz   : long timezone name  (e.g. "Central European Standard Time")
+ *  - Z    : numeric offset from UTC (e.g. "+01:00")
+ *
+ * @param {string} pattern Format pattern string
+ * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
+ */
+Object.defineProperty(Date.prototype, 'format', {
+    value: function (pattern, lang = 'en') {
+        const pad = (n, size = 2) => String(n).padStart(size, '0');
+        const locale = lang || 'es';
+        const needed = {
+            YYYY: pattern.includes('YYYY'),
+            MM: pattern.includes('MM'),
+            DD: pattern.includes('DD'),
+            HH: pattern.includes('HH'),
+            mm: pattern.includes('mm'),
+            ss: pattern.includes('ss'),
+            MMMM: pattern.includes('MMMM'),
+            MMM: pattern.includes('MMM'),
+            dddd: pattern.includes('dddd'),
+            ddd: pattern.includes('ddd'),
+            z: pattern.includes('z'),
+            zz: pattern.includes('zz'),
+            Z: pattern.includes('Z'),
+        };
+        const rep = {};
+        // Numeric
+        if (needed.YYYY)
+            rep['YYYY'] = String(this.getFullYear());
+        if (needed.MM)
+            rep['MM'] = pad(this.getMonth() + 1);
+        if (needed.DD)
+            rep['DD'] = pad(this.getDate());
+        if (needed.HH)
+            rep['HH'] = pad(this.getHours());
+        if (needed.mm)
+            rep['mm'] = pad(this.getMinutes());
+        if (needed.ss)
+            rep['ss'] = pad(this.getSeconds());
+        // Month names
+        if (needed.MMMM)
+            rep['MMMM'] = new Intl.DateTimeFormat(locale, { month: 'long' }).format(this);
+        if (needed.MMM)
+            rep['MMM'] = new Intl.DateTimeFormat(locale, { month: 'short' }).format(this);
+        // Weekday names
+        if (needed.dddd)
+            rep['dddd'] = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(this);
+        if (needed.ddd)
+            rep['ddd'] = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(this);
+        // Timezone names
+        if (needed.z || needed.zz) {
+            const formatShort = new Intl.DateTimeFormat(locale, { timeZoneName: 'short' });
+            const formatLong = new Intl.DateTimeFormat(locale, { timeZoneName: 'long' });
+            if (needed.z) {
+                rep['z'] = formatShort.formatToParts(this)
+                    .find(p => p.type === 'timeZoneName')?.value || '';
+            }
+            if (needed.zz) {
+                rep['zz'] = formatLong.formatToParts(this)
+                    .find(p => p.type === 'timeZoneName')?.value || '';
+            }
+        }
+        // Numeric timezone offset
+        if (needed.Z) {
+            const offsetMin = -this.getTimezoneOffset();
+            const sign = offsetMin >= 0 ? '+' : '-';
+            const abs = Math.abs(offsetMin);
+            rep['Z'] = `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
+        }
+        return pattern.replace(/YYYY|MM|DD|HH|mm|ss|MMMM|MMM|dddd|ddd|zz|z|Z/g, t => rep[t]);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 /**
  * Returns the date formatted as YYYY-MM-DD.
- * @returns A string representing the date in YYYY-MM-DD format.
+ * @return {string} A string representing the date in YYYY-MM-DD format.
  */
 Object.defineProperty(Date.prototype, 'toDayKey', {
     value: function () {
@@ -801,7 +985,7 @@ Object.defineProperty(Date.prototype, 'toDayKey', {
 });
 /**
  * Returns the month and year formatted as YYYY-MM.
- * @returns A string representing the month in YYYY-MM format.
+ * @return {string} A string representing the month in YYYY-MM format.
  */
 Object.defineProperty(Date.prototype, 'toMonthKey', {
     value: function () {
@@ -813,7 +997,7 @@ Object.defineProperty(Date.prototype, 'toMonthKey', {
 });
 /**
  * Returns the date formatted for input[type="date"] value.
- * @returns A string in YYYY-MM-DD format.
+ * @return {string} A string in YYYY-MM-DD format.
  */
 Object.defineProperty(Date.prototype, 'toInputDateValue', {
     value: function () {
@@ -828,7 +1012,7 @@ Object.defineProperty(Date.prototype, 'toInputDateValue', {
 });
 /**
  * Returns the date formatted for input[type="datetime-local"] value.
- * @returns A string in YYYY-MM-DDTHH:MM format.
+ * @return {string} A string in YYYY-MM-DDTHH:MM format.
  */
 Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValue', {
     value: function () {
@@ -846,7 +1030,7 @@ Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValue', {
 // Comparation ---
 /**
  * Checks if the date is in the past compared to now.
- * @returns True if the date is earlier than the current time, false otherwise.
+ * @return {boolean} True if the date is earlier than the current time, false otherwise.
  */
 Object.defineProperty(Date.prototype, 'isPast', {
     value: function () {
@@ -858,7 +1042,7 @@ Object.defineProperty(Date.prototype, 'isPast', {
 });
 /**
  * Checks if the date is in the future compared to now.
- * @returns True if the date is later than the current time, false otherwise.
+ * @return {boolean} True if the date is later than the current time, false otherwise.
  */
 Object.defineProperty(Date.prototype, 'isFuture', {
     value: function () {
@@ -870,13 +1054,14 @@ Object.defineProperty(Date.prototype, 'isFuture', {
 });
 /**
  * Checks if two dates are on the same day.
- * @param other - The date to compare against.
- * @returns True if both dates share the same year, month, and day; otherwise false.
+ * @param {Date | number} other - The date to compare against.
+ * @return {boolean} True if both dates share the same year, month, and day; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameDay', {
     value: function (other) {
-        const otherDate = typeof other == 'number'
-            ? new Date(other) : new Date();
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
         return this.getFullYear() === otherDate.getFullYear()
             && this.getMonth() === otherDate.getMonth()
             && this.getDate() === otherDate.getDate();
@@ -887,14 +1072,15 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
 });
 /**
  * Checks if two dates are on the same week.
- * @param other - The date to compare against.
- * @param weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @returns True if both dates are in the same week; otherwise false.
+ * @param {Date | number} other - The date to compare against.
+ * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @return {boolean} True if both dates are in the same week; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameWeek', {
     value: function (other, weekStartsOnMonday = false) {
-        const otherDate = typeof other == 'number'
-            ? new Date(other) : new Date();
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
         return this.startOfWeek(weekStartsOnMonday).getTime()
             == otherDate.startOfWeek(weekStartsOnMonday).getTime();
     },
@@ -904,13 +1090,14 @@ Object.defineProperty(Date.prototype, 'isSameWeek', {
 });
 /**
  * Checks if two dates are on the same month.
- * @param other - The date to compare against.
- * @returns True if both dates share the same year and month; otherwise false.
+ * @param {Date | number} other - The date to compare against.
+ * @return {boolean} True if both dates share the same year and month; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameMonth', {
     value: function (other) {
-        const otherDate = typeof other == 'number'
-            ? new Date(other) : new Date();
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
         return this.getFullYear() === otherDate.getFullYear()
             && this.getMonth() === otherDate.getMonth();
     },
@@ -920,14 +1107,75 @@ Object.defineProperty(Date.prototype, 'isSameMonth', {
 });
 /**
  * Checks if two dates are on the same year.
- * @param other - The date to compare against.
- * @returns True if both dates share the same year; otherwise false.
+ * @param {Date | number} other - The date to compare against.
+ * @return {boolean} True if both dates share the same year; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameYear', {
     value: function (other) {
-        const otherDate = typeof other == 'number'
-            ? new Date(other) : new Date();
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
         return this.getFullYear() === otherDate.getFullYear();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Indicates whether the date falls on a weekend (Saturday or Sunday).
+ * @return {boolean} true if the day is Saturday (6) or Sunday (0), otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isWeekend', {
+    value: function () {
+        return this.getDay() == 0 || this.getDay() == 6;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+// Misc ---
+/**
+ * Returns the Unix timestamp (in seconds) for this Date.
+ * @return {number} Number of seconds since Unix epoch (January 1, 1970 UTC)
+ */
+Object.defineProperty(Date.prototype, 'getUnixTime', {
+    value: function () {
+        return Math.trunc(this.getTime() / 1000);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Calculates the number of whole months between this date and another date.
+ * Positive if the other date is in the future, negative if it is in the past.
+ * Day and time components are ignored; only year and month differences are considered.
+ *
+ * @param {Date} other The target date to compare with.
+ * @return {number} The signed number of months from this date until the given date.
+ *
+ * @example
+ * new Date(2025, 1, 25).monthsUntil(new Date(2025, 2, 1)); // → 1
+ * new Date(2025, 6, 10).monthsUntil(new Date(2025, 4, 5)); // → -2
+ */
+Object.defineProperty(Date.prototype, 'monthsUntil', {
+    value: function (other) {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
+        return Date.monthsBetween(this, otherDate);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns the number of days in the current month of the date.
+ * @return {number} The total number of days in the month.
+ */
+Object.defineProperty(Date.prototype, 'daysInMonth', {
+    value: function () {
+        return this.endOfMonth().getDate();
     },
     writable: false,
     configurable: false,
