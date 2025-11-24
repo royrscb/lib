@@ -144,8 +144,7 @@ export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
     ];
 }
 
-function Popup(props:
-    PopupProps &
+function Popup(props: PopupProps &
     {
         close: () => void;
     }
