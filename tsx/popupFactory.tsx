@@ -9,7 +9,7 @@ import { createRoot, type Root } from 'react-dom/client';
 export type PopupPortalHandler = [
     portal: React.JSX.Element,
     pop: () => void,
-    close: () => void,
+    close: () => Promise<void>,
 ];
 
 // Props ---
