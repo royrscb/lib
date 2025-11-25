@@ -265,11 +265,11 @@ Object.defineProperty(Array.prototype, 'last', {
 
 /**
  * Returns a new array skipping the first `count` elements.
- * @param {number} count - Number of elements to skip from the start.
+ * @param {number} count - Number of elements to skip from the start. Default 1.
  * @return {T[]} A new array without the first `count` elements.
  */
 Object.defineProperty(Array.prototype, 'skip', {
-    value: function<T>(this: T[], count: number): T[] {
+    value: function<T>(this: T[], count: number = 1): T[] {
         return this.slice(count);
     },
     writable: false,
@@ -278,11 +278,11 @@ Object.defineProperty(Array.prototype, 'skip', {
 });
 /**
  * Returns a new array skipping the last `count` elements.
- * @param {number} count - Number of elements to skip from the end.
+ * @param {number} count - Number of elements to skip from the end. Default 1.
  * @return {T[]} A new array without the last `count` elements.
  */
 Object.defineProperty(Array.prototype, 'skipLast', {
-    value: function<T>(this: T[], count: number): T[] {
+    value: function<T>(this: T[], count: number = 1): T[] {
         return this.slice(0, -count);
     },
     writable: false,
@@ -292,11 +292,11 @@ Object.defineProperty(Array.prototype, 'skipLast', {
 
 /**
  * Returns a new array containing the first `count` elements.
- * @param {number} count - Number of elements to take from the start.
+ * @param {number} count - Number of elements to take from the start. Default 1.
  * @return {T[]} A new array with the first `count` elements.
  */
 Object.defineProperty(Array.prototype, 'take', {
-    value: function<T>(this: T[], count: number): T[] {
+    value: function<T>(this: T[], count: number = 1): T[] {
         return this.slice(0, count);
     },
     writable: false,
@@ -305,11 +305,11 @@ Object.defineProperty(Array.prototype, 'take', {
 });
 /**
  * Returns a new array containing the last `count` elements.
- * @param {number} count - Number of elements to take from the end.
+ * @param {number} count - Number of elements to take from the end. Default 1.
  * @return {T[]} A new array with the last `count` elements.
  */
 Object.defineProperty(Array.prototype, 'takeLast', {
-    value: function<T>(this: T[], count: number): T[] {
+    value: function<T>(this: T[], count: number = 1): T[] {
         return this.slice(-count);
     },
     writable: false,

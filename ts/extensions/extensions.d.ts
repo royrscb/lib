@@ -114,29 +114,29 @@ declare global {
 
         /**
          * Returns a new array skipping the first `count` elements.
-         * @param {number} count - Number of elements to skip from the start.
+         * @param {number} count - Number of elements to skip from the start. Default 1.
          * @return {T[]} A new array without the first `count` elements.
          */
-        skip<T>(this: T[], count: number): T[];
+        skip<T>(this: T[], count: number = 1): T[];
         /**
          * Returns a new array skipping the last `count` elements.
-         * @param {number} count - Number of elements to skip from the end.
+         * @param {number} count - Number of elements to skip from the end. Default 1.
          * @return {T[]} A new array without the last `count` elements.
          */
-        skipLast<T>(this: T[], count: number): T[];
+        skipLast<T>(this: T[], count: number = 1): T[];
 
         /**
          * Returns a new array containing the first `count` elements.
-         * @param {number} count - Number of elements to take from the start.
+         * @param {number} count - Number of elements to take from the start. Default 1.
          * @return {T[]} A new array with the first `count` elements.
          */
-        take<T>(this: T[], count: number): T[];
+        take<T>(this: T[], count: number = 1): T[];
         /**
          * Returns a new array containing the last `count` elements.
-         * @param {number} count - Number of elements to take from the end.
+         * @param {number} count - Number of elements to take from the end. Default 1.
          * @return {T[]} A new array with the last `count` elements.
          */
-        takeLast<T>(this: T[], count: number): T[];
+        takeLast<T>(this: T[], count: number = 1): T[];
 
         /**
          * Sorts the array in place based on the value returned by the provided predicate.
