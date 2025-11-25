@@ -176,8 +176,10 @@ input:focus, textarea:focus, select:focus {
 .underline      { text-decoration: underline; }
 .thin           { font-weight: 100; }
 .light          { font-weight: 300; }
+.fw-normal      { font-weight: 400; }
+.medium         { font-weight: 500; }
 .semi-bold      { font-weight: 600; }
-.bold           { font-weight: bold; }
+.bold           { font-weight: 700; }
 
 /* Colors --- */
 .color-white     { color: white; }     .bg-color-white     { background-color: white; }
