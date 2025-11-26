@@ -899,6 +899,7 @@ Object.defineProperty(Date.prototype, 'endOfYear', {
  *
  * @param {string} pattern Format pattern string
  * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
+ * @return {string} The formatted date.
  */
 Object.defineProperty(Date.prototype, 'format', {
     value: function (pattern, lang = 'en') {

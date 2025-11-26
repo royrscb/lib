@@ -276,93 +276,93 @@ declare global {
          * @param {number} milliseconds - Number of milliseconds to add.
          * @return {Date} A new Date instance with the milliseconds added.
          */
-        addMillis(this: Date, milliseconds: number);
+        addMillis(this: Date, milliseconds: number): Date;
         /**
          * Adds the specified number of seconds to the date and returns a new Date instance.
          * @param {number} seconds - Number of seconds to add.
          * @return {Date} A new Date instance with the seconds added.
          */
-        addSeconds(this: Date, seconds: number);
+        addSeconds(this: Date, seconds: number): Date;
         /**
          * Adds the specified number of minutes to the date and returns a new Date instance.
          * @param {number} minutes - Number of minutes to add.
          * @return {Date} A new Date instance with the minutes added.
          */
-        addMinutes(this: Date, minutes: number);
+        addMinutes(this: Date, minutes: number): Date;
         /**
          * Adds the specified number of hours to the date and returns a new Date instance.
          * @param {number} hours - Number of hours to add.
          * @return {Date} A new Date instance with the hours added.
          */
-        addHours(this: Date, hours: number);
+        addHours(this: Date, hours: number): Date;
         /**
          * Adds the specified number of days to the date and returns a new Date instance.
          * @param {number} days - Number of days to add.
          * @return {Date} A new Date instance with the days added.
          */
-        addDays(this: Date, days: number);
+        addDays(this: Date, days: number): Date;
         /**
          * Adds the specified number of weeks to the date and returns a new Date instance.
          * @param {number} weeks - Number of weeks to add.
          * @return {Date} A new Date instance with the weeks added.
          */
-        addWeeks(this: Date, weeks: number);
+        addWeeks(this: Date, weeks: number): Date;
         /**
          * Adds the specified number of months to the date and returns a new Date instance.
          * @param {number} months - Number of months to add.
          * @return {Date} A new Date instance with the months added.
          */
-        addMonths(this: Date, months: number);
+        addMonths(this: Date, months: number): Date;
         /**
          * Adds the specified number of years to the date and returns a new Date instance.
          * @param {number} years - Number of years to add.
          * @return {Date} A new Date instance with the years added.
          */
-        addYears(this: Date, years: number);
+        addYears(this: Date, years: number): Date;
 
         /**
          * Returns a new Date representing the first hour of the day at 00:00:00.
          * @return {Date} A new Date at the start of the day.
          */
-        startOfDay(this: Date);
+        startOfDay(this: Date): Date;
         /**
          * Returns a new Date representing the first day of the week at 00:00:00.
          * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
          * @return {Date} A new Date at the start of the week.
          */
-        startOfWeek(this: Date, weekStartsOnMonday: boolean = false);
+        startOfWeek(this: Date, weekStartsOnMonday: boolean = false): Date;
         /**
          * Returns a new Date representing the first day of the month at 00:00:00.
          * @return {Date} A new Date at the start of the month.
          */
-        startOfMonth(this: Date);
+        startOfMonth(this: Date): Date;
         /**
          * Returns a new Date representing January 1st of the year at 00:00:00.
          * @return {Date} A new Date at the start of the year.
          */
-        startOfYear(this: Date);
+        startOfYear(this: Date): Date;
 
         /**
          * Returns a new Date representing the last hour of the day at 23:59:59.999.
          * @return {Date} A new Date at the end of the day.
          */
-        endOfDay(this: Date);
+        endOfDay(this: Date): Date;
         /**
          * Returns a new Date representing the last day of the week at 23:59:59.999.
          * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
          * @return {Date} A new Date at the end of the week.
          */
-        endOfWeek(this: Date, weekStartsOnMonday: boolean = false);
+        endOfWeek(this: Date, weekStartsOnMonday: boolean = false): Date;
         /**
          * Returns a new Date representing the last day of the month at 23:59:59.999.
          * @return {Date} A new Date at the end of the month.
          */
-        endOfMonth(this: Date);
+        endOfMonth(this: Date): Date;
         /**
          * Returns a new Date representing December 31st of the year at 23:59:59.999.
          * @return {Date} A new Date at the end of the year.
          */
-        endOfYear(this: Date);
+        endOfYear(this: Date): Date;
 
         // Format ---
 
@@ -387,30 +387,31 @@ declare global {
          *
          * @param {string} pattern Format pattern string
          * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
+         * @return {string} The formatted date.
          */
-        format(this: Date, pattern: string, lang: string = 'en');
+        format(this: Date, pattern: string, lang: string = 'en'): string;
 
         /**
          * Returns the date formatted as YYYY-MM-DD.
          * @return {string} A string representing the date in YYYY-MM-DD format.
          */
-        toDayKey(this: Date);
+        toDayKey(this: Date): string;
         /**
          * Returns the month and year formatted as YYYY-MM.
          * @return {string} A string representing the month in YYYY-MM format.
          */
-        toMonthKey(this: Date);
+        toMonthKey(this: Date): string;
 
         /**
          * Returns the date formatted for input[type="date"] value.
          * @return {string} A string in YYYY-MM-DD format.
          */
-        toInputDateValue(this: Date);
+        toInputDateValue(this: Date): string;
         /**
          * Returns the date formatted for input[type="datetime-local"] value.
          * @return {string} A string in YYYY-MM-DDTHH:MM format.
          */
-        toInputDatetimeLocalValue(this: Date);
+        toInputDatetimeLocalValue(this: Date): string;
 
         // Comparation ---
 
@@ -418,44 +419,44 @@ declare global {
          * Checks if the date is in the past compared to now.
          * @return {boolean} True if the date is earlier than the current time, false otherwise.
          */
-        isPast(this: Date);
+        isPast(this: Date): boolean;
         /**
          * Checks if the date is in the future compared to now.
          * @return {boolean} True if the date is later than the current time, false otherwise.
          */
-        isFuture(this: Date);
+        isFuture(this: Date): boolean;
 
         /**
          * Checks if two dates are on the same day.
          * @param {Date | number} other - The date to compare against.
          * @return {boolean} True if both dates share the same year, month, and day; otherwise false.
          */
-        isSameDay(this: Date, other: Date | number);
+        isSameDay(this: Date, other: Date | number): boolean;
         /**
          * Checks if two dates are on the same week.
          * @param {Date | number} other - The date to compare against.
          * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
          * @return {boolean} True if both dates are in the same week; otherwise false.
          */
-        isSameWeek(this: Date, other: Date | number, weekStartsOnMonday: boolean = false);
+        isSameWeek(this: Date, other: Date | number, weekStartsOnMonday: boolean = false): boolean;
         /**
          * Checks if two dates are on the same month.
          * @param {Date | number} other - The date to compare against.
          * @return {boolean} True if both dates share the same year and month; otherwise false.
          */
-        isSameMonth(this: Date, other: Date | number);
+        isSameMonth(this: Date, other: Date | number): boolean;
         /**
          * Checks if two dates are on the same year.
          * @param {Date | number} other - The date to compare against.
          * @return {boolean} True if both dates share the same year; otherwise false.
          */
-        isSameYear(this: Date, other: Date | number);
+        isSameYear(this: Date, other: Date | number): boolean;
 
         /**
          * Indicates whether the date falls on a weekend (Saturday or Sunday).
          * @return {boolean} true if the day is Saturday (6) or Sunday (0), otherwise false.
          */
-        isWeekend(this: Date);
+        isWeekend(this: Date): boolean;
 
         // Misc ---
 
@@ -463,7 +464,7 @@ declare global {
          * Returns the Unix timestamp (in seconds) for this Date.
          * @return {number} Number of seconds since Unix epoch (January 1, 1970 UTC)
          */
-        getUnixTime(this: Date);
+        getUnixTime(this: Date): number;
 
         /**
          * Calculates the number of whole months between this date and another date.
@@ -477,12 +478,12 @@ declare global {
          * new Date(2025, 1, 25).monthsUntil(new Date(2025, 2, 1)); // → 1
          * new Date(2025, 6, 10).monthsUntil(new Date(2025, 4, 5)); // → -2
          */
-        monthsUntil(this: Date, other: Date | number);
+        monthsUntil(this: Date, other: Date | number): number;
 
         /**
          * Returns the number of days in the current month of the date.
          * @return {number} The total number of days in the month.
          */
-        daysInMonth(this: Date);
+        daysInMonth(this: Date): number;
     }
 }
