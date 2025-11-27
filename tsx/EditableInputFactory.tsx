@@ -45,6 +45,38 @@ export function TextInput(props: BaseEditableInputProps & {
     </div>;
 }
 
+export function TextAreaInput(props: BaseEditableInputProps & {
+    defaultValue?: string;
+    rows?: number;
+    placeHolder?: string;
+    // eslint-disable-next-line no-unused-vars
+    onSave: (text: string) => Promise<boolean | void> | boolean | void;
+}): React.JSX.Element {
+    const [showInput, setShowInput] = React.useState<boolean>(false);
+    const [text, setText] = React.useState<string>(props.defaultValue ?? '');
+
+    return <div style={props.style} className={clsx('editable-date-input', props.className)}>
+        {!showInput
+            ? <PreviewButton {...props.button} showInput={() => setShowInput(true)}/>
+            : <EditableInputWrapper
+                inputTitle={props.inputTitle}
+                onSave={() => props.onSave(text)}
+                hideInput={() => setShowInput(false)}
+                resetDefault={() => setText(props.defaultValue ?? '')}
+            >
+                <textarea
+                    autoFocus
+                    className='w-100 fs-20 mt-3'
+                    value={text}
+                    onChange={e => setText(e.currentTarget.value)}
+                    rows={props.rows ?? 3}
+                    placeholder={props.placeHolder}
+                />
+            </EditableInputWrapper>
+        }
+    </div>;
+}
+
 export function DateInput(props: BaseEditableInputProps & {
     defaultValue?: Date;
     min?: Date;
@@ -89,6 +121,18 @@ function PreviewButton(props: EditableInputButtonProps & {
     </button>;
 }
 
+// TODO: this must be nullable:
+// <div>
+//     <input
+//         id='setNull'
+//         type='checkbox'
+//         checked={isNull}
+//         onChange={e => setIsNull(e.currentTarget.checked)}
+//     />
+//     <label htmlFor='setNull' className='fs-smaller-2'>
+//         null
+//     </label>
+// </div>
 function EditableInputWrapper(props: {
     inputTitle?: React.ReactNode;
     onSave: () => Promise<boolean | void> | boolean | void;
@@ -110,18 +154,18 @@ function EditableInputWrapper(props: {
     return <div className='bg-color-lightgray p-5 br-10'>
         {props.inputTitle}
         {props.children}
-        <div className='d-flex'>
+        <div className='d-flex mt-5'>
             <button
                 onClick={onClose}
                 className='flex-center center-v w-50 mr-3 bg-color-red'
-                style={{padding: '2px 0'}}
+                style={{padding: '2px 0', marginBottom: 0}}
             >
                 <icons.Cross color='white'/>
             </button>
             <button
                 onClick={onSave}
                 className='flex-center center-v w-50 ml-3 bg-color-limegreen'
-                style={{padding: '2px 0'}}
+                style={{padding: '2px 0', marginBottom: 0}}
             >
                 <icons.Check color='white'/>
             </button>
