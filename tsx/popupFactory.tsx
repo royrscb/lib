@@ -67,8 +67,7 @@ export function createPopup(props: PopupProps | void): PopupHandler {
 
         container = document.createElement('div');
 
-        container.classList.add('popup');
-        getPopupHolder()?.classList.add('fade-in');
+        container.classList.add('popup', 'fade-in');
         props?.className?.split(' ').forEach(c => c && container?.classList.add(c));
         setTimeout(() => getPopupHolder()?.classList.remove('fade-in'), 400);
 
@@ -82,16 +81,16 @@ export function createPopup(props: PopupProps | void): PopupHandler {
         const closeBackRes = (await props?.onClose?.(container)) ?? true;
 
         if (closeBackRes !== false) {
+            if (container) {
+                container.classList.add('fade-out-fast');
+                await new Promise(resolve => setTimeout(() => resolve(true), 200));
+                container.remove();
+                container = null;
+            }
+
             if (root) {
                 try { root.unmount(); } catch { /* empty */ }
                 root = null;
-            }
-
-            if (container) {
-                getPopupHolder()?.classList.add('fade-out-fast');
-                await new Promise(resolve => setTimeout(resolve, 200));
-                container.remove();
-                container = null;
             }
         }
     }
@@ -144,7 +143,8 @@ export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
     ];
 }
 
-function Popup(props: PopupProps &
+function Popup(props:
+    PopupProps &
     {
         close: () => void;
     }
