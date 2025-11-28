@@ -69,11 +69,6 @@ export function DateInput(props: BaseEditableInputProps<Date> & {
     min?: Date;
     max?: Date;
 }): React.JSX.Element {
-    function getValidInputDateValueOrEmpty(date: Date | undefined | null): string {
-        return date && !isNaN(date.getTime())
-            ? date.toInputDateValue() : '';
-    }
-
     return <EditableInputWrapper<Date>
         {...props}
         renderInput={(date, setDate) =>
@@ -82,9 +77,9 @@ export function DateInput(props: BaseEditableInputProps<Date> & {
                 required={props.requireValue}
                 className='w-100'
                 type='date'
-                value={getValidInputDateValueOrEmpty(date)}
-                min={getValidInputDateValueOrEmpty(props.min)}
-                max={getValidInputDateValueOrEmpty(props.max)}
+                value={date?.toInputDateValue()}
+                min={props.min?.toInputDateValue()}
+                max={props.max?.toInputDateValue()}
                 onChange={e => setDate(new Date(e.currentTarget.value))}
             />
         }
