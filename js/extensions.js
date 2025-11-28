@@ -975,6 +975,8 @@ Object.defineProperty(Date.prototype, 'toMonthKey', {
  */
 Object.defineProperty(Date.prototype, 'toInputDateValue', {
     value: function () {
+        if (isNaN(this.getTime()))
+            return '';
         const year = this.getFullYear();
         const month = String(this.getMonth() + 1).padStart(2, '0');
         const day = String(this.getDate()).padStart(2, '0');
@@ -990,6 +992,8 @@ Object.defineProperty(Date.prototype, 'toInputDateValue', {
  */
 Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValue', {
     value: function () {
+        if (isNaN(this.getTime()))
+            return '';
         const year = this.getFullYear();
         const month = String(this.getMonth() + 1).padStart(2, '0');
         const day = String(this.getDate()).padStart(2, '0');
