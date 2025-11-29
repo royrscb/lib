@@ -1164,9 +1164,9 @@ Object.defineProperty(Date.prototype, 'daysInMonth', {
 // Static ---------------------------------------
 /**
  * Pauses execution for the specified number of milliseconds.
- * @param {number} ms - Time to wait in milliseconds.
+ * @param {number} ms - Time to wait in milliseconds. Default 0.
  * @return {Promise<void>} A promise that resolves after the delay.
  */
-Promise['sleep'] = function (ms) {
+Promise['sleep'] = function (ms = 0) {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
