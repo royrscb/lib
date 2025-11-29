@@ -631,7 +631,7 @@ Object.defineProperty(Array.prototype, 'average', {
  * Returns the Unix timestamp (in seconds).
  * @return {number} Number of seconds since Unix epoch (January 1, 1970 UTC)
  */
-Date.nowUnixTime = function () {
+Date['nowUnixTime'] = function () {
     return Math.trunc(Date.now() / 1000);
 };
 /**
@@ -639,7 +639,7 @@ Date.nowUnixTime = function () {
  * @param {number} unixTime - Timestamp in seconds.
  * @return {Date} Date object for the given Unix time.
  */
-Date.fromUnixTime = function (unixTime) {
+Date['fromUnixTime'] = function (unixTime) {
     return new Date(unixTime * 1000);
 };
 /**
@@ -655,7 +655,7 @@ Date.fromUnixTime = function (unixTime) {
  * Date.monthsBetween(new Date(2025, 1, 25), new Date(2025, 2, 1)); // → 1
  * Date.monthsBetween(new Date(2025, 6, 10), new Date(2025, 4, 5)); // → -2
  */
-Date.monthsBetween = function (a, b) {
+Date['monthsBetween'] = function (a, b) {
     if (!(a instanceof Date) && typeof a !== 'number')
         throw new Error(`a must be Date or number. Was ${typeof a}`);
     if (!(b instanceof Date) && typeof b !== 'number')
@@ -1160,3 +1160,13 @@ Object.defineProperty(Date.prototype, 'daysInMonth', {
     enumerable: false
 });
 //#endregion
+//#region Promise ---------------------------------------------------------------------------------
+// Static ---------------------------------------
+/**
+ * Pauses execution for the specified number of milliseconds.
+ * @param {number} ms - Time to wait in milliseconds.
+ * @return {Promise<void>} A promise that resolves after the delay.
+ */
+Promise['sleep'] = function (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+};
