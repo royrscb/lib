@@ -486,4 +486,13 @@ declare global {
          */
         daysInMonth(this: Date): number;
     }
+
+    interface PromiseConstructor {
+        /**
+         * Pauses execution for the specified number of milliseconds.
+         * @param {number} ms - Time to wait in milliseconds.
+         * @return {Promise<void>} A promise that resolves after the delay.
+         */
+        sleep(ms: number): Promise<void>;
+    }
 }
