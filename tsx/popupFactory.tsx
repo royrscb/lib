@@ -12,7 +12,7 @@ const closeAnimationDuration = 200;
 // Types ---
 export type PopupPortalHandler = [
     portal: React.JSX.Element,
-    pop: () => void,
+    pop: () => Promise<void>,
     close: () => Promise<void>,
 ];
 
@@ -77,7 +77,7 @@ export function createPopup(props: PopupProps | void): PopupHandler {
         root = createRoot(container);
         root.render(<Popup {...props} close={close} />);
 
-        await Promise.sleep();
+        await Promise.sleep(1);
         getPopupHolder()?.classList.add('fade-in-slow');
         container?.classList.remove('hidden');
         await Promise.sleep(popAnimationDuration);
@@ -125,7 +125,7 @@ export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
         await new Promise(resolve => setTimeout(resolve, popAnimationDuration));
     }
 
-    async function close() {
+    async function close(): Promise<void> {
         const closeBackRes = (await props?.onClose?.(popupRef.current)) ?? true;
         if (closeBackRes !== false) {
             getPopupHolder()?.classList.add('fade-out-fast');
