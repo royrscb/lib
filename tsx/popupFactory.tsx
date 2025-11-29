@@ -5,6 +5,10 @@ import { createRoot, type Root } from 'react-dom/client';
 
 //#region Popup
 
+// Const ---
+const popAnimationDuration = 400;
+const closeAnimationDuration = 200;
+
 // Types ---
 export type PopupPortalHandler = [
     portal: React.JSX.Element,
@@ -50,8 +54,8 @@ export interface PopupProps {
 }
 
 export interface PopupHandler {
-    pop: () => void;
-    close: () => void;
+    pop: () => Promise<void>;
+    close: () => Promise<void>;
     getPopup: () => HTMLDivElement | null;
 }
 
@@ -62,28 +66,34 @@ export function createPopup(props: PopupProps | void): PopupHandler {
 
     const getPopupHolder = () => container?.querySelector('.popup-holder');
 
-    function pop() {
+    async function pop(): Promise<void> {
         if (container) return;
 
         container = document.createElement('div');
+        console.log(container?.querySelector('.popup-holder'));
 
-        container.classList.add('popup', 'fade-in');
+        container.classList.add('popup', 'hidden');
         props?.className?.split(' ').forEach(c => c && container?.classList.add(c));
-        setTimeout(() => getPopupHolder()?.classList.remove('fade-in'), 400);
 
         document.body.appendChild(container);
 
         root = createRoot(container);
         root.render(<Popup {...props} close={close} />);
+
+        await Promise.sleep();
+        getPopupHolder()?.classList.add('fade-in-slow');
+        container?.classList.remove('hidden');
+        await Promise.sleep(popAnimationDuration);
+        getPopupHolder()?.classList.remove('fade-in-slow');
     }
 
-    async function close() {
+    async function close(): Promise<void> {
         const closeBackRes = (await props?.onClose?.(container)) ?? true;
 
         if (closeBackRes !== false) {
             if (container) {
-                container.classList.add('fade-out-fast');
-                await new Promise(resolve => setTimeout(() => resolve(true), 200));
+                getPopupHolder()?.classList.add('fade-out-fast');
+                await new Promise(resolve => setTimeout(() => resolve(true), closeAnimationDuration));
                 container.remove();
                 container = null;
             }
@@ -100,9 +110,6 @@ export function createPopup(props: PopupProps | void): PopupHandler {
 
 // Use popup declarative ---
 export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
-    const popAnimationDuration = 400;
-    const closeAnimationDuration = 200;
-
     const [isPortalVisible, setIsPortalVisible] = React.useState<boolean>(false);
     const popupRef = React.useRef<HTMLDivElement | null>(null);
     const getPopupHolder = () => popupRef.current?.querySelector('.popup-holder');
@@ -143,12 +150,7 @@ export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
     ];
 }
 
-function Popup(props:
-    PopupProps &
-    {
-        close: () => void;
-    }
-) : JSX.Element {
+function Popup(props: PopupProps & { close: () => void; }) : JSX.Element {
     const thisPopupRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
