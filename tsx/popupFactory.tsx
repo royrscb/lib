@@ -70,11 +70,8 @@ export function createPopup(props: PopupProps | void): PopupHandler {
         if (container) return;
 
         container = document.createElement('div');
-        console.log(container?.querySelector('.popup-holder'));
-
         container.classList.add('popup', 'hidden');
         props?.className?.split(' ').forEach(c => c && container?.classList.add(c));
-
         document.body.appendChild(container);
 
         root = createRoot(container);
