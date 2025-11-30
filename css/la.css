@@ -58,6 +58,10 @@ select {
     box-sizing: border-box;
 }
 
+input[type='checkbox'] + label {
+    cursor: pointer;
+}
+
 /* scroll ----------------*/
 ::-webkit-scrollbar {
     display: none; 
