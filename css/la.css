@@ -58,7 +58,7 @@ select {
     box-sizing: border-box;
 }
 
-input[type='checkbox'] + label {
+label[for] {
     cursor: pointer;
 }
 
