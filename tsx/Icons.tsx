@@ -1,23 +1,15 @@
 import React from 'react';
-import clsx from 'clsx';
 
-const IcoSize = {
-    'small-3': 12,
-    'small-2': 18,
-    'small': 22,
-    'normal': 24,
-    'big': 26,
-    'big-2': 30,
-    'big-3': 36,
-    'big-4': 44,
-    'big-5': 54,
-} as const;
-type IcoSizeKey = keyof typeof IcoSize;
+const DefaultWidthHeightSizePx = 24;
+const DefaultColor = 'black';
 
 interface IcoProps {
     className?: string;
-    size?: IcoSizeKey;
+    size?: number;
     color?: string;
+    strokeColor?: string;
+    strokeWidth?: number;
+
     onClick?: React.MouseEventHandler<SVGSVGElement>;
 }
 
@@ -54,8 +46,8 @@ export function Cross(props: IcoProps): React.JSX.Element {
 
 export function Add(props: IcoProps): React.JSX.Element {
     return <Ico
-        viewBox='0 -960 960 960'
-        d='M427-427H180.78v-106H427v-246.22h106V-533h246.22v106H533v246.22H427V-427Z'
+        viewBox='0 0 24 24'
+        d="M10.25 3a1.75 1.75 0 0 1 3.5 0v7.25H21a1.75 1.75 0 0 1 0 3.5h-7.25V21a1.75 1.75 0 0 1-3.5 0v-7.25H3a1.75 1.75 0 0 1 0-3.5h7.25V3z"
         {...props}
     />;
 }
@@ -64,14 +56,16 @@ function Ico(props: IcoProps & {
     viewBox: string;
     d: string;
 }): React.JSX.Element {
-    const size = IcoSize[props.size ?? 'normal'];
-
     return <svg
-        className={clsx(props.className)}
+        className={props.className}
         viewBox={props.viewBox}
-        width={size}
-        height={size}
-        fill={props.color ?? 'black'}
+        width={props.size ?? DefaultWidthHeightSizePx}
+        height={props.size ?? DefaultWidthHeightSizePx}
+
+        fill={props.color ?? DefaultColor}
+        stroke={props.strokeColor ?? props.color ?? DefaultColor}
+        strokeWidth={props.strokeWidth ?? 0}
+
         onClick={props.onClick}
     >
         <path d={props.d}/>
