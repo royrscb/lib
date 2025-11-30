@@ -11,8 +11,9 @@ const closeAnimationDuration = 200;
 
 // Types ---
 export type PopupPortalHandler = [
-    portal: React.JSX.Element,
-    pop: () => Promise<void>,
+    popupPortal: React.JSX.Element,
+    // eslint-disable-next-line no-unused-vars
+    pop: (propsOverride?: PopupProps | null) => Promise<void>,
     close: () => Promise<void>,
 ];
 
@@ -54,20 +55,24 @@ export interface PopupProps {
 }
 
 export interface PopupHandler {
-    pop: () => Promise<void>;
+    // eslint-disable-next-line no-unused-vars
+    pop: (propsOverride?: PopupProps | null) => Promise<void>,
     close: () => Promise<void>;
     getPopup: () => HTMLDivElement | null;
 }
 
 // Create popup imperative ---
-export function createPopup(props: PopupProps | void): PopupHandler {
+export function createPopup(initialProps?: PopupProps): PopupHandler {
+    let props = initialProps;
     let container: HTMLDivElement | null = null;
     let root: Root | null = null;
 
     const getPopupHolder = () => container?.querySelector('.popup-holder');
 
-    async function pop(): Promise<void> {
-        if (container) return;
+    async function pop(propsOverride?: PopupProps | null): Promise<void> {
+        if (propsOverride !== undefined) {
+            props = propsOverride === null ? undefined : propsOverride;
+        }
 
         container = document.createElement('div');
         container.classList.add('popup', 'hidden');
@@ -106,7 +111,8 @@ export function createPopup(props: PopupProps | void): PopupHandler {
 }
 
 // Use popup declarative ---
-export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
+export function usePortalPopup(initialProps?: PopupProps): PopupPortalHandler {
+    const [props, setProps] = React.useState<PopupProps | undefined>(initialProps);
     const [isPortalVisible, setIsPortalVisible] = React.useState<boolean>(false);
     const popupRef = React.useRef<HTMLDivElement | null>(null);
     const getPopupHolder = () => popupRef.current?.querySelector('.popup-holder');
@@ -120,7 +126,10 @@ export function usePortalPopup(props: PopupProps | void): PopupPortalHandler {
         }
     }, [isPortalVisible]);
 
-    async function pop(): Promise<void> {
+    async function pop(propsOverride?: PopupProps | null): Promise<void> {
+        if (propsOverride !== undefined) {
+            setProps(propsOverride === null ? undefined : propsOverride);
+        }
         setIsPortalVisible(true);
         await new Promise(resolve => setTimeout(resolve, popAnimationDuration));
     }
