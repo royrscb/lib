@@ -305,7 +305,7 @@ export enum ToastPosition {
     Bottom = 'bottom'
 }
 export const Toaster = {
-    pop: (text?: ReactNode, type?: ToastType, position: ToastPosition = ToastPosition.Bottom, duration_ms: number = 3000) : HTMLDivElement => {
+    pop: (text?: ReactNode, type?: ToastType, position: ToastPosition = ToastPosition.Bottom, duration: number = 3000) : HTMLDivElement => {
         const container = document.createElement('div');
         const root = createRoot(container);
         const toastElement = <p className='toast-text' onClick={destroy}>
@@ -323,7 +323,7 @@ export const Toaster = {
             container?.remove();
         }
 
-        setTimeout(destroy, duration_ms);
+        setTimeout(destroy, duration);
 
         return container;
     },
@@ -334,71 +334,71 @@ export const Toaster = {
 };
 
 // eslint-disable-next-line no-unused-vars
-function Toaster_popError(text?: ReactNode, position?: ToastPosition, duration_ms?: number): HTMLDivElement;
+function Toaster_popError(text?: ReactNode, position?: ToastPosition, duration?: number): HTMLDivElement;
 // eslint-disable-next-line no-redeclare, no-unused-vars
-function Toaster_popError(text?: ReactNode, duration_ms?: number, position?: ToastPosition): HTMLDivElement;
+function Toaster_popError(text?: ReactNode, duration?: number, position?: ToastPosition): HTMLDivElement;
 // eslint-disable-next-line no-redeclare
 function Toaster_popError(text?: ReactNode, arg1?: ToastPosition | number, arg2?: number | ToastPosition): HTMLDivElement {
     let position: ToastPosition | undefined = ToastPosition.Bottom;
-    let duration_ms: number | undefined = 5000;
+    let duration: number | undefined = 5000;
 
     [arg1, arg2].forEach(arg => {
-        if (typeof arg === 'number') duration_ms = arg;
+        if (typeof arg === 'number') duration = arg;
         else if (typeof arg === 'string') position = arg as ToastPosition;
     });
 
-    return Toaster.pop(text, ToastType.Error, position, duration_ms);
+    return Toaster.pop(text, ToastType.Error, position, duration);
 }
 
 // eslint-disable-next-line no-unused-vars
-function Toaster_popWarning(text?: ReactNode, position?: ToastPosition, duration_ms?: number): HTMLDivElement;
+function Toaster_popWarning(text?: ReactNode, position?: ToastPosition, duration?: number): HTMLDivElement;
 // eslint-disable-next-line no-redeclare, no-unused-vars
-function Toaster_popWarning(text?: ReactNode, duration_ms?: number, position?: ToastPosition): HTMLDivElement;
+function Toaster_popWarning(text?: ReactNode, duration?: number, position?: ToastPosition): HTMLDivElement;
 // eslint-disable-next-line no-redeclare
 function Toaster_popWarning(text?: ReactNode, arg1?: ToastPosition | number, arg2?: number | ToastPosition): HTMLDivElement {
     let position: ToastPosition | undefined = ToastPosition.Bottom;
-    let duration_ms: number | undefined = 4000;
+    let duration: number | undefined = 4000;
 
     [arg1, arg2].forEach(arg => {
-        if (typeof arg === 'number') duration_ms = arg;
+        if (typeof arg === 'number') duration = arg;
         else if (typeof arg === 'string') position = arg as ToastPosition;
     });
 
-    return Toaster.pop(text, ToastType.Warning, position, duration_ms);
+    return Toaster.pop(text, ToastType.Warning, position, duration);
 }
 
 // eslint-disable-next-line no-unused-vars
-function Toaster_popInfo(text?: ReactNode, position?: ToastPosition, duration_ms?: number): HTMLDivElement;
+function Toaster_popInfo(text?: ReactNode, position?: ToastPosition, duration?: number): HTMLDivElement;
 // eslint-disable-next-line no-redeclare, no-unused-vars
-function Toaster_popInfo(text?: ReactNode, duration_ms?: number, position?: ToastPosition): HTMLDivElement;
+function Toaster_popInfo(text?: ReactNode, duration?: number, position?: ToastPosition): HTMLDivElement;
 // eslint-disable-next-line no-redeclare
 function Toaster_popInfo(text?: ReactNode, arg1?: ToastPosition | number, arg2?: number | ToastPosition): HTMLDivElement {
     let position: ToastPosition | undefined = ToastPosition.Bottom;
-    let duration_ms: number | undefined = 3000;
+    let duration: number | undefined = 3000;
 
     [arg1, arg2].forEach(arg => {
-        if (typeof arg === 'number') duration_ms = arg;
+        if (typeof arg === 'number') duration = arg;
         else if (typeof arg === 'string') position = arg as ToastPosition;
     });
 
-    return Toaster.pop(text, ToastType.Info, position, duration_ms);
+    return Toaster.pop(text, ToastType.Info, position, duration);
 }
 
 // eslint-disable-next-line no-unused-vars
-function Toaster_popSuccess(text?: ReactNode, position?: ToastPosition, duration_ms?: number): HTMLDivElement;
+function Toaster_popSuccess(text?: ReactNode, position?: ToastPosition, duration?: number): HTMLDivElement;
 // eslint-disable-next-line no-redeclare, no-unused-vars
-function Toaster_popSuccess(text?: ReactNode, duration_ms?: number, position?: ToastPosition): HTMLDivElement;
+function Toaster_popSuccess(text?: ReactNode, duration?: number, position?: ToastPosition): HTMLDivElement;
 // eslint-disable-next-line no-redeclare
 function Toaster_popSuccess(text?: ReactNode, arg1?: ToastPosition | number, arg2?: number | ToastPosition): HTMLDivElement {
     let position: ToastPosition | undefined = ToastPosition.Bottom;
-    let duration_ms: number | undefined = 3000;
+    let duration: number | undefined = 3000;
 
     [arg1, arg2].forEach(arg => {
-        if (typeof arg === 'number') duration_ms = arg;
+        if (typeof arg === 'number') duration = arg;
         else if (typeof arg === 'string') position = arg as ToastPosition;
     });
 
-    return Toaster.pop(text, ToastType.Success, position, duration_ms);
+    return Toaster.pop(text, ToastType.Success, position, duration);
 }
 
 //#endregion
