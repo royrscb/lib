@@ -165,8 +165,8 @@ function Popup(props: PopupProps & { close: () => void; }) : JSX.Element {
             document.addEventListener('keydown', onKey);
             return () => document.removeEventListener('keydown', onKey);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        return undefined;
+    }, [props]);
 
     const titleAndSubtitle = <div className='title-and-subtitle'>
         {props.title !== null && <div className={clsx('title', props.titleClassName)}>{props.title ?? 'Popup'}</div>}
@@ -250,7 +250,7 @@ function PopupButton(props:
         const onClickParams: PopupButtonOnClickParams = {
             event: e,
             button: thisButtonRef.current,
-            popup: props.popupRef.current
+            popup: props.popupRef.current,
         };
 
         const form = props.formRef?.current;
@@ -330,7 +330,7 @@ export const Toaster = {
     popError: Toaster_popError,
     popWarning: Toaster_popWarning,
     popInfo: Toaster_popInfo,
-    popSuccess: Toaster_popSuccess
+    popSuccess: Toaster_popSuccess,
 };
 
 // eslint-disable-next-line no-unused-vars

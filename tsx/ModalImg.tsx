@@ -60,7 +60,7 @@ function PopupImg(props: ModalImgProps & {close: () => void}): JSX.Element {
 
     React.useEffect(() => {
         const img = imgRef.current;
-        if (!img) return;
+        if (!img) return undefined;
 
         function resize() {
             if (!img) return;

@@ -21,7 +21,6 @@ export interface EditableInputButtonProps {
     style?: React.CSSProperties;
     content: React.ReactNode;
 }
-
 // Inputs ---------------------------------------
 
 export function TextInput(props: BaseEditableInputProps<string> & {
@@ -110,14 +109,19 @@ function EditableInputWrapper<T>(props: BaseEditableInputProps<T> & {
     const [showEditor, setShowEditor] = React.useState<boolean>(props.showEditor || needUrgentValue);
     const [value, setValue] = React.useState<T | null>(props.initialValue);
     const [isNullChecked, setIsNullChecked] = React.useState<boolean>(props.initialValue === null);
+    const [isSaving, setIsSaving] = React.useState(false);
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+
+        setIsSaving(true);
 
         const res = await props.onSave(value);
         if (res !== false) {
             setShowEditor(false);
         }
+
+        setIsSaving(false);
     }
     function onClose() {
         setShowEditor(false);
@@ -145,6 +149,7 @@ function EditableInputWrapper<T>(props: BaseEditableInputProps<T> & {
                 <CloseSaveButtons
                     onClose={needUrgentValue ? undefined : onClose}
                     onSave={() => formRef.current!.requestSubmit()}
+                    isSaving={isSaving}
                 />
             </div>
         }
@@ -155,9 +160,9 @@ function SetNullInput<T>(props: BaseEditableInputProps<T> & {
     isChecked: boolean;
     setIsChecked: React.Dispatch<React.SetStateAction<boolean>>;
     setValue: React.Dispatch<React.SetStateAction<T | null>>;
-}): React.JSX.Element | undefined {
+}): React.JSX.Element | null {
     if (props.requireValue || !props.nullable)
-        return;
+        return null;
 
     const setNullInputId = `setNull-${generateUuid()}`;
 
@@ -181,10 +186,11 @@ function SetNullInput<T>(props: BaseEditableInputProps<T> & {
 function CloseSaveButtons(props: {
     onClose?: () => void;
     onSave: () => void;
+    isSaving: boolean;
 }): React.JSX.Element {
     return <div className='close-save-buttons d-flex mt-5'>
         <button
-            disabled={!props.onClose}
+            disabled={!props.onClose || props.isSaving}
             onClick={props.onClose}
             className='flex-center center-v w-50 mr-3 bg-color-red'
             style={{padding: '2px 0', marginBottom: 0}}
@@ -192,6 +198,7 @@ function CloseSaveButtons(props: {
             <icons.Cross color='white'/>
         </button>
         <button
+            disabled={props.isSaving}
             onClick={props.onSave}
             type='submit'
             className='flex-center center-v w-50 ml-3 bg-color-limegreen'
