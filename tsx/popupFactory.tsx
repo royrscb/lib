@@ -10,11 +10,12 @@ const popAnimationDuration = 400;
 const closeAnimationDuration = 200;
 
 // Types ---
+export type ClosePopup = () => Promise<void>;
 export type PopupPortalHandler = [
     popupPortal: React.JSX.Element,
     // eslint-disable-next-line no-unused-vars
     pop: (propsOverride?: PopupProps | null) => Promise<void>,
-    close: () => Promise<void>,
+    close: ClosePopup,
 ];
 
 // Props ---
@@ -44,6 +45,9 @@ export interface PopupProps {
     fixedTitleAndSubtitle?: boolean;
     content?: ReactNode;
 
+    // eslint-disable-next-line no-unused-vars
+    onOpen?: (close: ClosePopup) => void;
+
     preventClose?: boolean;
     preventCloseOnEscapeButtonPressed?: boolean;
     preventCloseOnClickOutside?: boolean;
@@ -57,7 +61,7 @@ export interface PopupProps {
 export interface PopupHandler {
     // eslint-disable-next-line no-unused-vars
     pop: (propsOverride?: PopupProps | null) => Promise<void>,
-    close: () => Promise<void>;
+    close: ClosePopup;
     getPopup: () => HTMLDivElement | null;
 }
 
@@ -87,6 +91,8 @@ export function createPopup(initialProps?: PopupProps): PopupHandler {
         container?.classList.remove('hidden');
         await Promise.sleep(popAnimationDuration);
         getPopupHolder()?.classList.remove('fade-in-slow');
+
+        props?.onOpen?.(close);
     }
 
     async function close(): Promise<void> {
@@ -131,7 +137,9 @@ export function usePortalPopup(initialProps?: PopupProps): PopupPortalHandler {
             setProps(propsOverride === null ? undefined : propsOverride);
         }
         setIsPortalVisible(true);
-        await new Promise(resolve => setTimeout(resolve, popAnimationDuration));
+        await Promise.sleep(popAnimationDuration);
+
+        props?.onOpen?.(close);
     }
 
     async function close(): Promise<void> {
