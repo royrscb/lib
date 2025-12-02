@@ -219,9 +219,6 @@ Object.defineProperty(Array.prototype, 'any', {
  */
 Object.defineProperty(Array.prototype, 'first', {
     value: function () {
-        if (this.isEmpty()) {
-            console.warn("first() called on an empty array");
-        }
         return this[0];
     },
     writable: false,
@@ -234,9 +231,6 @@ Object.defineProperty(Array.prototype, 'first', {
  */
 Object.defineProperty(Array.prototype, 'last', {
     value: function () {
-        if (this.isEmpty()) {
-            console.warn("last() called on an empty array");
-        }
         return this[this.length - 1];
     },
     writable: false,
@@ -490,9 +484,6 @@ Object.defineProperty(Array.prototype, 'removeDuplicates', {
  */
 Object.defineProperty(Array.prototype, 'removeIndex', {
     value: function (indexToRemove) {
-        if (indexToRemove < 0 || this.length <= indexToRemove) {
-            console.warn(`IndexToRemove: [${indexToRemove}] out of range. Array has ${this.length} elements`);
-        }
         return this.filter((_, index) => index != indexToRemove);
     },
     writable: false,
@@ -553,10 +544,8 @@ Object.defineProperty(Array.prototype, 'sum', {
  */
 Object.defineProperty(Array.prototype, 'max', {
     value: function (predicate) {
-        if (this.isEmpty()) {
-            console.warn("max() called on an empty array");
+        if (this.isEmpty())
             return undefined;
-        }
         if (!predicate && typeof this[0] !== 'number')
             throw new Error("If no predicate provided. Array must be of type number[] but was " + typeof this[0] + "");
         const fn = predicate ?? ((item) => item);
@@ -582,10 +571,8 @@ Object.defineProperty(Array.prototype, 'max', {
  */
 Object.defineProperty(Array.prototype, 'min', {
     value: function (predicate) {
-        if (this.isEmpty()) {
-            console.warn("min() called on an empty array");
+        if (this.isEmpty())
             return undefined;
-        }
         if (!predicate && typeof this[0] !== 'number')
             throw new Error("If no predicate provided. Array must be of type number[] but was " + typeof this[0] + "");
         const fn = predicate ?? ((item) => item);
@@ -612,10 +599,8 @@ Object.defineProperty(Array.prototype, 'min', {
  */
 Object.defineProperty(Array.prototype, 'average', {
     value: function (predicate) {
-        if (this.isEmpty()) {
-            console.warn("average() called on an empty array");
+        if (this.isEmpty())
             return undefined;
-        }
         if (!predicate && typeof this[0] !== 'number')
             throw new Error("If no predicate provided. Array must be of type number[] but was " + typeof this[0] + "");
         return this.sum(predicate) / this.length;
