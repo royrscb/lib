@@ -1247,3 +1247,5 @@ Object.defineProperty(Date.prototype, 'daysInMonth', {
 Promise['sleep'] = function(ms: number = 0): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
+
+//#endregion
