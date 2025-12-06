@@ -125,17 +125,24 @@ label[for] {
 .p-50-0 { padding: 50px 0px; } .p-50-1 { padding: 50px 1px; } .p-50-2 { padding: 50px 2px; } .p-50-3 { padding: 50px 3px; } .p-50-4 { padding: 50px 4px; } .p-50-5 { padding: 50px 5px; } .p-50-10 { padding: 50px 10px; } .p-50-15 { padding: 50px 15px; } .p-50-20 { padding: 50px 20px; } .p-50-25 { padding: 50px 25px; } .p-50-50 { padding: 50px 50px; } .p-50-100 { padding: 50px 100px; }
 .p-100-0 { padding: 100px 0px; } .p-100-1 { padding: 100px 1px; } .p-100-2 { padding: 100px 2px; } .p-100-3 { padding: 100px 3px; } .p-100-4 { padding: 100px 4px; } .p-100-5 { padding: 100px 5px; } .p-100-10 { padding: 100px 10px; } .p-100-15 { padding: 100px 15px; } .p-100-20 { padding: 100px 20px; } .p-100-25 { padding: 100px 25px; } .p-100-50 { padding: 100px 50px; } .p-100-100 { padding: 100px 100px; }
 
+/* Position pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp */
+.p-relative { position: relative; }
+.p-absolute { position: absolute; }
+.p-fixed    { position: fixed; }
+.p-static   { position: static; }
+.p-sticky   { position: sticky; }
+
 /* Displays dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd */
-.start-text {  text-align: start; }
+.start-text  { text-align: start; }
 .center-text { text-align: center; }
-.end-text {    text-align: end; }
+.end-text    { text-align: end; }
 
 .d-inline { display: inline; }
-.d-block {  display: block; }
-.d-ib {     display: inline-block; }
+.d-block  { display: block; }
+.d-ib     { display: inline-block; }
+.d-flex   { display: flex; }
 
 /* Flex */
-.d-flex {    display: flex; }
 .flex-even { 
     display: flex; 
 
@@ -158,6 +165,7 @@ label[for] {
     display: flex; 
     flex-direction: column; 
 }
+.flex-1, .flex-one { flex: 1; }
 
 .center-v { 
     vertical-align: middle; 
