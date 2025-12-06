@@ -39,6 +39,7 @@ export interface PopupProps {
     holderClassName?: string;
     titleClassName?: string;
     containerClassName?: string;
+    buttonsClassname?: string;
 
     title?: ReactNode | null;
     subtitle?: ReactNode;
@@ -208,7 +209,7 @@ function Popup(props: PopupProps & { close: () => void; }) : JSX.Element {
 
                 {/* Ok and Cancel button */}
                 {(props.okButton || props.cancelButton) &&
-                    <div className='buttons'>
+                    <div className={clsx('buttons', props.buttonsClassname)}>
                         {props.cancelButton &&
                             <PopupButton
                                 {...props.cancelButton}
