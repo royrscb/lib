@@ -188,16 +188,16 @@ label[for] {
 .dont-break-text { white-space: nowrap; }
 .break-word      { overflow-wrap: break-word; }
 
-.non-decoration { text-decoration: none; }
-.italic         { font-style: italic; }
-.line-through   { text-decoration: line-through; }
-.underline      { text-decoration: underline; }
-.thin           { font-weight: 100; }
-.light          { font-weight: 300; }
-.fw-normal      { font-weight: 400; }
-.medium         { font-weight: 500; }
-.semi-bold      { font-weight: 600; }
-.bold           { font-weight: 700; }
+.no-decoration { text-decoration: none; }
+.italic        { font-style: italic; }
+.line-through  { text-decoration: line-through; }
+.underline     { text-decoration: underline; }
+.thin          { font-weight: 100; }
+.light         { font-weight: 300; }
+.fw-normal     { font-weight: 400; }
+.medium        { font-weight: 500; }
+.semi-bold     { font-weight: 600; }
+.bold          { font-weight: 700; }
 
 /* Colors --- */
 .color-transparent { color: transparent; } .bg-color-transparent { background-color: transparent; }
