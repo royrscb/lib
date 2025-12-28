@@ -1149,10 +1149,14 @@ Object.defineProperty(Date.prototype, 'daysInMonth', {
 // Static ---------------------------------------
 /**
  * Pauses execution for the specified number of milliseconds.
- * @param {number} ms - Time to wait in milliseconds. Default 0.
+ * @param {number} ms - Time to wait in milliseconds.
  * @return {Promise<void>} A promise that resolves after the delay.
+ *
+ * @throws Error if ms is not an integer biggeror equal to 0
  */
-Promise['sleep'] = function (ms = 0) {
+Promise['sleep'] = function (ms) {
+    if (!Number.isInteger(ms) || ms < 0)
+        throw new Error("Milliseconds must be an integer bigger or equal to 0");
     return new Promise(resolve => setTimeout(resolve, ms));
 };
 //#endregion

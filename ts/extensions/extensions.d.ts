@@ -490,9 +490,11 @@ declare global {
     interface PromiseConstructor {
         /**
          * Pauses execution for the specified number of milliseconds.
-         * @param {number} ms - Time to wait in milliseconds. Default 0.
+         * @param {number} ms - Time to wait in milliseconds.
          * @return {Promise<void>} A promise that resolves after the delay.
+         * 
+         * @throws Error if ms is not an integer biggeror equal to 0
          */
-        sleep(ms: number = 0): Promise<void>;
+        sleep(ms: number): Promise<void>;
     }
 }
