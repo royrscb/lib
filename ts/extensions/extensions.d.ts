@@ -492,7 +492,7 @@ declare global {
          * Pauses execution for the specified number of milliseconds.
          * @param {number} ms - Time to wait in milliseconds.
          * @return {Promise<void>} A promise that resolves after the delay.
-         * 
+         *
          * @throws Error if ms is not an integer biggeror equal to 0
          */
         sleep(ms: number): Promise<void>;
