@@ -212,6 +212,14 @@ declare global {
         removeAll<T>(this: T[], predicate: (item: T, index: number) => boolean): T[];
 
         /**
+         * Swaps two elements in the array by index.
+         * @param {number} indexA First index
+         * @param {number} indexB Second index
+         * @return {T[]} New array with the elements swapped
+         */
+        swapIndex<T>(this: T[], indexA: number, indexB: number): T[];
+
+        /**
          * Returns the sum of elements according to an optional predicate.
          * @param {(item: T, index: number) => number} predicate Optional function to extract numeric value from element
          * @param {number} initialValue Optional initial value for sum (default 0)

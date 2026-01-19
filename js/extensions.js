@@ -517,6 +517,27 @@ Object.defineProperty(Array.prototype, 'removeAll', {
     enumerable: false
 });
 /**
+ * Swaps two elements in the array by index.
+ * @param {number} indexA First index
+ * @param {number} indexB Second index
+ * @return {T[]} New array with the elements swapped
+ */
+Object.defineProperty(Array.prototype, 'swapIndex', {
+    value: function (indexA, indexB) {
+        const copy = this.slice();
+        if (indexA === indexB ||
+            indexA < 0 || indexB < 0 ||
+            indexA >= this.length || indexB >= this.length) {
+            return copy;
+        }
+        [copy[indexA], copy[indexB]] = [copy[indexB], copy[indexA]];
+        return copy;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns the sum of elements according to an optional predicate.
  * @param {(item: T, index: number) => number} predicate Optional function to extract numeric value from element
  * @param {number} initialValue Optional initial value for sum (default 0)
