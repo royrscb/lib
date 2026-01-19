@@ -41,7 +41,7 @@
 	function http_request(string $method, string $url, $data = null){
 
 		if($method != 'GET' && $method != 'POST' && $method != 'PUT' && $method != 'DELETE') {
-			throwException(500, 'http request method must be either GET or POST');
+			throwException(500, 'http request method must be either GET, POST, PUT or DELETE');
 		}
 
 		$ch = curl_init($url);
