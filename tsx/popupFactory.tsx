@@ -140,7 +140,7 @@ export function usePortalPopup(initialProps?: PopupProps): PopupPortalHandler {
         setIsPortalVisible(true);
         await Promise.sleep(popAnimationDuration);
 
-        props?.onOpen?.(close);
+        (propsOverride ?? props)?.onOpen?.(close);
     }
 
     async function close(): Promise<void> {
