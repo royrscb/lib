@@ -10,7 +10,7 @@ const popAnimationDuration = 400;
 const closeAnimationDuration = 200;
 
 // Types ---
-export type ClosePopup = () => void | Promise<void>;
+export type ClosePopup = () => Promise<void>;
 export type PopupPortalHandler = [
     popupPortal: React.JSX.Element,
     // eslint-disable-next-line no-unused-vars
