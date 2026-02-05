@@ -150,6 +150,17 @@ declare global {
          */
         sortBy<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): T[];
         /**
+         * Sorts the array in place based on the value returned by the provided predicate (descending).
+         * Special ordering rules:
+         * - `undefined` values come first.
+         * - `null` values come after `undefined`.
+         * - All other values are sorted normally (descending).
+         * @param {(item: T) => boolean | number | string | null | undefined} predicate
+         * @return {T[]} array sorted by predicate return value
+         * @note This mutates the array.
+        */
+        sortByDescending<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): T[];
+        /**
          * Shuffle the array in-place using Fisher–Yates.
          * @return {T[]} shuffled array
          * @note This mutates the array.

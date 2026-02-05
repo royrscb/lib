@@ -312,17 +312,20 @@ Object.defineProperty(Array.prototype, 'takeLast', {
 });
 
 /**
- * Sorts the array in place based on the value returned by the provided predicate.
+ * Sorts the array in place based on the value returned by the provided predicate (ascending).
  * Special ordering rules:
  * - `undefined` values come first.
  * - `null` values come after `undefined`.
  * - All other values are sorted normally (ascending).
- * @param {(item: T) => boolean | number | string | null | undefined} predicate A function that returns the value used for sorting each element.
+ * @param {(item: T) => boolean | number | string | null | undefined} predicate
  * @return {T[]} array sorted by predicate return value
  * @note This mutates the array.
  */
 Object.defineProperty(Array.prototype, 'sortBy', {
-    value: function<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): T[] {
+    value: function<T>(
+        this: T[],
+        predicate: (item: T) => boolean | number | string | null | undefined
+    ): T[] {
         return this.sort((a, b) => {
             const itemA = predicate(a);
             const itemB = predicate(b);
@@ -332,8 +335,44 @@ Object.defineProperty(Array.prototype, 'sortBy', {
             if (itemA === null && itemB !== null) return -1;
             if (itemB === null && itemA !== null) return 1;
 
-            return typeof itemA == 'string' && typeof itemB == 'string' ? itemA.localeCompare(itemB)
-                : (itemA as any) - (itemB as any);
+            if (typeof itemA == 'string' && typeof itemB == 'string')
+                return itemA.localeCompare(itemB);
+
+            return (itemA as any) - (itemB as any);
+        });
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Sorts the array in place based on the value returned by the provided predicate (descending).
+ * Special ordering rules:
+ * - `undefined` values come first.
+ * - `null` values come after `undefined`.
+ * - All other values are sorted normally (descending).
+ * @param {(item: T) => boolean | number | string | null | undefined} predicate
+ * @return {T[]} array sorted by predicate return value
+ * @note This mutates the array.
+ */
+Object.defineProperty(Array.prototype, 'sortByDescending', {
+    value: function<T>(
+        this: T[],
+        predicate: (item: T) => boolean | number | string | null | undefined
+    ): T[] {
+        return this.sort((a, b) => {
+            const itemA = predicate(a);
+            const itemB = predicate(b);
+
+            if (itemA === undefined && itemB !== undefined) return -1;
+            if (itemB === undefined && itemA !== undefined) return 1;
+            if (itemA === null && itemB !== null) return -1;
+            if (itemB === null && itemA !== null) return 1;
+
+            if (typeof itemA === 'string' && typeof itemB === 'string')
+                return itemB.localeCompare(itemA); // reversed
+
+            return (itemB as any) - (itemA as any); // reversed
         });
     },
     writable: false,
