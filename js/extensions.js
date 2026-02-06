@@ -238,6 +238,20 @@ Object.defineProperty(Array.prototype, 'last', {
     enumerable: false
 });
 /**
+ * Returns a shallow copy of the array.
+ * The original array is not modified.
+ * Elements are copied by reference (objects and arrays inside are NOT cloned).
+ * @return {T[]} A new array containing the same elements.
+ */
+Object.defineProperty(Array.prototype, 'copy', {
+    value: function () {
+        return this.slice();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new array skipping the first `count` elements.
  * @param {number} count - Number of elements to skip from the start. Default 1.
  * @return {T[]} A new array without the first `count` elements.
@@ -290,20 +304,22 @@ Object.defineProperty(Array.prototype, 'takeLast', {
     enumerable: false
 });
 /**
- * Sorts the array in place based on the value returned by the provided predicate (ascending).
- * Special ordering rules:
- * - `undefined` values come first.
- * - `null` values come after `undefined`.
- * - All other values are sorted normally (ascending).
- * @param {(item: T) => boolean | number | string | null | undefined} predicate
- * @return {T[]} array sorted by predicate return value
- * @note This mutates the array.
+ * Returns a new array sorted in ascending order by the value returned
+ * from an optional predicate.
+ * The original array is not modified (shallow copy).
+ *
+ * Ordering priority:
+ * `undefined` → first, `null` → after undefined, others → normal ascending.
+ *
+ * @param {(item: T) => boolean | number | string | null | undefined} [predicate]
+ * @return {T[]} A new sorted array.
  */
 Object.defineProperty(Array.prototype, 'sortBy', {
     value: function (predicate) {
-        return this.sort((a, b) => {
-            const itemA = predicate(a);
-            const itemB = predicate(b);
+        return this.copy().sort((a, b) => {
+            const fn = predicate ?? ((item) => item);
+            const itemA = fn(a);
+            const itemB = fn(b);
             if (itemA === undefined && itemB !== undefined)
                 return -1;
             if (itemB === undefined && itemA !== undefined)
@@ -322,20 +338,22 @@ Object.defineProperty(Array.prototype, 'sortBy', {
     enumerable: false
 });
 /**
- * Sorts the array in place based on the value returned by the provided predicate (descending).
- * Special ordering rules:
- * - `undefined` values come first.
- * - `null` values come after `undefined`.
- * - All other values are sorted normally (descending).
- * @param {(item: T) => boolean | number | string | null | undefined} predicate
- * @return {T[]} array sorted by predicate return value
- * @note This mutates the array.
+ * Returns a new array sorted in descending order by the value returned
+ * from an optional predicate.
+ * The original array is not modified (shallow copy).
+ *
+ * Ordering priority:
+ * `undefined` → first, `null` → after undefined, others → normal descending.
+ *
+ * @param {(item: T) => boolean | number | string | null | undefined} [predicate]
+ * @return {T[]} A new sorted array.
  */
 Object.defineProperty(Array.prototype, 'sortByDescending', {
     value: function (predicate) {
-        return this.sort((a, b) => {
-            const itemA = predicate(a);
-            const itemB = predicate(b);
+        return this.copy().sort((a, b) => {
+            const fn = predicate ?? ((item) => item);
+            const itemA = fn(a);
+            const itemB = fn(b);
             if (itemA === undefined && itemB !== undefined)
                 return -1;
             if (itemB === undefined && itemA !== undefined)
@@ -557,7 +575,7 @@ Object.defineProperty(Array.prototype, 'removeAll', {
  */
 Object.defineProperty(Array.prototype, 'swapIndex', {
     value: function (indexA, indexB) {
-        const copy = this.slice();
+        const copy = this.copy();
         if (indexA === indexB ||
             indexA < 0 || indexB < 0 ||
             indexA >= this.length || indexB >= this.length) {
