@@ -118,7 +118,7 @@ declare global {
          * Elements are copied by reference (objects and arrays inside are NOT cloned).
          * @return {T[]} A new array containing the same elements.
          */
-        copy<T>(this: T[]): T;
+        copy<T>(this: T[]): T[];
 
         /**
          * Returns a new array skipping the first `count` elements.
@@ -147,27 +147,29 @@ declare global {
         takeLast<T>(this: T[], count: number = 1): T[];
 
         /**
-         * Sorts the array in place based on the value returned by the provided predicate.
-         * Special ordering rules:
-         * - `undefined` values come first.
-         * - `null` values come after `undefined`.
-         * - All other values are sorted normally (ascending).
-         * @param {(item: T) => boolean | number | string | null | undefined} predicate A function that returns the value used for sorting each element.
-         * @return {T[]} array sorted by predicate return value
-         * @note This mutates the array.
+         * Returns a new array sorted in ascending order by the value returned
+         * from an optional predicate.
+         * The original array is not modified (shallow copy).
+         *
+         * Ordering priority:
+         * `undefined` → first, `null` → after undefined, others → normal ascending.
+         *
+         * @param {(item: T) => boolean | number | string | null | undefined} [predicate]
+         * @return {T[]} A new sorted array.
          */
-        sortBy<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): T[];
+        sortBy<T>(this: T[], predicate?: (item: T) => boolean | number | string | null | undefined): T[];
         /**
-         * Sorts the array in place based on the value returned by the provided predicate (descending).
-         * Special ordering rules:
-         * - `undefined` values come first.
-         * - `null` values come after `undefined`.
-         * - All other values are sorted normally (descending).
-         * @param {(item: T) => boolean | number | string | null | undefined} predicate
-         * @return {T[]} array sorted by predicate return value
-         * @note This mutates the array.
-        */
-        sortByDescending<T>(this: T[], predicate: (item: T) => boolean | number | string | null | undefined): T[];
+         * Returns a new array sorted in descending order by the value returned
+         * from an optional predicate.
+         * The original array is not modified (shallow copy).
+         *
+         * Ordering priority:
+         * `undefined` → first, `null` → after undefined, others → normal descending.
+         *
+         * @param {(item: T) => boolean | number | string | null | undefined} [predicate]
+         * @return {T[]} A new sorted array.
+         */
+        sortByDescending<T>(this: T[], predicate?: (item: T) => boolean | number | string | null | undefined): T[];
         /**
          * Shuffle the array in-place using Fisher–Yates.
          * @return {T[]} shuffled array
