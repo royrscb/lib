@@ -258,6 +258,23 @@ Object.defineProperty(Array.prototype, 'last', {
 });
 
 /**
+ * Returns a shallow copy of the array.
+ * The original array is not modified.
+ * Elements are copied by reference (objects and arrays inside are NOT cloned).
+ * @return {T[]} A new array containing the same elements.
+ */
+Object.defineProperty(Array.prototype, 'copy', {
+    value: function<T>(
+        this: T[]
+    ): T[] {
+        return this.slice();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+
+/**
  * Returns a new array skipping the first `count` elements.
  * @param {number} count - Number of elements to skip from the start. Default 1.
  * @return {T[]} A new array without the first `count` elements.
