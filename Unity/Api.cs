@@ -1,87 +1,110 @@
-using System.Collections;
 using UnityEngine.Networking;
 using System.Text;
 using System;
+using Newtonsoft.Json;
 using UnityEngine;
 using System.Text.RegularExpressions;
-
-public enum RequestMethod
-{
-    Post,
-    Get,
-    Put,
-    Delete
-}
+using System.Linq;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 public static class Api
 {
-    private const string BaseUrl = "http://localhost/tabaco/php/";
-
-    [Serializable]
-    private class ErrorResponse
+    public static string BaseUrl
     {
-        public string status;
-        public int code;
-        public string text;
-
-        public static bool TryParse(string maybeError, out ErrorResponse error)
+        get
         {
-            error = null;
-
-            if (maybeError == null) { return false; }
-
-            try
-            {
-                error = JsonUtility.FromJson<ErrorResponse>(maybeError);
-
-                return error.status == "ERROR";
-            }
-            catch (ArgumentException)
-            {
-                return false;
-            }
-        }
-
-        public override string ToString()
-        {
-            return $"ErrorMeu {code}: {text}";
+            return "http://localhost/tabaco/php/"; 
         }
     }
 
-    public static IEnumerator SendRequest(string endpoint, RequestMethod method, string data = null, Action<string> onSuccess = null, Action<string> onError = null)
+    // Public -----------------------------------
+    public static async Task<string> SendRequest(RequestMethod method, string url, string json = null)
     {
-        Logger.Debug($"🌐⬆️ {method} request to \"{endpoint}\" with data: \"{data}\"");
-
-        var uri = BaseUrl + endpoint;
+        Logger.Api.Debug($"🔺{method.ToString().ToUpper()} request to '{url}' with json: '{json}'");
 
         UnityWebRequest request = method switch
         {
-            RequestMethod.Post => new UnityWebRequest(uri, RequestMethod.Post.ToString()),
-            RequestMethod.Get => UnityWebRequest.Get(uri),
-            RequestMethod.Put => new UnityWebRequest(uri, RequestMethod.Put.ToString()),
-            RequestMethod.Delete => UnityWebRequest.Delete(uri),
+            RequestMethod.Post => new UnityWebRequest(url, RequestMethod.Post.ToString().ToUpper()),
+            RequestMethod.Get => UnityWebRequest.Get(url),
+            RequestMethod.Put => new UnityWebRequest(url, RequestMethod.Put.ToString().ToUpper()),
+            RequestMethod.Delete => UnityWebRequest.Delete(url),
             _ => throw new ArgumentOutOfRangeException($"Request method [{method}] not found")
         };
 
-        AddBody(request, data);
+        AddBody(request, json);
         SetHeaders(request);
-        
-        yield return request.SendWebRequest();
+
+        await request.SendWebRequest();
 
         CaptureCookies(request);
 
-        // Handle maybe errors
-        HandleResponse(request, onSuccess, onError);
+        return HandleResponse(request);
     }
 
-    public static IEnumerator Get(string endpoint, string data = null, Action<string> onSuccess = null, Action<string> onError = null)
-        => SendRequest(endpoint, RequestMethod.Get, data, onSuccess, onError);
-    public static IEnumerator Post(string endpoint, string data = null, Action<string> onSuccess = null, Action<string> onError = null)
-        => SendRequest(endpoint, RequestMethod.Post, data, onSuccess, onError);
-    public static IEnumerator Put(string endpoint, string data = null, Action<string> onSuccess = null, Action<string> onError = null)
-        => SendRequest(endpoint, RequestMethod.Put, data, onSuccess, onError);
-    public static IEnumerator Delete(string endpoint, string data = null, Action<string> onSuccess = null, Action<string> onError = null)
-        => SendRequest(endpoint, RequestMethod.Delete, data, onSuccess, onError);
+    // Get ---
+    public static Task<string> Get(string url, string json = null)
+        => SendRequest(RequestMethod.Get, url, json);
+    public static async Task<T> GetById<T>(int id)
+    {
+        Logger.Api.Debug($"Get by id [{id}] <{typeof(T).Name}>");
+
+        var response = await Get(GetApiUrl<T>(), JsonConvert.SerializeObject(new { id }));
+        return JsonConvert.DeserializeObject<T>(response);
+    }
+    public static async Task<List<T>> GetAll<T>()
+    {
+        Logger.Api.Debug($"Get all <{typeof(T).Name}>");
+
+        var response = await Get(GetApiUrl<T>());
+        return JsonConvert.DeserializeObject<List<T>>(response);
+    }
+
+    // Post ---
+    public static Task<string> Post(string url, string json)
+        => SendRequest(RequestMethod.Post, url, json);
+    public static async Task<T> Post<T>(T entity) where T : class
+    {
+        Logger.Api.Debug($"POST <{typeof(T).Name}> {entity}");
+
+        var json = JsonConvert.SerializeObject(new { data = entity });
+        var response = await Post(GetApiUrl<T>(), json);
+
+        return JsonConvert.DeserializeObject<T>(response);
+    }
+    // Put ---
+    public static Task<string> Put(string url, string json = null)
+        => SendRequest(RequestMethod.Put, url, json);
+    public static async Task<T> Put<T>(int id, JObject jsonData)
+    {
+        Logger.Api.Debug($"PUT <{typeof(T).Name}> [{id}] {jsonData}");
+
+        jsonData["id"] = id;
+        var json = JsonConvert.SerializeObject(new { data = jsonData });
+        var response = await Put(GetApiUrl<T>(), json);
+
+        return JsonConvert.DeserializeObject<T>(response);
+    }
+
+    // Delete ---
+    public static Task<string> Delete(string url, string json = null)
+        => SendRequest(RequestMethod.Delete, url, json);
+    public static async Task Delete<T>(int id)
+    {
+        Logger.Api.Debug($"DELETE <{typeof(T).Name}> with id [{id}]");
+
+        var json = JsonConvert.SerializeObject(new { id });
+        await Delete(GetApiUrl<T>(), json);
+    }
+
+    // Private ----------------------------------
+    private static string GetApiUrl<T>()
+    {
+        var objectName = typeof(T).Name.ToLower();
+        return Path.Combine(BaseUrl, $"api/{objectName}.php");
+    }
 
     private static void AddBody(UnityWebRequest request, string json)
     {
@@ -95,18 +118,18 @@ public static class Api
     private static void SetHeaders(UnityWebRequest request)
     {
         request.SetRequestHeader("Content-Type", "application/json");
-        if (Storage.CookieJar.Count > 0)
+
+        var cookieJar = Storage.CookieJar;
+        if (cookieJar.Count > 0)
         {
-            if(Logger.CurrentLogLevel == LogLevel.Verbose) foreach (var cookie in Storage.CookieJar)
-            {
-                Logger.Verbose("🍪⬆️: " + cookie);
-            }
-            request.SetRequestHeader("Cookie", string.Join(',', Storage.CookieJar));
+            cookieJar.ForEach(c => Logger.Api.Verbose("🔺 " + c));
+
+            var rawCookies = cookieJar.Select(c => c.ToRaw());
+            request.SetRequestHeader("Cookie", string.Join(',', rawCookies));
         }
     }
     private static void CaptureCookies(UnityWebRequest request)
     {
-        Storage.DeleteCookies();
         string allRawCookies = request.GetResponseHeader("Set-Cookie");
 
         if (!string.IsNullOrEmpty(allRawCookies))
@@ -115,35 +138,90 @@ public static class Api
 
             foreach (var rawCookie in cookiesList)
             {
-                Logger.Verbose("🍪⬇️: " + rawCookie);
-                Storage.Set(new Cookie(rawCookie));
+                var cookie = new Cookie(rawCookie);
+
+                Logger.Api.Verbose($"🔻 {cookie}");
+
+                if (cookie.Value.ToLower() == "deleted")
+                {
+                    Storage.Delete(cookie);
+                }
+                else if (!cookie.IsExpired())
+                {
+                    Storage.Set(new Cookie(rawCookie));
+                }
             }
         }
     }
-
-    private static void HandleResponse(UnityWebRequest request, Action<string> onSuccess, Action<string> onError)
+    private static string HandleResponse(UnityWebRequest request)
     {
-        if (request.result == UnityWebRequest.Result.Success)
+        if (request.result != UnityWebRequest.Result.Success)
         {
-            var res = request?.downloadHandler?.text;
+            var ex = new ServerException((int)request.responseCode, request.error);
+            Laui.Pop.ToastError($"Server exception {ex.Code}: {ex.MessageText}");
 
-            if (res == "null") { res = null; }
+            throw ex;
+        }
 
-            if (ErrorResponse.TryParse(res, out var error))
+        var res = request?.downloadHandler?.text;
+        if (res == "null" || res.IsNullOrEmpty())
+        {
+            res = null;
+        }
+
+        if (ErrorResponse.TryParse(res, out var error))
+        {
+            var ex = new ValidationException(error.Code, error.Text);
+            Laui.Pop.ToastError(ex.MessageText);
+
+            throw ex;
+        }
+
+        Logger.Api.Debug($"🔻Response [{res?.Length}]: {res}");
+        return res;
+    }
+
+    // Enums and classes ------------------------
+    public enum RequestMethod
+    {
+        Post,
+        Get,
+        Put,
+        Delete
+    }
+
+    private class ErrorResponse
+    {
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        [JsonProperty("code")]
+        public int Code { get; set; }
+
+        [JsonProperty("text")]
+        public string Text { get; set; }
+
+        public static bool TryParse(string maybeError, out ErrorResponse error)
+        {
+            error = null;
+
+            if (maybeError == null) { return false; }
+
+            try
             {
-                Logger.Error(error);
-                onError?.Invoke(error.text);
+                error = JsonConvert.DeserializeObject<ErrorResponse>(maybeError);
+
+                return error?.Status == "ERROR";
             }
-            else
+            catch (JsonSerializationException)
             {
-                Logger.Debug($"🌐⬇️ Response [{res?.Length}]: {res}");
-                onSuccess?.Invoke(res);
+                return false;
             }
         }
-        else
+
+        public override string ToString()
         {
-            Logger.Error($"Error {request.responseCode}: {request.error}");
-            onError?.Invoke(request.error);
+            return $"ErrorMeu {Code}: {Text}";
         }
     }
 }
