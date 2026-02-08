@@ -1,70 +1,146 @@
 using System;
 
-public enum LogLevel
+// Loggers ---
+public class Logger
 {
-    Verbose = 0,    // Mensajes muy detallados, útiles para rastrear cada paso
-    Debug   = 1,    // Mensajes para depurar flujos específicos
-    Info    = 2,    // Mensajes “informativos” generales
-    Warning = 3,    // Advertencias
-    Error   = 4,    // Errores críticos
-    None    = 5     // Ningún log, silencia TODO
+    // For unity GUI ---
+    public static LogLevel CurrentLogLevel { get; set; } = LogLevel.Info;
+    public static LogFilters Filters { get; set; } = new();
+    // ---
+
+    // Static predefined loggers
+    public static Logger Common { get; } = new();
+    public static Logger System { get; } = new Logger(LogFilter.System);
+    public static Logger Storage { get; } = new Logger(LogFilter.Storage);
+    public static Logger Api { get; } = new Logger(LogFilter.Api);
+    public static Logger Ui { get; } = new Logger(LogFilter.Ui);
+
+    // Instance fields ---
+    public readonly string emoji = null;
+    private readonly LogFilter? _filter = null;
+
+    // Constructor ---
+    public Logger(LogFilter? filter = null, string emoji = null)
+    {
+        _filter = filter;
+        this.emoji = emoji ?? filter.Emoji();
+    }
+
+    // Public ---
+    public void Log(LogLevel logLevel, object message, UnityEngine.Object context = null)
+    {
+        if (Filters.IsEnabled(_filter) && CurrentLogLevel <= logLevel)
+        {
+            if (logLevel <= LogLevel.Info)
+            {
+                UnityEngine.Debug.Log($"{emoji}[{logLevel.ToString().ToUpper()}] {message}", context);
+            }
+            else if (logLevel == LogLevel.Warning)
+            {
+                var emoji = string.IsNullOrEmpty(this.emoji) ? "" : this.emoji + " ";
+                UnityEngine.Debug.LogWarning(emoji + message, context);
+            }
+            else if (logLevel == LogLevel.Error)
+            {
+                var emoji = string.IsNullOrEmpty(this.emoji) ? "" : this.emoji + " ";
+                UnityEngine.Debug.LogError(emoji + message, context);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("LogLevel", $"LogLevel \"{logLevel}\" not found");
+            }
+        }
+    }
+
+    public void Verbose(object message, UnityEngine.Object context = null)
+        => Log(LogLevel.Verbose, message, context);
+    public void Debug(object message, UnityEngine.Object context = null)
+        => Log(LogLevel.Debug, message, context);
+    public void Info(object message, UnityEngine.Object context = null)
+        => Log(LogLevel.Info, message, context);
+    public void Warn(object message, UnityEngine.Object context = null)
+        => Log(LogLevel.Warning, message, context);
+    public void Error(object message, UnityEngine.Object context = null)
+        => Log(LogLevel.Error, message, context);
+    public void Exception(Exception ex, UnityEngine.Object context = null)
+    {
+        if (CurrentLogLevel <= LogLevel.Error)
+        {
+            UnityEngine.Debug.LogException(ex, context);
+        }
+    }
+    public void Always(object message, UnityEngine.Object context = null)
+    {
+        UnityEngine.Debug.Log($"{emoji}[ALWAYS] {message}", context);
+    }
+
+    public void Tmp(object message, UnityEngine.Object context = null)
+    {
+        if (Filters.IsEnabled(_filter))
+        {
+            UnityEngine.Debug.Log($"🚧{emoji}[TMP] {message}", context);
+        }
+    }
+
+    // Static ---
+    public static void Tmp(object message, UnityEngine.Object context = null, int _ = 0)
+        => Common.Tmp(message, context);
 }
 
-public static class Logger
+// Enums ---
+public enum LogLevel
 {
-    /// <summary>
-    /// Nivel mínimo de log que queremos ver. 
-    /// Si un mensaje tiene un LogLevel menor (más “detallado”) que esto, no se mostrará.
-    /// Por defecto ponemos Info para evitar demasiados mensajes Verbose/Debug en producción.
-    /// </summary>
-    public static LogLevel CurrentLogLevel { get; set; } = LogLevel.Verbose;
+    Verbose = 0,    // messages muy detallados, útiles para rastrear cada paso
+    Debug = 1,    // messages para depurar flujos específicos
+    Info = 2,    // messages “informativos” generales
+    Warning = 3,    // Advertencias
+    Error = 4,    // Errores críticos
+    None = 5     // Ningún log, silencia TODO
+}
 
-    public static void Verbose(object mensaje, UnityEngine.Object contexto = null)
+public enum LogFilter {
+    System,
+    Storage,
+    Api,
+    Ui
+}
+
+// Classes ---
+[Serializable]
+public class LogFilters
+{
+    public bool system = true;
+    public bool storage = true;
+    public bool api = true;
+    public bool ui = true;
+
+    public bool IsEnabled(LogFilter? logFilter)
     {
-        if (CurrentLogLevel <= LogLevel.Verbose)
+        return logFilter switch
         {
-            UnityEngine.Debug.Log($"[VERBOSE] {mensaje}", contexto);
-        }
+            null => true,
+            LogFilter.System => system,
+            LogFilter.Storage => storage,
+            LogFilter.Api => api,
+            LogFilter.Ui => ui,
+            _ => throw new ArgumentOutOfRangeException("LogFilter", $"LogFilter \"{logFilter}\" not found")
+        };
     }
+}
 
-    public static void Debug(object mensaje, UnityEngine.Object contexto = null)
+// Extensions ---
+internal static class LogFilterEnumExtensions
+{
+    public static string Emoji(this LogFilter? logFilter)
     {
-        if (CurrentLogLevel <= LogLevel.Debug)
+        return logFilter switch
         {
-            UnityEngine.Debug.Log($"[DEBUG] {mensaje}", contexto);
-        }
-    }
-
-    public static void Info(object mensaje, UnityEngine.Object contexto = null)
-    {
-        if (CurrentLogLevel <= LogLevel.Info)
-        {
-            UnityEngine.Debug.Log($"[INFO] {mensaje}", contexto);
-        }
-    }
-
-    public static void Warn(object mensaje, UnityEngine.Object contexto = null)
-    {
-        if (CurrentLogLevel <= LogLevel.Warning)
-        {
-            UnityEngine.Debug.LogWarning(mensaje, contexto);
-        }
-    }
-
-    public static void Error(object mensaje, UnityEngine.Object contexto = null)
-    {
-        if (CurrentLogLevel <= LogLevel.Error)
-        {
-            UnityEngine.Debug.LogError(mensaje, contexto);
-        }
-    }
-
-    public static void Exception(Exception ex, UnityEngine.Object contexto = null)
-    {
-        // Siempre mostramos excepciones si el nivel es Error o menor
-        if (CurrentLogLevel <= LogLevel.Error)
-        {
-            UnityEngine.Debug.LogException(ex, contexto);
-        }
+            null => null,
+            LogFilter.System => "⚙️",
+            LogFilter.Storage => "🗄️",
+            LogFilter.Api => "🌐",
+            LogFilter.Ui => "🧩",
+            _ => throw new ArgumentOutOfRangeException("LogFilter", $"LogFilter \"{logFilter}\" not found")
+        };
     }
 }
