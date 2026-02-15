@@ -126,15 +126,15 @@ export class TimeSpan {
 
     // Individual parts ---
     /** Milliseconds remainder part (0..999). Returns 0 for infinite values. */
-    public millisPart(): number { return this.isInfinite() ? 0 : Math.floor(this.totalMillis() % TimeSpan.MS_PER_SECOND); }
+    public millisPart(): number { return this.isInfinite() ? 0 : Math.trunc(this.totalMillis() % TimeSpan.MS_PER_SECOND); }
     /** Seconds remainder part (0..59). Returns 0 for infinite values. */
-    public secondsPart(): number { return this.isInfinite() ? 0 : Math.floor(this.totalSeconds() % TimeSpan.SECONDS_PER_MINUTE); }
+    public secondsPart(): number { return this.isInfinite() ? 0 : Math.trunc(this.totalSeconds() % TimeSpan.SECONDS_PER_MINUTE); }
     /** Minutes remainder part (0..59). Returns 0 for infinite values. */
-    public minutesPart(): number { return this.isInfinite() ? 0 : Math.floor(this.totalMinutes() % TimeSpan.MINUTES_PER_HOUR); }
+    public minutesPart(): number { return this.isInfinite() ? 0 : Math.trunc(this.totalMinutes() % TimeSpan.MINUTES_PER_HOUR); }
     /** Hours remainder part (0..23). Returns 0 for infinite values. */
-    public hoursPart(): number { return this.isInfinite() ? 0 : Math.floor(this.totalHours() % TimeSpan.HOURS_PER_DAY); }
+    public hoursPart(): number { return this.isInfinite() ? 0 : Math.trunc(this.totalHours() % TimeSpan.HOURS_PER_DAY); }
     /** Days total (floor). For formatting of multi-day spans. Returns 0 for infinite values. */
-    public daysPart(): number { return this.isInfinite() ? 0 : Math.floor(this.totalDays()); }
+    public daysPart(): number { return this.isInfinite() ? 0 : Math.trunc(this.totalDays()); }
 
     // Arithmetic operations ---
     /**
@@ -210,10 +210,10 @@ export class TimeSpan {
 
         if (humanReadable) {
             let display = '';
-            if (days > 0) display += `${days} days`;
-            if (hours > 0) display += ` ${hours}h`;
-            if (minutes > 0) display += ` ${minutes}m`;
-            if (seconds > 0) display += ` ${seconds}s`;
+            if (days != 0) display += `${days} days`;
+            if (hours != 0) display += ` ${hours}h`;
+            if (minutes != 0) display += ` ${minutes}m`;
+            if (seconds != 0) display += ` ${seconds}s`;
 
             return display.trim();
         }
@@ -221,7 +221,7 @@ export class TimeSpan {
             const milliseconds = this.millisPart();
 
             const signStr = this.isNegative() ? "-" : "";
-            const daysStr = days > 0 ? `${days}.` : "";
+            const daysStr = days != 0 ? `${days}.` : "";
             let timeStr = `${hours}:${minutes}:${seconds}`;
             if (milliseconds != 0) timeStr += `.${milliseconds}`;
 
