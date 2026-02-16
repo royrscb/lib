@@ -88,6 +88,37 @@ declare global {
          * @throws Error if the string cannot be parsed to a number
          */
         prettyPrice(this: string): string;
+
+        /**
+         * Converts string to camelCase.
+         * Example: "hello world" -> "helloWorld"
+         * @return {string}
+         */
+        camelCase(this: string): string;
+        /**
+         * Converts string to PascalCase.
+         * Example: "hello world" -> "HelloWorld"
+         * @return {string}
+         */
+        pascalCase(this: string): string;
+        /**
+         * Converts string to snake_case.
+         * Example: "hello world" -> "hello_world"
+         * @return {string}
+         */
+        snakeCase(this: string): string;
+        /**
+         * Converts string to SCREAMING_SNAKE_CASE.
+         * Example: "hello world" -> "HELLO_WORLD"
+         * @return {string}
+         */
+        screamingSnakeCase(this: string): string;
+        /**
+         * Converts string to kebab-case.
+         * Example: "hello world" -> "HELLO-WORLD"
+         * @return {string}
+         */
+        kebabCase(this: string): string;
     }
 
     interface Array<T> {

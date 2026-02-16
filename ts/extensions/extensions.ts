@@ -204,6 +204,84 @@ Object.defineProperty(String.prototype, 'prettyPrice', {
     enumerable: false
 });
 
+/**
+ * Converts string to camelCase.
+ * Example: "hello world" -> "helloWorld"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'camelCase', { 
+    value: function(this: string): string {
+        return this.toLowerCase()
+            .split(' ')
+            .map((w, i) => i == 0 ? w : w.upperCaseFirst())
+            .join('');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts string to PascalCase.
+ * Example: "hello world" -> "HelloWorld"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'pascalCase', { 
+    value: function(this: string): string {
+        return this.toLowerCase()
+            .split(' ')
+            .map(w => w.upperCaseFirst())
+            .join('');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts string to snake_case.
+ * Example: "hello world" -> "hello_world"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'snakeCase', { 
+    value: function(this: string): string {
+        return this.toLowerCase()
+            .split(' ')
+            .join('_');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts string to SCREAMING_SNAKE_CASE.
+ * Example: "hello world" -> "HELLO_WORLD"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'screamingSnakeCase', { 
+    value: function(this: string): string {
+        return this.toUpperCase()
+            .split(' ')
+            .join('_');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts string to kebab-case.
+ * Example: "hello world" -> "HELLO-WORLD"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'kebabCase', { 
+    value: function(this: string): string {
+        return this.toUpperCase()
+            .split(' ')
+            .join('-');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+
 //#endregion
 
 //#region Array -----------------------------------------------------------------------------------
