@@ -187,6 +187,96 @@ Object.defineProperty(String.prototype, 'prettyPrice', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Replaces separators (-, _) with spaces.
+ * Example: "hello_world-test" -> "hello world test"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'toWords', {
+    value: function () {
+        return this.replace(/[-_]+/g, ' ');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts string to camelCase.
+ * Example: "hello world" -> "helloWorld"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'camelCase', {
+    value: function () {
+        return this.toLowerCase()
+            .split(' ')
+            .map((w, i) => i == 0 ? w : w.upperCaseFirst())
+            .join('');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts string to PascalCase.
+ * Example: "hello world" -> "HelloWorld"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'pascalCase', {
+    value: function () {
+        return this.toLowerCase()
+            .split(' ')
+            .map(w => w.upperCaseFirst())
+            .join('');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts string to snake_case.
+ * Example: "hello world" -> "hello_world"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'snakeCase', {
+    value: function () {
+        return this.toLowerCase()
+            .split(' ')
+            .join('_');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts string to SCREAMING_SNAKE_CASE.
+ * Example: "hello world" -> "HELLO_WORLD"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'screamingSnakeCase', {
+    value: function () {
+        return this.toUpperCase()
+            .split(' ')
+            .join('_');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Converts string to kebab-case.
+ * Example: "hello world" -> "HELLO-WORLD"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'kebabCase', {
+    value: function () {
+        return this.toUpperCase()
+            .split(' ')
+            .join('-');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 //#endregion
 //#region Array -----------------------------------------------------------------------------------
 /**

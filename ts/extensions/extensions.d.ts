@@ -90,6 +90,13 @@ declare global {
         prettyPrice(this: string): string;
 
         /**
+         * Replaces separators (-, _) with spaces.
+         * Example: "hello_world-test" -> "hello world test"
+         * @return {string}
+         */
+        toWords(this: string): string;
+
+        /**
          * Converts string to camelCase.
          * Example: "hello world" -> "helloWorld"
          * @return {string}

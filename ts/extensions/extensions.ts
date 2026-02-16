@@ -205,6 +205,20 @@ Object.defineProperty(String.prototype, 'prettyPrice', {
 });
 
 /**
+ * Replaces separators (-, _) with spaces.
+ * Example: "hello_world-test" -> "hello world test"
+ * @return {string}
+ */
+Object.defineProperty(String.prototype, 'toWords', { 
+    value: function(this: string): string {
+        return this.replace(/[-_]+/g, ' ');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+
+/**
  * Converts string to camelCase.
  * Example: "hello world" -> "helloWorld"
  * @return {string}
