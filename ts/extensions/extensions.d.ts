@@ -115,14 +115,8 @@ declare global {
          */
         toSnakeCase(this: string): string;
         /**
-         * Converts string to SCREAMING_SNAKE_CASE.
-         * Example: "hello world" -> "HELLO_WORLD"
-         * @return {string}
-         */
-        toSreamingSnakeCase(this: string): string;
-        /**
          * Converts string to kebab-case.
-         * Example: "hello world" -> "HELLO-WORLD"
+         * Example: "hello world" -> "hello-world"
          * @return {string}
          */
         toKebabCase(this: string): string;

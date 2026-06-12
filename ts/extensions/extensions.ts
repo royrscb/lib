@@ -257,23 +257,7 @@ Object.defineProperty(String.prototype, 'toPascalCase', {
  */
 Object.defineProperty(String.prototype, 'toSnakeCase', { 
     value: function(this: string): string {
-        return this.toLowerCase()
-            .split(' ')
-            .join('_');
-    },
-    writable: false,
-    configurable: false,
-    enumerable: false
-});
-/**
- * Converts string to SCREAMING_SNAKE_CASE.
- * Example: "hello world" -> "HELLO_WORLD"
- * @return {string}
- */
-Object.defineProperty(String.prototype, 'toScreamingSnakeCase', { 
-    value: function(this: string): string {
-        return this.toUpperCase()
-            .split(' ')
+        return this.split(' ')
             .join('_');
     },
     writable: false,
@@ -287,8 +271,7 @@ Object.defineProperty(String.prototype, 'toScreamingSnakeCase', {
  */
 Object.defineProperty(String.prototype, 'toKebabCase', { 
     value: function(this: string): string {
-        return this.toUpperCase()
-            .split(' ')
+        return this.split(' ')
             .join('-');
     },
     writable: false,
