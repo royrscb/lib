@@ -223,7 +223,7 @@ Object.defineProperty(String.prototype, 'toWords', {
  * Example: "hello world" -> "helloWorld"
  * @return {string}
  */
-Object.defineProperty(String.prototype, 'camelCase', { 
+Object.defineProperty(String.prototype, 'toCamelCase', { 
     value: function(this: string): string {
         return this.toLowerCase()
             .split(' ')
@@ -239,7 +239,7 @@ Object.defineProperty(String.prototype, 'camelCase', {
  * Example: "hello world" -> "HelloWorld"
  * @return {string}
  */
-Object.defineProperty(String.prototype, 'pascalCase', { 
+Object.defineProperty(String.prototype, 'toPascalCase', { 
     value: function(this: string): string {
         return this.toLowerCase()
             .split(' ')
@@ -255,7 +255,7 @@ Object.defineProperty(String.prototype, 'pascalCase', {
  * Example: "hello world" -> "hello_world"
  * @return {string}
  */
-Object.defineProperty(String.prototype, 'snakeCase', { 
+Object.defineProperty(String.prototype, 'toSnakeCase', { 
     value: function(this: string): string {
         return this.toLowerCase()
             .split(' ')
@@ -270,7 +270,7 @@ Object.defineProperty(String.prototype, 'snakeCase', {
  * Example: "hello world" -> "HELLO_WORLD"
  * @return {string}
  */
-Object.defineProperty(String.prototype, 'screamingSnakeCase', { 
+Object.defineProperty(String.prototype, 'toScreamingSnakeCase', { 
     value: function(this: string): string {
         return this.toUpperCase()
             .split(' ')
@@ -285,7 +285,7 @@ Object.defineProperty(String.prototype, 'screamingSnakeCase', {
  * Example: "hello world" -> "HELLO-WORLD"
  * @return {string}
  */
-Object.defineProperty(String.prototype, 'kebabCase', { 
+Object.defineProperty(String.prototype, 'toKebabCase', { 
     value: function(this: string): string {
         return this.toUpperCase()
             .split(' ')

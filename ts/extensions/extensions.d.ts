@@ -101,31 +101,31 @@ declare global {
          * Example: "hello world" -> "helloWorld"
          * @return {string}
          */
-        camelCase(this: string): string;
+        toCamelCase(this: string): string;
         /**
          * Converts string to PascalCase.
          * Example: "hello world" -> "HelloWorld"
          * @return {string}
          */
-        pascalCase(this: string): string;
+        toPascalCase(this: string): string;
         /**
          * Converts string to snake_case.
          * Example: "hello world" -> "hello_world"
          * @return {string}
          */
-        snakeCase(this: string): string;
+        toSnakeCase(this: string): string;
         /**
          * Converts string to SCREAMING_SNAKE_CASE.
          * Example: "hello world" -> "HELLO_WORLD"
          * @return {string}
          */
-        screamingSnakeCase(this: string): string;
+        toSreamingSnakeCase(this: string): string;
         /**
          * Converts string to kebab-case.
          * Example: "hello world" -> "HELLO-WORLD"
          * @return {string}
          */
-        kebabCase(this: string): string;
+        toKebabCase(this: string): string;
     }
 
     interface Array<T> {
