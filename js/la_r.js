@@ -2028,3 +2028,286 @@ $(document).on('paste', '.uppercase-first', function(a, b, c){
         $(this).val($(this).val().upperCaseFirst())
     }, 1);
 })
+
+// Classes ----------------------------------------------------------------------------------------
+
+/**
+ * TimeSpan
+ * 
+ * Represents a duration of time with millisecond precision.
+ *
+ * Features:
+ * - Construction from common units (ms, s, m, h, d, w, y).
+ * - Infinite and negative-infinite representations.
+ * - Safe integer validation for finite values.
+ * - Arithmetic, comparison and formatting helpers.
+ *
+ * Note: Year is approximated as 365.25 days. Generation and manipulation
+ * use numbers and are not suitable for high-precision scientific timing.
+ */
+export class TimeSpan {
+    // Constants --------------------------------
+    /** Milliseconds per second. */
+    static MS_PER_SECOND = 1000;
+    /** Milliseconds per minute. */
+    static MS_PER_MINUTE = 60_000;
+    /** Milliseconds per hour. */
+    static MS_PER_HOUR = 3_600_000;
+    /** Milliseconds per day. */
+    static MS_PER_DAY = 86_400_000;
+    /** Milliseconds per week. */
+    static MS_PER_WEEK = 604_800_000;
+    /** Milliseconds per (approx.) year = 365.25 days. */
+    static MS_PER_YEAR = 31_557_600_000;
+
+    static SECONDS_PER_MINUTE = 60;
+    static MINUTES_PER_HOUR = 60;
+    static HOURS_PER_DAY = 24;
+    static DAYS_PER_WEEK = 7;
+    static DAYS_PER_YEAR = 365.25;
+
+    // Attributes -------------------------------
+    /**
+     * Internal storage in milliseconds. Can be finite, Infinity or -Infinity.
+     * @type {number}
+     */
+    #ms;
+
+    // Constructor ------------------------------
+    /**
+     * Create a TimeSpan.
+     * @param {number} [milliseconds=0] - Duration in milliseconds. Defaults to 0.
+     *                      Can be +Infinity or -Infinity for infinite values.
+     * @throws {Error} if a finite value is not a safe integer or if it's not Infinity, -Infinity or a number.
+     */
+    constructor(milliseconds = 0) {
+        if (milliseconds !== Infinity && milliseconds !== -Infinity) {
+            if (Number.isFinite(milliseconds)) {
+                if (!Number.isSafeInteger(milliseconds))
+                    throw new Error("Timespan does not have a safe value: " + milliseconds);
+            }
+            else throw new Error("Invalid TimeSpan value: " + milliseconds);
+        }
+        this.#ms = milliseconds;
+    }
+
+    // Static methods ---------------------------
+    // Factories ---
+    /**
+     * Create a TimeSpan from milliseconds.
+     * @param {number} ms
+     * @returns {TimeSpan}
+     */
+    static fromMillis(ms) { return new TimeSpan(ms); }
+    /**
+     * Create a TimeSpan from seconds.
+     * @param {number} s
+     * @returns {TimeSpan}
+     */
+    static fromSeconds(s) { return new TimeSpan(s * this.MS_PER_SECOND); }
+    /**
+     * Create a TimeSpan from minutes.
+     * @param {number} m
+     * @returns {TimeSpan}
+     */
+    static fromMinutes(m) { return new TimeSpan(m * this.MS_PER_MINUTE); }
+    /**
+     * Create a TimeSpan from hours.
+     * @param {number} h
+     * @returns {TimeSpan}
+     */
+    static fromHours(h) { return new TimeSpan(h * this.MS_PER_HOUR); }
+    /**
+     * Create a TimeSpan from days.
+     * @param {number} d
+     * @returns {TimeSpan}
+     */
+    static fromDays(d) { return new TimeSpan(d * this.MS_PER_DAY); }
+    /**
+     * Create a TimeSpan from weeks.
+     * @param {number} w
+     * @returns {TimeSpan}
+     */
+    static fromWeeks(w) { return new TimeSpan(w * this.MS_PER_WEEK); }
+    /**
+     * Create a TimeSpan from (approx.) years.
+     * @param {number} y
+     * @returns {TimeSpan}
+     */
+    static fromYears(y) { return new TimeSpan(y * this.MS_PER_YEAR); }
+    /**
+     * Represent an infinite positive duration.
+     * @returns {TimeSpan}
+     */
+    static infinite() { return new TimeSpan(Infinity); }
+    /**
+     * Represent an infinite negative duration.
+     * @returns {TimeSpan}
+     */
+    static negativeInfinite() { return new TimeSpan(-Infinity); }
+
+    /**
+     * Create a TimeSpan representing the time elapsed since the provided
+     * Unix time (milliseconds) or Date. Equivalent to now - input.
+     * Positive if input is in the past and negative if is in the future.
+     * @param {number|Date} arg1 - Unix time in milliseconds, or a Date instance.
+     * @returns {TimeSpan} TimeSpan from the given time until now.
+     */
+    static untilNow(arg1) {
+        const millisUnixTime = typeof arg1 === 'number'
+            ? arg1 : arg1.getTime();
+        return TimeSpan.fromMillis(Date.now() - millisUnixTime);
+    }
+
+    // Sort ---
+    /**
+     * Compare two TimeSpans for ascending order.
+     * @param {TimeSpan} a
+     * @param {TimeSpan} b
+     * @returns {number} negative if a < b, positive if a > b, zero if equal.
+     */
+    static sortByAscending(a, b) {
+        return a.equals(b) ? 0 : a.#ms - b.#ms;
+    }
+    /**
+     * Compare two TimeSpans for descending order.
+     * @param {TimeSpan} a
+     * @param {TimeSpan} b
+     * @returns {number} negative if a > b, positive if a < b, zero if equal.
+     */
+    static sortByDescending(a, b) {
+        return a.equals(b) ? 0 : b.#ms - a.#ms;
+    }
+
+    // Public methods ---------------------------
+    // Totals ---
+    /** Total milliseconds represented by this TimeSpan. @returns {number} */
+    totalMillis() { return this.#ms; }
+    /** Total seconds (may be fractional). @returns {number} */
+    totalSeconds() { return this.#ms / TimeSpan.MS_PER_SECOND; }
+    /** Total minutes (may be fractional). @returns {number} */
+    totalMinutes() { return this.#ms / TimeSpan.MS_PER_MINUTE; }
+    /** Total hours (may be fractional). @returns {number} */
+    totalHours() { return this.#ms / TimeSpan.MS_PER_HOUR; }
+    /** Total days (may be fractional). @returns {number} */
+    totalDays() { return this.#ms / TimeSpan.MS_PER_DAY; }
+    /** Total weeks (may be fractional). @returns {number} */
+    totalWeeks() { return this.#ms / TimeSpan.MS_PER_WEEK; }
+    /** Total (approx.) years (may be fractional). @returns {number} */
+    totalYears() { return this.#ms / TimeSpan.MS_PER_YEAR; }
+
+    // Individual parts ---
+    // NOTE: these always return non-negative magnitudes, even for negative
+    // durations. The overall sign is only reflected once, by toString()
+    // (via isNegative()) - not duplicated into each individual part.
+    /** Milliseconds remainder part (0..999). Returns 0 for infinite values. @returns {number} */
+    millisPart() { return this.isInfinite() ? 0 : Math.abs(Math.trunc(this.totalMillis() % TimeSpan.MS_PER_SECOND)); }
+    /** Seconds remainder part (0..59). Returns 0 for infinite values. @returns {number} */
+    secondsPart() { return this.isInfinite() ? 0 : Math.abs(Math.trunc(this.totalSeconds() % TimeSpan.SECONDS_PER_MINUTE)); }
+    /** Minutes remainder part (0..59). Returns 0 for infinite values. @returns {number} */
+    minutesPart() { return this.isInfinite() ? 0 : Math.abs(Math.trunc(this.totalMinutes() % TimeSpan.MINUTES_PER_HOUR)); }
+    /** Hours remainder part (0..23). Returns 0 for infinite values. @returns {number} */
+    hoursPart() { return this.isInfinite() ? 0 : Math.abs(Math.trunc(this.totalHours() % TimeSpan.HOURS_PER_DAY)); }
+    /** Days total (floor magnitude). For formatting of multi-day spans. Returns 0 for infinite values. @returns {number} */
+    daysPart() { return this.isInfinite() ? 0 : Math.abs(Math.trunc(this.totalDays())); }
+
+    // Arithmetic operations ---
+    /**
+     * Add two TimeSpans.
+     * @param {TimeSpan} other
+     * @throws {Error} if attempting to add +Infinity and -Infinity.
+     * @returns {TimeSpan} New TimeSpan with summed duration.
+     */
+    add(other) {
+        if (this.isInfinite() && other.isInfinite() && this.#ms != other.#ms)
+            throw new Error("Can not add +Infinity and -Infinity TimeSpans");
+
+        return new TimeSpan(this.#ms + other.#ms);
+    }
+    /**
+     * Subtract another TimeSpan from this one.
+     * @param {TimeSpan} other
+     * @throws {Error} if attempting to subtract +Infinity and -Infinity.
+     * @returns {TimeSpan} New TimeSpan with the result.
+     */
+    subtract(other) {
+        if (this.isInfinite() && other.isInfinite() && this.#ms != other.#ms)
+            throw new Error("Can not subtract +Infinity and -Infinity TimeSpans");
+
+        return new TimeSpan(this.#ms - other.#ms);
+    }
+
+    // Comparison ---
+    /** True if both TimeSpans represent the same duration. @param {TimeSpan} other @returns {boolean} */
+    equals(other) { return this.#ms === other.#ms; }
+    /** True if this TimeSpan is strictly greater than other. @param {TimeSpan} other @returns {boolean} */
+    isGreaterThan(other) { return this.#ms > other.#ms; }
+    /** True if this TimeSpan is strictly less than other. @param {TimeSpan} other @returns {boolean} */
+    isLessThan(other) { return this.#ms < other.#ms; }
+
+    // Sort ---
+    /** Instance helper to compare ascending with another TimeSpan. @param {TimeSpan} other @returns {number} */
+    sortByAscending(other) {
+        return this.equals(other) ? 0 : this.#ms - other.#ms;
+    }
+    /** Instance helper to compare descending with another TimeSpan. @param {TimeSpan} other @returns {number} */
+    sortByDescending(other) {
+        return this.equals(other) ? 0 : other.#ms - this.#ms;
+    }
+
+    // Utility ---
+    /** Absolute value of this TimeSpan. @returns {TimeSpan} */
+    abs() { return new TimeSpan(Math.abs(this.#ms)); }
+    /** True if duration is exactly zero. @returns {boolean} */
+    isZero() { return this.#ms === 0; }
+    /** True if duration is strictly positive. @returns {boolean} */
+    isPositive() { return this.#ms > 0; }
+    /** True if duration is strictly negative. @returns {boolean} */
+    isNegative() { return this.#ms < 0; }
+    /** True if duration is +Infinity or -Infinity. @returns {boolean} */
+    isInfinite() { return this.#ms === Infinity || this.#ms === -Infinity; }
+
+    // Formatting ---
+    /**
+     * Convert the TimeSpan to a string.
+     * @param {boolean} [humanReadable=true] - If true (default) returns a compact human string
+     *                        like "2 days 3h 4m 5s". Durations under 1 second fall back to
+     *                        showing milliseconds (e.g. "500ms"), since they would otherwise
+     *                        render as an empty string.
+     *                        If false returns a machine-friendly format:
+     *                        "[days.]HH:MM:SS[.ms]" with a single sign prefix if negative.
+     * @returns {string} Formatted string.
+     */
+    toString(humanReadable = true) {
+        if (this.isInfinite())
+            return this.isPositive() ? "∞" : "-∞";
+
+        const sign = this.isNegative() ? "-" : "";
+        const days = this.daysPart();
+        const hours = this.hoursPart();
+        const minutes = this.minutesPart();
+        const seconds = this.secondsPart();
+        const milliseconds = this.millisPart();
+
+        if (humanReadable) {
+            let display = '';
+            if (days != 0) display += `${days} days`;
+            if (hours != 0) display += ` ${hours}h`;
+            if (minutes != 0) display += ` ${minutes}m`;
+            if (seconds != 0) display += ` ${seconds}s`;
+            display = display.trim();
+
+            // Sub-second durations would otherwise render as an empty string.
+            if (display === '' && milliseconds != 0) display = `${milliseconds}ms`;
+
+            return display === '' ? '' : `${sign}${display}`;
+        }
+        else {
+            const daysStr = days != 0 ? `${days}.` : "";
+            let timeStr = `${hours}:${minutes}:${seconds}`;
+            if (milliseconds != 0) timeStr += `.${milliseconds}`;
+
+            return `${sign}${daysStr}${timeStr}`;
+        }
+    }
+}
