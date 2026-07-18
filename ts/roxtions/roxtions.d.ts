@@ -328,6 +328,19 @@ declare global {
          * Date.monthsBetween(new Date(2025, 6, 10), new Date(2025, 4, 5)); // → -2
          */
         monthsBetween(a: Date | number, b: Date | number): number;
+
+        /**
+         * UTC version of `Date.monthsBetween`. Uses UTC year/month fields instead of local ones,
+         * so the result doesn't shift depending on the caller's time zone.
+         *
+         * @param {Date} a The starting date.
+         * @param {Date} b The ending date.
+         * @return {number} The signed number of months between `a` and `b`, in UTC.
+         *
+         * @example
+         * Date.monthsBetweenUTC(new Date(Date.UTC(2025, 1, 25)), new Date(Date.UTC(2025, 2, 1))); // → 1
+         */
+        monthsBetweenUTC(a: Date | number, b: Date | number): number;
     }
     interface Date {
         // Time change ---
@@ -375,11 +388,25 @@ declare global {
          */
         addMonths(this: Date, months: number): Date;
         /**
+         * UTC version of `addMonths`. Uses `setUTCMonth` instead of `setMonth`, so the month
+         * boundary is resolved against UTC fields instead of the local time zone.
+         * @param {number} months - Number of months to add.
+         * @return {Date} A new Date instance with the months added, in UTC.
+         */
+        addMonthsUTC(this: Date, months: number): Date;
+        /**
          * Adds the specified number of years to the date and returns a new Date instance.
          * @param {number} years - Number of years to add.
          * @return {Date} A new Date instance with the years added.
          */
         addYears(this: Date, years: number): Date;
+        /**
+         * UTC version of `addYears`. Uses `setUTCFullYear` instead of `setFullYear`, so the year
+         * boundary is resolved against UTC fields instead of the local time zone.
+         * @param {number} years - Number of years to add.
+         * @return {Date} A new Date instance with the years added, in UTC.
+         */
+        addYearsUTC(this: Date, years: number): Date;
 
         /**
          * Returns a new Date representing the first hour of the day at 00:00:00.
@@ -387,21 +414,43 @@ declare global {
          */
         startOfDay(this: Date): Date;
         /**
+         * UTC version of `startOfDay`. Returns 00:00:00 UTC of the same UTC calendar day.
+         * @return {Date} A new Date at the start of the day, in UTC.
+         */
+        startOfDayUTC(this: Date): Date;
+        /**
          * Returns a new Date representing the first day of the week at 00:00:00.
          * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
          * @return {Date} A new Date at the start of the week.
          */
         startOfWeek(this: Date, weekStartsOnMonday: boolean = false): Date;
         /**
+         * UTC version of `startOfWeek`. Resolves the week's starting day against UTC fields
+         * instead of the local time zone.
+         * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+         * @return {Date} A new Date at the start of the week, in UTC.
+         */
+        startOfWeekUTC(this: Date, weekStartsOnMonday: boolean = false): Date;
+        /**
          * Returns a new Date representing the first day of the month at 00:00:00.
          * @return {Date} A new Date at the start of the month.
          */
         startOfMonth(this: Date): Date;
         /**
+         * UTC version of `startOfMonth`. Returns the 1st of the UTC calendar month at 00:00:00 UTC.
+         * @return {Date} A new Date at the start of the month, in UTC.
+         */
+        startOfMonthUTC(this: Date): Date;
+        /**
          * Returns a new Date representing January 1st of the year at 00:00:00.
          * @return {Date} A new Date at the start of the year.
          */
         startOfYear(this: Date): Date;
+        /**
+         * UTC version of `startOfYear`. Returns January 1st of the UTC calendar year at 00:00:00 UTC.
+         * @return {Date} A new Date at the start of the year, in UTC.
+         */
+        startOfYearUTC(this: Date): Date;
 
         /**
          * Returns a new Date representing the last hour of the day at 23:59:59.999.
@@ -409,21 +458,43 @@ declare global {
          */
         endOfDay(this: Date): Date;
         /**
+         * UTC version of `endOfDay`. Returns 23:59:59.999 UTC of the same UTC calendar day.
+         * @return {Date} A new Date at the end of the day, in UTC.
+         */
+        endOfDayUTC(this: Date): Date;
+        /**
          * Returns a new Date representing the last day of the week at 23:59:59.999.
          * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
          * @return {Date} A new Date at the end of the week.
          */
         endOfWeek(this: Date, weekStartsOnMonday: boolean = false): Date;
         /**
+         * UTC version of `endOfWeek`. Resolves the week's end against UTC fields instead of
+         * the local time zone.
+         * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+         * @return {Date} A new Date at the end of the week, in UTC.
+         */
+        endOfWeekUTC(this: Date, weekStartsOnMonday: boolean = false): Date;
+        /**
          * Returns a new Date representing the last day of the month at 23:59:59.999.
          * @return {Date} A new Date at the end of the month.
          */
         endOfMonth(this: Date): Date;
         /**
+         * UTC version of `endOfMonth`. Returns the last instant of the UTC calendar month.
+         * @return {Date} A new Date at the end of the month, in UTC.
+         */
+        endOfMonthUTC(this: Date): Date;
+        /**
          * Returns a new Date representing December 31st of the year at 23:59:59.999.
          * @return {Date} A new Date at the end of the year.
          */
         endOfYear(this: Date): Date;
+        /**
+         * UTC version of `endOfYear`. Returns the last instant of the UTC calendar year.
+         * @return {Date} A new Date at the end of the year, in UTC.
+         */
+        endOfYearUTC(this: Date): Date;
 
         // Format ---
 
@@ -451,6 +522,16 @@ declare global {
          * @return {string} The formatted date.
          */
         format(this: Date, pattern: string, lang: string = 'en'): string;
+        /**
+         * UTC version of `format`. Uses UTC date/time components and formats month/weekday/timezone
+         * names against the UTC time zone, so the result doesn't depend on the caller's local time zone.
+         * Supports the same tokens as `format`. The `Z` token is always "+00:00".
+         *
+         * @param {string} pattern Format pattern string
+         * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
+         * @return {string} The formatted date, in UTC.
+         */
+        formatUTC(this: Date, pattern: string, lang: string = 'en'): string;
 
         /**
          * Returns the date formatted as YYYY-MM-DD.
@@ -458,10 +539,20 @@ declare global {
          */
         toDayKey(this: Date): string;
         /**
+         * UTC version of `toDayKey`. Uses the UTC calendar day instead of the local one.
+         * @return {string} A string representing the UTC date in YYYY-MM-DD format.
+         */
+        toDayKeyUTC(this: Date): string;
+        /**
          * Returns the month and year formatted as YYYY-MM.
          * @return {string} A string representing the month in YYYY-MM format.
          */
         toMonthKey(this: Date): string;
+        /**
+         * UTC version of `toMonthKey`. Uses the UTC calendar month instead of the local one.
+         * @return {string} A string representing the UTC month in YYYY-MM format.
+         */
+        toMonthKeyUTC(this: Date): string;
 
         /**
          * Returns the date formatted for input[type="date"] value.
@@ -469,10 +560,23 @@ declare global {
          */
         toInputDateValue(this: Date): string;
         /**
+         * UTC version of `toInputDateValue`. Useful when the Date represents a date-only value
+         * anchored at UTC midnight (e.g. coming from an API), so it doesn't shift a day depending
+         * on the browser's local time zone.
+         * @return {string} A string in YYYY-MM-DD format, from UTC fields.
+         */
+        toInputDateValueUTC(this: Date): string;
+        /**
          * Returns the date formatted for input[type="datetime-local"] value.
          * @return {string} A string in YYYY-MM-DDTHH:MM format.
          */
         toInputDatetimeLocalValue(this: Date): string;
+        /**
+         * UTC version of `toInputDatetimeLocalValue`. Builds the same input[type="datetime-local"]
+         * shaped string, but from UTC fields instead of the local time zone.
+         * @return {string} A string in YYYY-MM-DDTHH:MM format, from UTC fields.
+         */
+        toInputDatetimeLocalValueUTC(this: Date): string;
 
         // Comparation ---
 
@@ -494,6 +598,12 @@ declare global {
          */
         isSameDay(this: Date, other: Date | number): boolean;
         /**
+         * UTC version of `isSameDay`. Compares UTC year/month/day fields instead of local ones.
+         * @param {Date | number} other - The date to compare against.
+         * @return {boolean} True if both dates share the same UTC year, month, and day; otherwise false.
+         */
+        isSameDayUTC(this: Date, other: Date | number): boolean;
+        /**
          * Checks if two dates are on the same week.
          * @param {Date | number} other - The date to compare against.
          * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
@@ -501,23 +611,48 @@ declare global {
          */
         isSameWeek(this: Date, other: Date | number, weekStartsOnMonday: boolean = false): boolean;
         /**
+         * UTC version of `isSameWeek`. Resolves each week's start against UTC fields instead of
+         * the local time zone.
+         * @param {Date | number} other - The date to compare against.
+         * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+         * @return {boolean} True if both dates are in the same UTC week; otherwise false.
+         */
+        isSameWeekUTC(this: Date, other: Date | number, weekStartsOnMonday: boolean = false): boolean;
+        /**
          * Checks if two dates are on the same month.
          * @param {Date | number} other - The date to compare against.
          * @return {boolean} True if both dates share the same year and month; otherwise false.
          */
         isSameMonth(this: Date, other: Date | number): boolean;
         /**
+         * UTC version of `isSameMonth`. Compares UTC year/month fields instead of local ones.
+         * @param {Date | number} other - The date to compare against.
+         * @return {boolean} True if both dates share the same UTC year and month; otherwise false.
+         */
+        isSameMonthUTC(this: Date, other: Date | number): boolean;
+        /**
          * Checks if two dates are on the same year.
          * @param {Date | number} other - The date to compare against.
          * @return {boolean} True if both dates share the same year; otherwise false.
          */
         isSameYear(this: Date, other: Date | number): boolean;
+        /**
+         * UTC version of `isSameYear`. Compares the UTC year field instead of the local one.
+         * @param {Date | number} other - The date to compare against.
+         * @return {boolean} True if both dates share the same UTC year; otherwise false.
+         */
+        isSameYearUTC(this: Date, other: Date | number): boolean;
 
         /**
          * Indicates whether the date falls on a weekend (Saturday or Sunday).
          * @return {boolean} true if the day is Saturday (6) or Sunday (0), otherwise false.
          */
         isWeekend(this: Date): boolean;
+        /**
+         * UTC version of `isWeekend`. Uses the UTC weekday instead of the local one.
+         * @return {boolean} true if the UTC day is Saturday (6) or Sunday (0), otherwise false.
+         */
+        isWeekendUTC(this: Date): boolean;
 
         // Misc ---
 
@@ -540,12 +675,28 @@ declare global {
          * new Date(2025, 6, 10).monthsUntil(new Date(2025, 4, 5)); // → -2
          */
         monthsUntil(this: Date, other: Date | number): number;
+        /**
+         * UTC version of `monthsUntil`. Delegates to `Date.monthsBetweenUTC`, so year/month
+         * fields are read in UTC instead of local time.
+         *
+         * @param {Date} other The target date to compare with.
+         * @return {number} The signed number of UTC months from this date until the given date.
+         *
+         * @example
+         * new Date(Date.UTC(2025, 1, 25)).monthsUntilUTC(new Date(Date.UTC(2025, 2, 1))); // → 1
+         */
+        monthsUntilUTC(this: Date, other: Date | number): number;
 
         /**
          * Returns the number of days in the current month of the date.
          * @return {number} The total number of days in the month.
          */
         daysInMonth(this: Date): number;
+        /**
+         * UTC version of `daysInMonth`. Uses the UTC calendar month instead of the local one.
+         * @return {number} The total number of days in the UTC month.
+         */
+        daysInMonthUTC(this: Date): number;
     }
 
     interface PromiseConstructor {

@@ -797,6 +797,28 @@ Date['monthsBetween'] = function (a, b) {
     const months = bDate.getMonth() - aDate.getMonth();
     return years * 12 + months;
 };
+/**
+ * UTC version of `Date.monthsBetween`. Uses UTC year/month fields instead of local ones,
+ * so the result doesn't shift depending on the caller's time zone.
+ *
+ * @param {Date} a The starting date.
+ * @param {Date} b The ending date.
+ * @return {number} The signed number of months between `a` and `b`, in UTC.
+ *
+ * @example
+ * Date.monthsBetweenUTC(new Date(Date.UTC(2025, 1, 25)), new Date(Date.UTC(2025, 2, 1))); // → 1
+ */
+Date['monthsBetweenUTC'] = function (a, b) {
+    if (!(a instanceof Date) && typeof a !== 'number')
+        throw new Error(`a must be Date or number. Was ${typeof a}`);
+    if (!(b instanceof Date) && typeof b !== 'number')
+        throw new Error(`b must be Date or number. Was ${typeof b}`);
+    const aDate = a instanceof Date ? a : new Date(a);
+    const bDate = b instanceof Date ? b : new Date(b);
+    const years = bDate.getUTCFullYear() - aDate.getUTCFullYear();
+    const months = bDate.getUTCMonth() - aDate.getUTCMonth();
+    return years * 12 + months;
+};
 // Instance -------------------------------------
 // Time change ---
 /**
@@ -893,6 +915,22 @@ Object.defineProperty(Date.prototype, 'addMonths', {
     enumerable: false
 });
 /**
+ * UTC version of `addMonths`. Uses `setUTCMonth` instead of `setMonth`, so the month
+ * boundary is resolved against UTC fields instead of the local time zone.
+ * @param {number} months - Number of months to add.
+ * @return {Date} A new Date instance with the months added, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'addMonthsUTC', {
+    value: function (months) {
+        const d = new Date(this.getTime());
+        d.setUTCMonth(d.getUTCMonth() + months);
+        return d;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Adds the specified number of years to the date and returns a new Date instance.
  * @param {number} years - Number of years to add.
  * @return {Date} A new Date instance with the years added.
@@ -908,12 +946,40 @@ Object.defineProperty(Date.prototype, 'addYears', {
     enumerable: false
 });
 /**
+ * UTC version of `addYears`. Uses `setUTCFullYear` instead of `setFullYear`, so the year
+ * boundary is resolved against UTC fields instead of the local time zone.
+ * @param {number} years - Number of years to add.
+ * @return {Date} A new Date instance with the years added, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'addYearsUTC', {
+    value: function (years) {
+        const d = new Date(this.getTime());
+        d.setUTCFullYear(d.getUTCFullYear() + years);
+        return d;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing the first hour of the day at 00:00:00.
  * @return {Date} A new Date at the start of the day.
  */
 Object.defineProperty(Date.prototype, 'startOfDay', {
     value: function () {
         return new Date(this.getFullYear(), this.getMonth(), this.getDate());
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `startOfDay`. Returns 00:00:00 UTC of the same UTC calendar day.
+ * @return {Date} A new Date at the start of the day, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'startOfDayUTC', {
+    value: function () {
+        return new Date(Date.UTC(this.getUTCFullYear(), this.getUTCMonth(), this.getUTCDate()));
     },
     writable: false,
     configurable: false,
@@ -936,12 +1002,41 @@ Object.defineProperty(Date.prototype, 'startOfWeek', {
     enumerable: false
 });
 /**
+ * UTC version of `startOfWeek`. Resolves the week's starting day against UTC fields
+ * instead of the local time zone.
+ * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @return {Date} A new Date at the start of the week, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'startOfWeekUTC', {
+    value: function (weekStartsOnMonday = false) {
+        const day = this.getUTCDay();
+        const diff = weekStartsOnMonday ? (day == 0 ? -6 : 1 - day)
+            : -day;
+        return new Date(Date.UTC(this.getUTCFullYear(), this.getUTCMonth(), this.getUTCDate() + diff));
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing the first day of the month at 00:00:00.
  * @return {Date} A new Date at the start of the month.
  */
 Object.defineProperty(Date.prototype, 'startOfMonth', {
     value: function () {
         return new Date(this.getFullYear(), this.getMonth());
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `startOfMonth`. Returns the 1st of the UTC calendar month at 00:00:00 UTC.
+ * @return {Date} A new Date at the start of the month, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'startOfMonthUTC', {
+    value: function () {
+        return new Date(Date.UTC(this.getUTCFullYear(), this.getUTCMonth()));
     },
     writable: false,
     configurable: false,
@@ -960,12 +1055,36 @@ Object.defineProperty(Date.prototype, 'startOfYear', {
     enumerable: false
 });
 /**
+ * UTC version of `startOfYear`. Returns January 1st of the UTC calendar year at 00:00:00 UTC.
+ * @return {Date} A new Date at the start of the year, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'startOfYearUTC', {
+    value: function () {
+        return new Date(Date.UTC(this.getUTCFullYear(), 0));
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing the last hour of the day at 23:59:59.999.
  * @return {Date} A new Date at the end of the day.
  */
 Object.defineProperty(Date.prototype, 'endOfDay', {
     value: function () {
         return new Date(this.addDays(1).startOfDay().getTime() - 1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `endOfDay`. Returns 23:59:59.999 UTC of the same UTC calendar day.
+ * @return {Date} A new Date at the end of the day, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'endOfDayUTC', {
+    value: function () {
+        return new Date(this.addDays(1).startOfDayUTC().getTime() - 1);
     },
     writable: false,
     configurable: false,
@@ -985,6 +1104,20 @@ Object.defineProperty(Date.prototype, 'endOfWeek', {
     enumerable: false
 });
 /**
+ * UTC version of `endOfWeek`. Resolves the week's end against UTC fields instead of
+ * the local time zone.
+ * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @return {Date} A new Date at the end of the week, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'endOfWeekUTC', {
+    value: function (weekStartsOnMonday = false) {
+        return new Date(this.addWeeks(1).startOfWeekUTC(weekStartsOnMonday).getTime() - 1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing the last day of the month at 23:59:59.999.
  * @return {Date} A new Date at the end of the month.
  */
@@ -997,12 +1130,36 @@ Object.defineProperty(Date.prototype, 'endOfMonth', {
     enumerable: false
 });
 /**
+ * UTC version of `endOfMonth`. Returns the last instant of the UTC calendar month.
+ * @return {Date} A new Date at the end of the month, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'endOfMonthUTC', {
+    value: function () {
+        return new Date(this.addMonthsUTC(1).startOfMonthUTC().getTime() - 1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing December 31st of the year at 23:59:59.999.
  * @return {Date} A new Date at the end of the year.
  */
 Object.defineProperty(Date.prototype, 'endOfYear', {
     value: function () {
         return new Date(this.addYears(1).startOfYear().getTime() - 1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `endOfYear`. Returns the last instant of the UTC calendar year.
+ * @return {Date} A new Date at the end of the year, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'endOfYearUTC', {
+    value: function () {
+        return new Date(this.addYearsUTC(1).startOfYearUTC().getTime() - 1);
     },
     writable: false,
     configurable: false,
@@ -1074,6 +1231,51 @@ Object.defineProperty(Date.prototype, 'format', {
     enumerable: false
 });
 /**
+ * UTC version of `format`. Uses UTC date/time components and formats month/weekday/timezone
+ * names against the UTC time zone, so the result doesn't depend on the caller's local time zone.
+ * Supports the same tokens as `format`. The `Z` token is always "+00:00".
+ *
+ * @param {string} pattern Format pattern string
+ * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
+ * @return {string} The formatted date, in UTC.
+ */
+Object.defineProperty(Date.prototype, 'formatUTC', {
+    value: function (pattern, lang = 'en') {
+        const pad = (n) => String(n).padStart(2, '0');
+        const rep = {
+            // Numeric
+            'YYYY': String(this.getUTCFullYear()),
+            'MM': pad(this.getUTCMonth() + 1),
+            'DD': pad(this.getUTCDate()),
+            'HH': pad(this.getUTCHours()),
+            'hh': pad(this.getUTCHours() % 12 || 12),
+            'mm': pad(this.getUTCMinutes()),
+            'ss': pad(this.getUTCSeconds()),
+            // Month names
+            'MMMM': new Intl.DateTimeFormat(lang, { month: 'long', timeZone: 'UTC' }).format(this)
+                .upperCaseFirst(),
+            'MMM': new Intl.DateTimeFormat(lang, { month: 'short', timeZone: 'UTC' }).format(this)
+                .slice(0, 3).replace('.', '').upperCaseFirst(),
+            // Weekday names
+            'dddd': new Intl.DateTimeFormat(lang, { weekday: 'long', timeZone: 'UTC' }).format(this)
+                .upperCaseFirst(),
+            'ddd': new Intl.DateTimeFormat(lang, { weekday: 'short', timeZone: 'UTC' }).format(this)
+                .slice(0, 2).replace('.', '').upperCaseFirst(),
+            // Timezone names
+            'z': new Intl.DateTimeFormat(lang, { timeZoneName: 'short', timeZone: 'UTC' }).formatToParts(this)
+                .find(p => p.type === 'timeZoneName')?.value || '',
+            'zz': new Intl.DateTimeFormat(lang, { timeZoneName: 'long', timeZone: 'UTC' }).formatToParts(this)
+                .find(p => p.type === 'timeZoneName')?.value || '',
+            // Numeric timezone offset (always UTC)
+            'Z': '+00:00',
+        };
+        return pattern.replace(/YYYY|DD|HH|hh|mm|ss|MMMM|MMM|MM|dddd|ddd|zz|z|Z/g, t => rep[t]);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns the date formatted as YYYY-MM-DD.
  * @return {string} A string representing the date in YYYY-MM-DD format.
  */
@@ -1089,12 +1291,39 @@ Object.defineProperty(Date.prototype, 'toDayKey', {
     enumerable: false
 });
 /**
+ * UTC version of `toDayKey`. Uses the UTC calendar day instead of the local one.
+ * @return {string} A string representing the UTC date in YYYY-MM-DD format.
+ */
+Object.defineProperty(Date.prototype, 'toDayKeyUTC', {
+    value: function () {
+        const year = this.getUTCFullYear();
+        const month = String(this.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(this.getUTCDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns the month and year formatted as YYYY-MM.
  * @return {string} A string representing the month in YYYY-MM format.
  */
 Object.defineProperty(Date.prototype, 'toMonthKey', {
     value: function () {
         return this.toDayKey().slice(0, 7);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `toMonthKey`. Uses the UTC calendar month instead of the local one.
+ * @return {string} A string representing the UTC month in YYYY-MM format.
+ */
+Object.defineProperty(Date.prototype, 'toMonthKeyUTC', {
+    value: function () {
+        return this.toDayKeyUTC().slice(0, 7);
     },
     writable: false,
     configurable: false,
@@ -1118,6 +1347,25 @@ Object.defineProperty(Date.prototype, 'toInputDateValue', {
     enumerable: false
 });
 /**
+ * UTC version of `toInputDateValue`. Useful when the Date represents a date-only value
+ * anchored at UTC midnight (e.g. coming from an API), so it doesn't shift a day depending
+ * on the browser's local time zone.
+ * @return {string} A string in YYYY-MM-DD format, from UTC fields.
+ */
+Object.defineProperty(Date.prototype, 'toInputDateValueUTC', {
+    value: function () {
+        if (!this || isNaN(this.getTime()))
+            return '';
+        const year = this.getUTCFullYear();
+        const month = String(this.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(this.getUTCDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns the date formatted for input[type="datetime-local"] value.
  * @return {string} A string in YYYY-MM-DDTHH:MM format.
  */
@@ -1130,6 +1378,26 @@ Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValue', {
         const day = String(this.getDate()).padStart(2, '0');
         const hours = String(this.getHours()).padStart(2, '0');
         const minutes = String(this.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `toInputDatetimeLocalValue`. Builds the same input[type="datetime-local"]
+ * shaped string, but from UTC fields instead of the local time zone.
+ * @return {string} A string in YYYY-MM-DDTHH:MM format, from UTC fields.
+ */
+Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValueUTC', {
+    value: function () {
+        if (!this || isNaN(this.getTime()))
+            return '';
+        const year = this.getUTCFullYear();
+        const month = String(this.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(this.getUTCDate()).padStart(2, '0');
+        const hours = String(this.getUTCHours()).padStart(2, '0');
+        const minutes = String(this.getUTCMinutes()).padStart(2, '0');
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     },
     writable: false,
@@ -1180,6 +1448,24 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
     enumerable: false
 });
 /**
+ * UTC version of `isSameDay`. Compares UTC year/month/day fields instead of local ones.
+ * @param {Date | number} other - The date to compare against.
+ * @return {boolean} True if both dates share the same UTC year, month, and day; otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isSameDayUTC', {
+    value: function (other) {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
+        return this.getUTCFullYear() === otherDate.getUTCFullYear()
+            && this.getUTCMonth() === otherDate.getUTCMonth()
+            && this.getUTCDate() === otherDate.getUTCDate();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Checks if two dates are on the same week.
  * @param {Date | number} other - The date to compare against.
  * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
@@ -1192,6 +1478,25 @@ Object.defineProperty(Date.prototype, 'isSameWeek', {
         const otherDate = other instanceof Date ? other : new Date(other);
         return this.startOfWeek(weekStartsOnMonday).getTime()
             == otherDate.startOfWeek(weekStartsOnMonday).getTime();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `isSameWeek`. Resolves each week's start against UTC fields instead of
+ * the local time zone.
+ * @param {Date | number} other - The date to compare against.
+ * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @return {boolean} True if both dates are in the same UTC week; otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isSameWeekUTC', {
+    value: function (other, weekStartsOnMonday = false) {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
+        return this.startOfWeekUTC(weekStartsOnMonday).getTime()
+            == otherDate.startOfWeekUTC(weekStartsOnMonday).getTime();
     },
     writable: false,
     configurable: false,
@@ -1215,6 +1520,23 @@ Object.defineProperty(Date.prototype, 'isSameMonth', {
     enumerable: false
 });
 /**
+ * UTC version of `isSameMonth`. Compares UTC year/month fields instead of local ones.
+ * @param {Date | number} other - The date to compare against.
+ * @return {boolean} True if both dates share the same UTC year and month; otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isSameMonthUTC', {
+    value: function (other) {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
+        return this.getUTCFullYear() === otherDate.getUTCFullYear()
+            && this.getUTCMonth() === otherDate.getUTCMonth();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Checks if two dates are on the same year.
  * @param {Date | number} other - The date to compare against.
  * @return {boolean} True if both dates share the same year; otherwise false.
@@ -1231,12 +1553,40 @@ Object.defineProperty(Date.prototype, 'isSameYear', {
     enumerable: false
 });
 /**
+ * UTC version of `isSameYear`. Compares the UTC year field instead of the local one.
+ * @param {Date | number} other - The date to compare against.
+ * @return {boolean} True if both dates share the same UTC year; otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isSameYearUTC', {
+    value: function (other) {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
+        return this.getUTCFullYear() === otherDate.getUTCFullYear();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Indicates whether the date falls on a weekend (Saturday or Sunday).
  * @return {boolean} true if the day is Saturday (6) or Sunday (0), otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isWeekend', {
     value: function () {
         return this.getDay() == 0 || this.getDay() == 6;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `isWeekend`. Uses the UTC weekday instead of the local one.
+ * @return {boolean} true if the UTC day is Saturday (6) or Sunday (0), otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isWeekendUTC', {
+    value: function () {
+        return this.getUTCDay() == 0 || this.getUTCDay() == 6;
     },
     writable: false,
     configurable: false,
@@ -1279,12 +1629,45 @@ Object.defineProperty(Date.prototype, 'monthsUntil', {
     enumerable: false
 });
 /**
+ * UTC version of `monthsUntil`. Delegates to `Date.monthsBetweenUTC`, so year/month
+ * fields are read in UTC instead of local time.
+ *
+ * @param {Date} other The target date to compare with.
+ * @return {number} The signed number of UTC months from this date until the given date.
+ *
+ * @example
+ * new Date(Date.UTC(2025, 1, 25)).monthsUntilUTC(new Date(Date.UTC(2025, 2, 1))); // → 1
+ */
+Object.defineProperty(Date.prototype, 'monthsUntilUTC', {
+    value: function (other) {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+        const otherDate = other instanceof Date ? other : new Date(other);
+        return Date.monthsBetweenUTC(this, otherDate);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns the number of days in the current month of the date.
  * @return {number} The total number of days in the month.
  */
 Object.defineProperty(Date.prototype, 'daysInMonth', {
     value: function () {
         return this.endOfMonth().getDate();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `daysInMonth`. Uses the UTC calendar month instead of the local one.
+ * @return {number} The total number of days in the UTC month.
+ */
+Object.defineProperty(Date.prototype, 'daysInMonthUTC', {
+    value: function () {
+        return this.endOfMonthUTC().getUTCDate();
     },
     writable: false,
     configurable: false,
