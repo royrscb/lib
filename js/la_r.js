@@ -2045,7 +2045,7 @@ $(document).on('paste', '.uppercase-first', function(a, b, c){
  * Note: Year is approximated as 365.25 days. Generation and manipulation
  * use numbers and are not suitable for high-precision scientific timing.
  */
-export class TimeSpan {
+class TimeSpan {
     // Constants --------------------------------
     /** Milliseconds per second. */
     static MS_PER_SECOND = 1000;
