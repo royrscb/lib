@@ -2150,12 +2150,16 @@ class TimeSpan {
      * Create a TimeSpan representing the time elapsed since the provided
      * Unix time (milliseconds) or Date. Equivalent to now - input.
      * Positive if input is in the past and negative if is in the future.
-     * @param {number|Date} arg1 - Unix time in milliseconds, or a Date instance.
+     * @param {number|Date} millisecondsUnixTime_or_date - Unix time in milliseconds, or a Date instance.
+     * @throws {Error} if arg1 is neither a number nor a Date instance.
      * @returns {TimeSpan} TimeSpan from the given time until now.
      */
-    static untilNow(arg1) {
-        const millisUnixTime = typeof arg1 === 'number'
-            ? arg1 : arg1.getTime();
+    static untilNow(millisecondsUnixTime_or_date) {
+        let millisUnixTime;
+        if (typeof millisecondsUnixTime_or_date === 'number') millisUnixTime = millisecondsUnixTime_or_date;
+        else if (millisecondsUnixTime_or_date instanceof Date) millisUnixTime = millisecondsUnixTime_or_date.getTime();
+        else throw new Error("untilNow expects a number (Unix time in milliseconds) or a Date instance, got: " + typeof millisecondsUnixTime_or_date);
+ 
         return TimeSpan.fromMillis(Date.now() - millisUnixTime);
     }
 
