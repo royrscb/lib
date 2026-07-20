@@ -1778,9 +1778,9 @@ const La = {
     },
 
     // Consts
-    EURO_CHAR = '€',
-    TIMESTAMP = 'Y-m-d H:i:s',
-    COUNTRIES = [
+    EURO_CHAR: '€',
+    TIMESTAMP: 'Y-m-d H:i:s',
+    COUNTRIES: [
         { code: "AF", flag: "🇦🇫", name: "Afghanistan" },
         { code: "AL", flag: "🇦🇱", name: "Albania" },
         { code: "DZ", flag: "🇩🇿", name: "Algeria" },
@@ -1977,7 +1977,7 @@ const La = {
         { code: "ZW", flag: "🇿🇼", name: "Zimbab" },
     ],
 
-    TIMEFORMAT = {
+    TIMEFORMAT: {
         timestamp: 'Y-m-d H:i:s',
         UTC_timestamp: 'UTC_TIMESTAMP',
         input_datetimeLocal: 'Y-m-dTh:i',
@@ -1998,12 +1998,12 @@ const La = {
         month_name: 'M',
         years: 'Y'
     },
-    DEVICE = {
+    DEVICE: {
         mobile: 'MOBILE',
         tablet: 'TABLET',
         desktop: 'DESKTOP'
     },
-    HTTP_STATUS_CODES = {
+    HTTP_STATUS_CODES: {
         // 1xx informational response
         100: 'Continue',
         101: 'Switching Protocols',
