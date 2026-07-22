@@ -1728,6 +1728,49 @@ Object.defineProperty(Date.prototype, 'getUnixTime', {
 });
 
 /**
+ * Returns the date in standard ISO 8601 format with the local timezone offset.
+ * Example: "2026-07-22T12:34:56.789+02:00"
+ * @return {string} ISO 8601 string including the local offset.
+ */
+Object.defineProperty(Date.prototype, 'getTimestamp', {
+    value: function(this: Date): string {
+        if (!this || isNaN(this.getTime()))
+            return '';
+
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const offsetMinutes = -this.getTimezoneOffset();
+        const offsetSign = offsetMinutes >= 0 ? '+' : '-';
+        const offsetAbs = Math.abs(offsetMinutes);
+        const offset = `${offsetSign}${pad(Math.floor(offsetAbs / 60))}:${pad(offsetAbs % 60)}`;
+
+        const milliseconds = String(this.getMilliseconds()).padStart(3, '0');
+
+        return `${this.getFullYear()}-${pad(this.getMonth() + 1)}-${pad(this.getDate())}` +
+            `T${pad(this.getHours())}:${pad(this.getMinutes())}:${pad(this.getSeconds())}.${milliseconds}` +
+            offset;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns the date in standard ISO 8601 UTC format.
+ * Example: "2026-07-22T10:34:56.789Z"
+ * @return {string} ISO 8601 string in UTC.
+ */
+Object.defineProperty(Date.prototype, 'getTimestampUTC', {
+    value: function(this: Date): string {
+        if (!this || isNaN(this.getTime()))
+            return '';
+
+        return this.toISOString();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+
+/**
  * Calculates the number of whole months between this date and another date.
  * Positive if the other date is in the future, negative if it is in the past.
  * Day and time components are ignored; only year and month differences are considered.

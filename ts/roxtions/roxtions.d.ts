@@ -663,6 +663,19 @@ declare global {
         getUnixTime(this: Date): number;
 
         /**
+         * Returns the date in standard ISO 8601 format with the local timezone offset.
+         * Example: "2026-07-22T12:34:56.789+02:00"
+         * @return {string} ISO 8601 string including the local offset.
+         */
+        getTimestamp(this: Date): string;
+        /**
+         * Returns the date in standard ISO 8601 UTC format.
+         * Example: "2026-07-22T10:34:56.789Z"
+         * @return {string} ISO 8601 string in UTC.
+         */
+        getTimestampUTC(this: Date): string;
+
+        /**
          * Calculates the number of whole months between this date and another date.
          * Positive if the other date is in the future, negative if it is in the past.
          * Day and time components are ignored; only year and month differences are considered.
