@@ -1612,8 +1612,6 @@ Object.defineProperty(Date.prototype, 'getUnixTime', {
  */
 Object.defineProperty(Date.prototype, 'getTimestamp', {
     value: function () {
-        if (!this || isNaN(this.getTime()))
-            return '';
         const pad = (n) => String(n).padStart(2, '0');
         const offsetMinutes = -this.getTimezoneOffset();
         const offsetSign = offsetMinutes >= 0 ? '+' : '-';
@@ -1635,8 +1633,6 @@ Object.defineProperty(Date.prototype, 'getTimestamp', {
  */
 Object.defineProperty(Date.prototype, 'getTimestampUTC', {
     value: function () {
-        if (!this || isNaN(this.getTime()))
-            return '';
         return this.toISOString();
     },
     writable: false,
