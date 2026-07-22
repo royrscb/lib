@@ -541,11 +541,6 @@ const La = {
             else if(a > b) return 1
             else if(a < b) return -1
             else return 0
-        },
-        byTime(time_a, time_b, oldToNew = true){
-
-            if(oldToNew) return La.time.parse(time_a) - La.time.parse(time_b)
-            else return La.time.parse(time_b) - La.time.parse(time_a)
         }
     } ,
 
@@ -1542,7 +1537,7 @@ const La = {
 
 			let expirationTimes = JSON.parse(localStorage.getItem(La.storage._expirationTimesName)) || {}
 
-			if(expiration) expirationTimes[key] = Number.isInteger(expiration) ? Date.now() + expiration : La.time.parse(expiration).getTime()
+			if(expiration) expirationTimes[key] = Number.isInteger(expiration) ? Date.now() + expiration : new Date(expiration).getTime()
 			else if(expiration === null && expirationTimes[key]) delete expirationTimes[key]
 
 			if(!expiration || Date.now() < expirationTimes[key]){
@@ -1571,7 +1566,7 @@ const La = {
 
 			Object.keys(localStorage).filter(key => La.storage.exists(key)).forEach(key => {
 
-				if(Object.keys(expirationTimes).includes(key)) console.log('%c'+key+': %c['+La.time.parse(expirationTimes[key], La.TIMEFORMAT.timestamp)+']', 'font-weight: bold; font-size: 12px', 'color: red', La.storage.get(key))
+				if(Object.keys(expirationTimes).includes(key)) console.log('%c'+key+': %c['+new Date(expirationTimes[key]).format('YYYY-MM-DD HH:mm:ss Z')+']', 'font-weight: bold; font-size: 12px', 'color: red', La.storage.get(key))
 				else console.log('%c'+key+':', 'font-weight: bold; font-size: 12px', La.storage.get(key))
 			})
 		},
@@ -1779,7 +1774,6 @@ const La = {
 
     // Consts
     EURO_CHAR: '€',
-    TIMESTAMP: 'Y-m-d H:i:s',
     COUNTRIES: [
         { code: "AF", flag: "🇦🇫", name: "Afghanistan" },
         { code: "AL", flag: "🇦🇱", name: "Albania" },
@@ -1977,27 +1971,6 @@ const La = {
         { code: "ZW", flag: "🇿🇼", name: "Zimbab" },
     ],
 
-    TIMEFORMAT: {
-        timestamp: 'Y-m-d H:i:s',
-        UTC_timestamp: 'UTC_TIMESTAMP',
-        input_datetimeLocal: 'Y-m-dTh:i',
-        unix_time: 'U',
-
-        milliseconds: 'v',
-        seconds: 's',
-        minutes: 'i',
-        hours: 'h',
-        hour_24: 'H',
-        days: 'd',
-        day_name_short: 'C',
-        day_name: 'D',
-        weeks: 'w',
-        week_day_starting_monday: 'W',
-        months: 'm',
-        month_name_short: 'N',
-        month_name: 'M',
-        years: 'Y'
-    },
     DEVICE: {
         mobile: 'MOBILE',
         tablet: 'TABLET',
