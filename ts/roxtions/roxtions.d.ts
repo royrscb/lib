@@ -341,6 +341,15 @@ declare global {
          * Date.monthsBetweenUTC(new Date(Date.UTC(2025, 1, 25)), new Date(Date.UTC(2025, 2, 1))); // → 1
          */
         monthsBetweenUTC(a: Date | number, b: Date | number): number;
+
+        /**
+         * Spain version of `Date.monthsBetween`. Uses Europe/Madrid year/month fields instead of local ones.
+         *
+         * @param {Date} a The starting date.
+         * @param {Date} b The ending date.
+         * @return {number} The signed number of months between `a` and `b`, in Spain time.
+         */
+        monthsBetweenSpain(a: Date | number, b: Date | number): number;
     }
     interface Date {
         // Time change ---
@@ -395,6 +404,12 @@ declare global {
          */
         addMonthsUTC(this: Date, months: number): Date;
         /**
+         * Spain version of `addMonths`. Uses the Europe/Madrid calendar instead of the local time zone.
+         * @param {number} months - Number of months to add.
+         * @return {Date} A new Date instance with the months added, in Spain time.
+         */
+        addMonthsSpain(this: Date, months: number): Date;
+        /**
          * Adds the specified number of years to the date and returns a new Date instance.
          * @param {number} years - Number of years to add.
          * @return {Date} A new Date instance with the years added.
@@ -407,6 +422,12 @@ declare global {
          * @return {Date} A new Date instance with the years added, in UTC.
          */
         addYearsUTC(this: Date, years: number): Date;
+        /**
+         * Spain version of `addYears`. Uses the Europe/Madrid calendar instead of the local time zone.
+         * @param {number} years - Number of years to add.
+         * @return {Date} A new Date instance with the years added, in Spain time.
+         */
+        addYearsSpain(this: Date, years: number): Date;
 
         /**
          * Returns a new Date representing the first hour of the day at 00:00:00.
@@ -418,6 +439,11 @@ declare global {
          * @return {Date} A new Date at the start of the day, in UTC.
          */
         startOfDayUTC(this: Date): Date;
+        /**
+         * Spain version of `startOfDay`. Returns 00:00:00 Europe/Madrid of the same Spain calendar day.
+         * @return {Date} A new Date at the start of the day, in Spain time.
+         */
+        startOfDaySpain(this: Date): Date;
         /**
          * Returns a new Date representing the first day of the week at 00:00:00.
          * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
@@ -432,6 +458,12 @@ declare global {
          */
         startOfWeekUTC(this: Date, weekStartsOnMonday: boolean = false): Date;
         /**
+         * Spain version of `startOfWeek`. Resolves the week's starting day against Spain fields.
+         * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+         * @return {Date} A new Date at the start of the week, in Spain time.
+         */
+        startOfWeekSpain(this: Date, weekStartsOnMonday: boolean = false): Date;
+        /**
          * Returns a new Date representing the first day of the month at 00:00:00.
          * @return {Date} A new Date at the start of the month.
          */
@@ -442,6 +474,11 @@ declare global {
          */
         startOfMonthUTC(this: Date): Date;
         /**
+         * Spain version of `startOfMonth`. Returns the 1st of the Spain calendar month at 00:00:00 Europe/Madrid.
+         * @return {Date} A new Date at the start of the month, in Spain time.
+         */
+        startOfMonthSpain(this: Date): Date;
+        /**
          * Returns a new Date representing January 1st of the year at 00:00:00.
          * @return {Date} A new Date at the start of the year.
          */
@@ -451,6 +488,11 @@ declare global {
          * @return {Date} A new Date at the start of the year, in UTC.
          */
         startOfYearUTC(this: Date): Date;
+        /**
+         * Spain version of `startOfYear`. Returns January 1st of the Spain calendar year at 00:00:00 Europe/Madrid.
+         * @return {Date} A new Date at the start of the year, in Spain time.
+         */
+        startOfYearSpain(this: Date): Date;
 
         /**
          * Returns a new Date representing the last hour of the day at 23:59:59.999.
@@ -462,6 +504,11 @@ declare global {
          * @return {Date} A new Date at the end of the day, in UTC.
          */
         endOfDayUTC(this: Date): Date;
+        /**
+         * Spain version of `endOfDay`. Returns 23:59:59.999 Europe/Madrid of the same Spain calendar day.
+         * @return {Date} A new Date at the end of the day, in Spain time.
+         */
+        endOfDaySpain(this: Date): Date;
         /**
          * Returns a new Date representing the last day of the week at 23:59:59.999.
          * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
@@ -476,6 +523,12 @@ declare global {
          */
         endOfWeekUTC(this: Date, weekStartsOnMonday: boolean = false): Date;
         /**
+         * Spain version of `endOfWeek`. Resolves the week's end against Spain fields.
+         * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+         * @return {Date} A new Date at the end of the week, in Spain time.
+         */
+        endOfWeekSpain(this: Date, weekStartsOnMonday: boolean = false): Date;
+        /**
          * Returns a new Date representing the last day of the month at 23:59:59.999.
          * @return {Date} A new Date at the end of the month.
          */
@@ -486,6 +539,11 @@ declare global {
          */
         endOfMonthUTC(this: Date): Date;
         /**
+         * Spain version of `endOfMonth`. Returns the last instant of the Spain calendar month.
+         * @return {Date} A new Date at the end of the month, in Spain time.
+         */
+        endOfMonthSpain(this: Date): Date;
+        /**
          * Returns a new Date representing December 31st of the year at 23:59:59.999.
          * @return {Date} A new Date at the end of the year.
          */
@@ -495,6 +553,11 @@ declare global {
          * @return {Date} A new Date at the end of the year, in UTC.
          */
         endOfYearUTC(this: Date): Date;
+        /**
+         * Spain version of `endOfYear`. Returns the last instant of the Spain calendar year.
+         * @return {Date} A new Date at the end of the year, in Spain time.
+         */
+        endOfYearSpain(this: Date): Date;
 
         // Format ---
 
@@ -532,6 +595,13 @@ declare global {
          * @return {string} The formatted date, in UTC.
          */
         formatUTC(this: Date, pattern: string, lang: string = 'en'): string;
+        /**
+         * Spain version of `format`. Uses Europe/Madrid date/time components and Spain locale formatting.
+         * @param {string} pattern Format pattern string
+         * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
+         * @return {string} The formatted date, in Spain time.
+         */
+        formatSpain(this: Date, pattern: string, lang: string = 'es'): string;
 
         /**
          * Returns the date formatted as YYYY-MM-DD.
@@ -544,6 +614,11 @@ declare global {
          */
         toDayKeyUTC(this: Date): string;
         /**
+         * Spain version of `toDayKey`. Uses the Europe/Madrid calendar day instead of the local one.
+         * @return {string} A string representing the Spain date in YYYY-MM-DD format.
+         */
+        toDayKeySpain(this: Date): string;
+        /**
          * Returns the month and year formatted as YYYY-MM.
          * @return {string} A string representing the month in YYYY-MM format.
          */
@@ -553,6 +628,11 @@ declare global {
          * @return {string} A string representing the UTC month in YYYY-MM format.
          */
         toMonthKeyUTC(this: Date): string;
+        /**
+         * Spain version of `toMonthKey`. Uses the Europe/Madrid calendar month instead of the local one.
+         * @return {string} A string representing the Spain month in YYYY-MM format.
+         */
+        toMonthKeySpain(this: Date): string;
 
         /**
          * Returns the date formatted for input[type="date"] value.
@@ -567,6 +647,11 @@ declare global {
          */
         toInputDateValueUTC(this: Date): string;
         /**
+         * Spain version of `toInputDateValue`. Uses the Europe/Madrid date fields, so it does not shift depending on the machine's local time zone.
+         * @return {string} A string in YYYY-MM-DD format, from Spain fields.
+         */
+        toInputDateValueSpain(this: Date): string;
+        /**
          * Returns the date formatted for input[type="datetime-local"] value.
          * @return {string} A string in YYYY-MM-DDTHH:MM format.
          */
@@ -577,6 +662,12 @@ declare global {
          * @return {string} A string in YYYY-MM-DDTHH:MM format, from UTC fields.
          */
         toInputDatetimeLocalValueUTC(this: Date): string;
+        /**
+         * Spain version of `toInputDatetimeLocalValue`. Builds the same input[type="datetime-local"]
+         * shaped string, but using the Europe/Madrid timezone instead of the host local zone.
+         * @return {string} A string in YYYY-MM-DDTHH:MM format, from Spain fields.
+         */
+        toInputDatetimeLocalValueSpain(this: Date): string;
 
         // Comparation ---
 
@@ -604,6 +695,12 @@ declare global {
          */
         isSameDayUTC(this: Date, other: Date | number): boolean;
         /**
+         * Spain version of `isSameDay`. Compares the Spain calendar year/month/day fields.
+         * @param {Date | number} other - The date to compare against.
+         * @return {boolean} True if both dates share the same Spain year, month, and day; otherwise false.
+         */
+        isSameDaySpain(this: Date, other: Date | number): boolean;
+        /**
          * Checks if two dates are on the same week.
          * @param {Date | number} other - The date to compare against.
          * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
@@ -619,6 +716,13 @@ declare global {
          */
         isSameWeekUTC(this: Date, other: Date | number, weekStartsOnMonday: boolean = false): boolean;
         /**
+         * Spain version of `isSameWeek`. Resolves each week's start against Spain fields.
+         * @param {Date | number} other - The date to compare against.
+         * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+         * @return {boolean} True if both dates are in the same Spain week; otherwise false.
+         */
+        isSameWeekSpain(this: Date, other: Date | number, weekStartsOnMonday: boolean = false): boolean;
+        /**
          * Checks if two dates are on the same month.
          * @param {Date | number} other - The date to compare against.
          * @return {boolean} True if both dates share the same year and month; otherwise false.
@@ -631,6 +735,12 @@ declare global {
          */
         isSameMonthUTC(this: Date, other: Date | number): boolean;
         /**
+         * Spain version of `isSameMonth`. Compares Spain year/month fields.
+         * @param {Date | number} other - The date to compare against.
+         * @return {boolean} True if both dates share the same Spain year and month; otherwise false.
+         */
+        isSameMonthSpain(this: Date, other: Date | number): boolean;
+        /**
          * Checks if two dates are on the same year.
          * @param {Date | number} other - The date to compare against.
          * @return {boolean} True if both dates share the same year; otherwise false.
@@ -642,6 +752,12 @@ declare global {
          * @return {boolean} True if both dates share the same UTC year; otherwise false.
          */
         isSameYearUTC(this: Date, other: Date | number): boolean;
+        /**
+         * Spain version of `isSameYear`. Compares the Spain year field.
+         * @param {Date | number} other - The date to compare against.
+         * @return {boolean} True if both dates share the same Spain year; otherwise false.
+         */
+        isSameYearSpain(this: Date, other: Date | number): boolean;
 
         /**
          * Indicates whether the date falls on a weekend (Saturday or Sunday).
@@ -653,6 +769,11 @@ declare global {
          * @return {boolean} true if the UTC day is Saturday (6) or Sunday (0), otherwise false.
          */
         isWeekendUTC(this: Date): boolean;
+        /**
+         * Spain version of `isWeekend`. Uses the Spain weekday instead of the local one.
+         * @return {boolean} true if the Spain day is Saturday (6) or Sunday (0), otherwise false.
+         */
+        isWeekendSpain(this: Date): boolean;
 
         // Misc ---
 
@@ -674,6 +795,12 @@ declare global {
          * @return {string} ISO 8601 string in UTC.
          */
         getTimestampUTC(this: Date): string;
+        /**
+         * Returns the date in standard ISO 8601 format for the Europe/Madrid timezone.
+         * Example: "2026-07-22T12:34:56.789+02:00"
+         * @return {string} ISO 8601 string in Spain time.
+         */
+        getTimestampSpain(this: Date): string;
 
         /**
          * Calculates the number of whole months between this date and another date.
@@ -699,6 +826,12 @@ declare global {
          * new Date(Date.UTC(2025, 1, 25)).monthsUntilUTC(new Date(Date.UTC(2025, 2, 1))); // → 1
          */
         monthsUntilUTC(this: Date, other: Date | number): number;
+        /**
+         * Spain version of `monthsUntil`. Delegates to `Date.monthsBetweenSpain` using Europe/Madrid fields.
+         * @param {Date} other The target date to compare with.
+         * @return {number} The signed number of Spain months from this date until the given date.
+         */
+        monthsUntilSpain(this: Date, other: Date | number): number;
 
         /**
          * Returns the number of days in the current month of the date.
@@ -710,6 +843,11 @@ declare global {
          * @return {number} The total number of days in the UTC month.
          */
         daysInMonthUTC(this: Date): number;
+        /**
+         * Spain version of `daysInMonth`. Uses the Europe/Madrid calendar month instead of the local one.
+         * @return {number} The total number of days in the Spain month.
+         */
+        daysInMonthSpain(this: Date): number;
     }
 
     interface PromiseConstructor {

@@ -887,6 +887,30 @@ Date['monthsBetweenUTC'] = function(a: Date | number, b: Date | number): number 
     const months = bDate.getUTCMonth() - aDate.getUTCMonth();
     return years * 12 + months;
 }
+/**
+ * Spain version of `Date.monthsBetween`. Uses Spain calendar year/month fields instead of local ones,
+ * so the result is stable for the Europe/Madrid timezone.
+ *
+ * @param {Date} a The starting date.
+ * @param {Date} b The ending date.
+ * @return {number} The signed number of months between `a` and `b`, in Spain time.
+ */
+Date['monthsBetweenSpain'] = function(a: Date | number, b: Date | number): number {
+    if (!(a instanceof Date) && typeof a !== 'number')
+        throw new Error(`a must be Date or number. Was ${typeof a}`);
+    if (!(b instanceof Date) && typeof b !== 'number')
+        throw new Error(`b must be Date or number. Was ${typeof b}`);
+
+    const aDate = a instanceof Date ? a : new Date(a);
+    const bDate = b instanceof Date ? b : new Date(b);
+
+    const aParts = getPartsInTimeZone(aDate, SPAIN_TIME_ZONE);
+    const bParts = getPartsInTimeZone(bDate, SPAIN_TIME_ZONE);
+
+    const years = bParts.year - aParts.year;
+    const months = bParts.month - aParts.month;
+    return years * 12 + months;
+}
 
 // Instance -------------------------------------
 
@@ -1002,6 +1026,21 @@ Object.defineProperty(Date.prototype, 'addMonthsUTC', {
     enumerable: false
 });
 /**
+ * Spain version of `addMonths`. Uses the Spain calendar instead of the local time zone.
+ * @param {number} months - Number of months to add.
+ * @return {Date} A new Date instance with the months added, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'addMonthsSpain', {
+    value: function(this: Date, months: number): Date {
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        const target = new Date(Date.UTC(parts.year, parts.month - 1 + months, parts.day, parts.hour, parts.minute, parts.second, this.getMilliseconds()));
+        return new Date(target.getTime() - (getTimeZoneOffsetMinutes(target, SPAIN_TIME_ZONE) * 60 * 1000));
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Adds the specified number of years to the date and returns a new Date instance.
  * @param {number} years - Number of years to add.
  * @return {Date} A new Date instance with the years added.
@@ -1032,6 +1071,21 @@ Object.defineProperty(Date.prototype, 'addYearsUTC', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Spain version of `addYears`. Uses the Spain calendar instead of the local time zone.
+ * @param {number} years - Number of years to add.
+ * @return {Date} A new Date instance with the years added, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'addYearsSpain', {
+    value: function(this: Date, years: number): Date {
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        const target = new Date(Date.UTC(parts.year + years, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second, this.getMilliseconds()));
+        return new Date(target.getTime() - (getTimeZoneOffsetMinutes(target, SPAIN_TIME_ZONE) * 60 * 1000));
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 
 /**
  * Returns a new Date representing the first hour of the day at 00:00:00.
@@ -1052,6 +1106,19 @@ Object.defineProperty(Date.prototype, 'startOfDay', {
 Object.defineProperty(Date.prototype, 'startOfDayUTC', {
     value: function(this: Date): Date {
         return new Date(Date.UTC(this.getUTCFullYear(), this.getUTCMonth(), this.getUTCDate()));
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Spain version of `startOfDay`. Returns 00:00:00 Europe/Madrid of the same Spain calendar day.
+ * @return {Date} A new Date at the start of the day, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'startOfDaySpain', {
+    value: function(this: Date): Date {
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        return new Date(Date.UTC(parts.year, parts.month - 1, parts.day) - (getTimeZoneOffsetMinutes(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)), SPAIN_TIME_ZONE) * 60 * 1000));
     },
     writable: false,
     configurable: false,
@@ -1093,6 +1160,24 @@ Object.defineProperty(Date.prototype, 'startOfWeekUTC', {
     enumerable: false
 });
 /**
+ * Spain version of `startOfWeek`. Resolves the week's starting day against Spain fields.
+ * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @return {Date} A new Date at the start of the week, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'startOfWeekSpain', {
+    value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        const day = parts.weekday;
+        const diff = weekStartsOnMonday ? (day == 0 ? -6 : 1 - day) : -day;
+        const start = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + diff));
+        const offsetMinutes = getTimeZoneOffsetMinutes(start, SPAIN_TIME_ZONE);
+        return new Date(start.getTime() - (offsetMinutes * 60 * 1000));
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing the first day of the month at 00:00:00.
  * @return {Date} A new Date at the start of the month.
  */
@@ -1111,6 +1196,19 @@ Object.defineProperty(Date.prototype, 'startOfMonth', {
 Object.defineProperty(Date.prototype, 'startOfMonthUTC', {
     value: function(this: Date): Date {
         return new Date(Date.UTC(this.getUTCFullYear(), this.getUTCMonth()));
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Spain version of `startOfMonth`. Returns the 1st of the Spain calendar month at 00:00:00 Europe/Madrid.
+ * @return {Date} A new Date at the start of the month, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'startOfMonthSpain', {
+    value: function(this: Date): Date {
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        return new Date(Date.UTC(parts.year, parts.month - 1, 1) - (getTimeZoneOffsetMinutes(new Date(Date.UTC(parts.year, parts.month - 1, 1, 12)), SPAIN_TIME_ZONE) * 60 * 1000));
     },
     writable: false,
     configurable: false,
@@ -1140,6 +1238,19 @@ Object.defineProperty(Date.prototype, 'startOfYearUTC', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Spain version of `startOfYear`. Returns January 1st of the Spain calendar year at 00:00:00 Europe/Madrid.
+ * @return {Date} A new Date at the start of the year, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'startOfYearSpain', {
+    value: function(this: Date): Date {
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        return new Date(Date.UTC(parts.year, 0, 1) - (getTimeZoneOffsetMinutes(new Date(Date.UTC(parts.year, 0, 1, 12)), SPAIN_TIME_ZONE) * 60 * 1000));
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 
 /**
  * Returns a new Date representing the last hour of the day at 23:59:59.999.
@@ -1160,6 +1271,18 @@ Object.defineProperty(Date.prototype, 'endOfDay', {
 Object.defineProperty(Date.prototype, 'endOfDayUTC', {
     value: function(this: Date): Date {
         return new Date(this.addDays(1).startOfDayUTC().getTime() -1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Spain version of `endOfDay`. Returns 23:59:59.999 Europe/Madrid of the same Spain calendar day.
+ * @return {Date} A new Date at the end of the day, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'endOfDaySpain', {
+    value: function(this: Date): Date {
+        return new Date(this.addDays(1).startOfDaySpain().getTime() -1);
     },
     writable: false,
     configurable: false,
@@ -1193,6 +1316,19 @@ Object.defineProperty(Date.prototype, 'endOfWeekUTC', {
     enumerable: false
 });
 /**
+ * Spain version of `endOfWeek`. Resolves the week's end against Spain fields.
+ * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @return {Date} A new Date at the end of the week, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'endOfWeekSpain', {
+    value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
+        return new Date(this.addWeeks(1).startOfWeekSpain(weekStartsOnMonday).getTime() -1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing the last day of the month at 23:59:59.999.
  * @return {Date} A new Date at the end of the month.
  */
@@ -1217,6 +1353,18 @@ Object.defineProperty(Date.prototype, 'endOfMonthUTC', {
     enumerable: false
 });
 /**
+ * Spain version of `endOfMonth`. Returns the last instant of the Spain calendar month.
+ * @return {Date} A new Date at the end of the month, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'endOfMonthSpain', {
+    value: function(this: Date): Date {
+        return new Date(this.addMonthsSpain(1).startOfMonthSpain().getTime() -1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns a new Date representing December 31st of the year at 23:59:59.999.
  * @return {Date} A new Date at the end of the year.
  */
@@ -1235,6 +1383,18 @@ Object.defineProperty(Date.prototype, 'endOfYear', {
 Object.defineProperty(Date.prototype, 'endOfYearUTC', {
     value: function(this: Date): Date {
         return new Date(this.addYearsUTC(1).startOfYearUTC().getTime() -1);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Spain version of `endOfYear`. Returns the last instant of the Spain calendar year.
+ * @return {Date} A new Date at the end of the year, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'endOfYearSpain', {
+    value: function(this: Date): Date {
+        return new Date(this.addYearsSpain(1).startOfYearSpain().getTime() -1);
     },
     writable: false,
     configurable: false,
@@ -1364,6 +1524,48 @@ Object.defineProperty(Date.prototype, 'formatUTC', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Spain version of `format`. Uses Spain calendar/timezone fields and Spain locale formatting.
+ * Supports the same tokens as `format` and uses the Europe/Madrid timezone.
+ *
+ * @param {string} pattern Format pattern string
+ * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
+ * @return {string} The formatted date, in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'formatSpain', {
+    value: function(this: Date, pattern: string, lang: string = 'es'): string {
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+
+        const rep = {
+            'YYYY': String(parts.year),
+            'MM': pad(parts.month),
+            'DD': pad(parts.day),
+            'HH': pad(parts.hour),
+            'hh': pad(parts.hour % 12 || 12),
+            'mm': pad(parts.minute),
+            'ss': pad(parts.second),
+            'MMMM': new Intl.DateTimeFormat(lang, { month: 'long', timeZone: SPAIN_TIME_ZONE }).format(this).upperCaseFirst(),
+            'MMM': new Intl.DateTimeFormat(lang, { month: 'short', timeZone: SPAIN_TIME_ZONE }).format(this).slice(0, 3).replace('.', '').upperCaseFirst(),
+            'dddd': new Intl.DateTimeFormat(lang, { weekday: 'long', timeZone: SPAIN_TIME_ZONE }).format(this).upperCaseFirst(),
+            'ddd': new Intl.DateTimeFormat(lang, { weekday: 'short', timeZone: SPAIN_TIME_ZONE }).format(this).slice(0, 2).replace('.', '').upperCaseFirst(),
+            'z': new Intl.DateTimeFormat(lang, { timeZoneName: 'short', timeZone: SPAIN_TIME_ZONE }).formatToParts(this).find(p => p.type === 'timeZoneName')?.value || '',
+            'zz': new Intl.DateTimeFormat(lang, { timeZoneName: 'long', timeZone: SPAIN_TIME_ZONE }).formatToParts(this).find(p => p.type === 'timeZoneName')?.value || '',
+        } as Record<string, string>;
+
+        if (pattern.includes('Z')) {
+            const offsetMinutes = getTimeZoneOffsetMinutes(this, SPAIN_TIME_ZONE);
+            const sign = offsetMinutes >= 0 ? '+' : '-';
+            const abs = Math.abs(offsetMinutes);
+            rep['Z'] = `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
+        }
+
+        return pattern.replace(/YYYY|DD|HH|hh|mm|ss|MMMM|MMM|MM|dddd|ddd|zz|z|Z/g, t => rep[t]);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 
 /**
  * Returns the date formatted as YYYY-MM-DD.
@@ -1396,6 +1598,18 @@ Object.defineProperty(Date.prototype, 'toDayKeyUTC', {
     enumerable: false
 });
 /**
+ * Spain version of `toDayKey`. Uses the Europe/Madrid calendar day instead of the local one.
+ * @return {string} A string representing the Spain date in YYYY-MM-DD format.
+ */
+Object.defineProperty(Date.prototype, 'toDayKeySpain', {
+    value: function(this: Date): string {
+        return dateToSpainDayKey(this);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns the month and year formatted as YYYY-MM.
  * @return {string} A string representing the month in YYYY-MM format.
  */
@@ -1414,6 +1628,18 @@ Object.defineProperty(Date.prototype, 'toMonthKey', {
 Object.defineProperty(Date.prototype, 'toMonthKeyUTC', {
     value: function(this: Date): string {
         return this.toDayKeyUTC().slice(0, 7);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Spain version of `toMonthKey`. Uses the Europe/Madrid calendar month instead of the local one.
+ * @return {string} A string representing the Spain month in YYYY-MM format.
+ */
+Object.defineProperty(Date.prototype, 'toMonthKeySpain', {
+    value: function(this: Date): string {
+        return this.toDayKeySpain().slice(0, 7);
     },
     writable: false,
     configurable: false,
@@ -1459,6 +1685,23 @@ Object.defineProperty(Date.prototype, 'toInputDateValueUTC', {
     enumerable: false
 });
 /**
+ * Spain version of `toInputDateValue`. Uses the Europe/Madrid date fields, so it does not shift
+ * depending on the machine's local time zone.
+ * @return {string} A string in YYYY-MM-DD format, from Spain fields.
+ */
+Object.defineProperty(Date.prototype, 'toInputDateValueSpain', {
+    value: function(this: Date): string {
+        if (!this || isNaN(this.getTime()))
+            return '';
+
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Returns the date formatted for input[type="datetime-local"] value.
  * @return {string} A string in YYYY-MM-DDTHH:MM format.
  */
@@ -1498,6 +1741,23 @@ Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValueUTC', {
         const minutes = String(this.getUTCMinutes()).padStart(2, '0');
 
         return `${year}-${month}-${day}T${hours}:${minutes}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Spain version of `toInputDatetimeLocalValue`. Builds the same input[type="datetime-local"]
+ * shaped string, but using the Europe/Madrid timezone instead of the host local zone.
+ * @return {string} A string in YYYY-MM-DDTHH:MM format, from Spain fields.
+ */
+Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValueSpain', {
+    value: function(this: Date): string {
+        if (!this || isNaN(this.getTime()))
+            return '';
+
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}T${String(parts.hour).padStart(2, '0')}:${String(parts.minute).padStart(2, '0')}`;
     },
     writable: false,
     configurable: false,
@@ -1572,6 +1832,28 @@ Object.defineProperty(Date.prototype, 'isSameDayUTC', {
     enumerable: false
 });
 /**
+ * Spain version of `isSameDay`. Compares the Spain calendar year/month/day fields.
+ * @param {Date | number} other - The date to compare against.
+ * @return {boolean} True if both dates share the same Spain year, month, and day; otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isSameDaySpain', {
+    value: function(this: Date, other: Date | number): boolean {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+
+        const otherDate = other instanceof Date ? other : new Date(other);
+        const thisParts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        const otherParts = getPartsInTimeZone(otherDate, SPAIN_TIME_ZONE);
+
+        return thisParts.year === otherParts.year
+            && thisParts.month === otherParts.month
+            && thisParts.day === otherParts.day;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Checks if two dates are on the same week.
  * @param {Date | number} other - The date to compare against.
  * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
@@ -1607,6 +1889,26 @@ Object.defineProperty(Date.prototype, 'isSameWeekUTC', {
 
         return this.startOfWeekUTC(weekStartsOnMonday).getTime()
             == otherDate.startOfWeekUTC(weekStartsOnMonday).getTime();
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Spain version of `isSameWeek`. Resolves each week's start against Spain fields.
+ * @param {Date | number} other - The date to compare against.
+ * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @return {boolean} True if both dates are in the same Spain week; otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isSameWeekSpain', {
+    value: function(this: Date, other: Date | number, weekStartsOnMonday: boolean = false): boolean {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+
+        const otherDate = other instanceof Date ? other : new Date(other);
+
+        return this.startOfWeekSpain(weekStartsOnMonday).getTime()
+            == otherDate.startOfWeekSpain(weekStartsOnMonday).getTime();
     },
     writable: false,
     configurable: false,
@@ -1651,6 +1953,27 @@ Object.defineProperty(Date.prototype, 'isSameMonthUTC', {
     enumerable: false
 });
 /**
+ * Spain version of `isSameMonth`. Compares Spain year/month fields.
+ * @param {Date | number} other - The date to compare against.
+ * @return {boolean} True if both dates share the same Spain year and month; otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isSameMonthSpain', {
+    value: function(this: Date, other: Date | number): boolean {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+
+        const otherDate = other instanceof Date ? other : new Date(other);
+        const thisParts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        const otherParts = getPartsInTimeZone(otherDate, SPAIN_TIME_ZONE);
+
+        return thisParts.year === otherParts.year
+            && thisParts.month === otherParts.month;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
  * Checks if two dates are on the same year.
  * @param {Date | number} other - The date to compare against.
  * @return {boolean} True if both dates share the same year; otherwise false.
@@ -1686,6 +2009,23 @@ Object.defineProperty(Date.prototype, 'isSameYearUTC', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Spain version of `isSameYear`. Compares the Spain year field.
+ * @param {Date | number} other - The date to compare against.
+ * @return {boolean} True if both dates share the same Spain year; otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isSameYearSpain', {
+    value: function(this: Date, other: Date | number): boolean {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+
+        const otherDate = other instanceof Date ? other : new Date(other);
+        return getPartsInTimeZone(this, SPAIN_TIME_ZONE).year === getPartsInTimeZone(otherDate, SPAIN_TIME_ZONE).year;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 
 /**
  * Indicates whether the date falls on a weekend (Saturday or Sunday).
@@ -1706,6 +2046,19 @@ Object.defineProperty(Date.prototype, 'isWeekend', {
 Object.defineProperty(Date.prototype, 'isWeekendUTC', {
     value: function(this: Date): boolean {
         return this.getUTCDay() == 0 || this.getUTCDay() == 6;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Spain version of `isWeekend`. Uses the Spain weekday instead of the local one.
+ * @return {boolean} true if the Spain day is Saturday (6) or Sunday (0), otherwise false.
+ */
+Object.defineProperty(Date.prototype, 'isWeekendSpain', {
+    value: function(this: Date): boolean {
+        const day = getPartsInTimeZone(this, SPAIN_TIME_ZONE).weekday;
+        return day == 0 || day == 6;
     },
     writable: false,
     configurable: false,
@@ -1763,6 +2116,25 @@ Object.defineProperty(Date.prototype, 'getTimestampUTC', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Returns the date in standard ISO 8601 format for the Europe/Madrid timezone.
+ * Example: "2026-07-22T12:34:56.789+02:00"
+ * @return {string} ISO 8601 string in Spain time.
+ */
+Object.defineProperty(Date.prototype, 'getTimestampSpain', {
+    value: function(this: Date): string {
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        const offsetMinutes = getTimeZoneOffsetMinutes(this, SPAIN_TIME_ZONE);
+        const offsetSign = offsetMinutes >= 0 ? '+' : '-';
+        const offsetAbs = Math.abs(offsetMinutes);
+        const offset = `${offsetSign}${pad(Math.floor(offsetAbs / 60))}:${pad(offsetAbs % 60)}`;
+        return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}T${pad(parts.hour)}:${pad(parts.minute)}:${pad(parts.second)}.${String(this.getMilliseconds()).padStart(3, '0')}${offset}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 
 /**
  * Calculates the number of whole months between this date and another date.
@@ -1812,6 +2184,23 @@ Object.defineProperty(Date.prototype, 'monthsUntilUTC', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Spain version of `monthsUntil`. Delegates to `Date.monthsBetweenSpain` using Europe/Madrid fields.
+ * @param {Date} other The target date to compare with.
+ * @return {number} The signed number of Spain months from this date until the given date.
+ */
+Object.defineProperty(Date.prototype, 'monthsUntilSpain', {
+    value: function(this: Date, other: Date | number): number {
+        if (!(other instanceof Date) && typeof other !== 'number')
+            throw new Error(`other must be Date or number. Was ${typeof other}`);
+
+        const otherDate = other instanceof Date ? other : new Date(other);
+        return Date.monthsBetweenSpain(this, otherDate);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
 
 /**
  * Returns the number of days in the current month of the date.
@@ -1837,6 +2226,113 @@ Object.defineProperty(Date.prototype, 'daysInMonthUTC', {
     configurable: false,
     enumerable: false
 });
+/**
+ * Spain version of `daysInMonth`. Uses the Europe/Madrid calendar month instead of the local one.
+ * @return {number} The total number of days in the Spain month.
+ */
+Object.defineProperty(Date.prototype, 'daysInMonthSpain', {
+    value: function(this: Date): number {
+        return this.endOfMonthSpain().getTime() - this.startOfMonthSpain().getTime() >= 0 ? new Date(this.endOfMonthSpain().getTime() - this.startOfMonthSpain().getTime()).getUTCDate() : 0;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+
+//#region Time zones help
+
+function getTimeZoneOffsetMinutes(date: Date, timeZone: string): number {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        timeZoneName: 'shortOffset',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+    });
+
+    const value = formatter.formatToParts(date)
+        .find(part => part.type === 'timeZoneName')?.value ?? 'GMT';
+    const match = value.match(/GMT([+-])(\d{1,2})(?::?(\d{2}))?/);
+    if (!match)
+        return 0;
+
+    const sign = match[1] === '-' ? -1 : 1;
+    const hours = Number(match[2] || 0);
+    const minutes = Number(match[3] || 0);
+    return sign * (hours * 60 + minutes);
+}
+
+function getPartsInTimeZone(date: Date, timeZone: string): {
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    minute: number;
+    second: number;
+    weekday: number;
+} {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        weekday: 'short',
+    });
+
+    const parts = formatter.formatToParts(date);
+    const values: Record<string, string> = {};
+    for (const part of parts)
+        if (part.type !== 'literal')
+            values[part.type] = part.value;
+
+    const weekdayMap: Record<string, number> = {
+        Sun: 0,
+        Mon: 1,
+        Tue: 2,
+        Wed: 3,
+        Thu: 4,
+        Fri: 5,
+        Sat: 6,
+    };
+
+    return {
+        year: Number(values.year ?? '0'),
+        month: Number(values.month ?? '0'),
+        day: Number(values.day ?? '0'),
+        hour: Number(values.hour ?? '0'),
+        minute: Number(values.minute ?? '0'),
+        second: Number(values.second ?? '0'),
+        weekday: weekdayMap[values.weekday ?? 'Sun'] ?? 0,
+    };
+}
+
+//#endregion
+
+//#region Spanish help
+
+const SPAIN_TIME_ZONE = 'Europe/Madrid';
+
+function dateAtStartOfSpainDay(date: Date): Date {
+    const parts = getPartsInTimeZone(date, SPAIN_TIME_ZONE);
+    const offsetMinutes = getTimeZoneOffsetMinutes(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)), SPAIN_TIME_ZONE);
+    return new Date(Date.UTC(parts.year, parts.month - 1, parts.day) - (offsetMinutes * 60 * 1000));
+}
+
+function dateToSpainDayKey(date: Date): string {
+    const parts = getPartsInTimeZone(date, SPAIN_TIME_ZONE);
+    return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
+}
+
+//#endregion
+
 //#endregion
 
 //#region Promise ---------------------------------------------------------------------------------
