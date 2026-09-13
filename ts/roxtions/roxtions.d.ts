@@ -21,7 +21,7 @@ declare global {
         ceil(this: number): number;
 
         /**
-         * Clamps the number between min and max (inclusive).
+         * Clamps the number between min (inclusive) and max (inclusive).
          * @param {number} min Minimum allowed value.
          * @param {number} max Maximum allowed value.
          * @return {number} The number constrained to the range [min, max].

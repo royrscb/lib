@@ -48,13 +48,16 @@ Object.defineProperty(Number.prototype, 'ceil', {
 });
 
 /**
- * Clamps the number between min and max (inclusive).
+ * Clamps the number between min (inclusive) and max (inclusive).
  * @param {number} min Minimum allowed value.
  * @param {number} max Maximum allowed value.
  * @return {number} The number constrained to the range [min, max].
  */
 Object.defineProperty(Number.prototype, 'clamp', {
     value: function(this: number, min: number, max: number): number {
+        if (min > max)
+            throw new Error(`clamp: min (${min}) cannot be greater than max (${max})`);
+
         return Math.min(Math.max(this, min), max);
     },
     writable: false,
