@@ -1017,13 +1017,26 @@ Object.defineProperty(Date.prototype, 'addWeeks', {
 });
 /**
  * Adds the specified number of months to the date and returns a new Date instance.
+ * If the target month does not contain the original day, the last day of the target month is used.
  * @param {number} months - Number of months to add.
  * @return {Date} A new Date instance with the months added.
  */
 Object.defineProperty(Date.prototype, 'addMonths', {
     value: function(this: Date, months: number): Date {
         const d = new Date(this.getTime());
+        const day = d.getDate();
+
+        d.setDate(1);
         d.setMonth(d.getMonth() + months);
+
+        const lastDay = new Date(
+            d.getFullYear(),
+            d.getMonth() + 1,
+            0
+        ).getDate();
+
+        d.setDate(Math.min(day, lastDay));
+
         return d;
     },
     writable: false,
@@ -1031,15 +1044,25 @@ Object.defineProperty(Date.prototype, 'addMonths', {
     enumerable: false
 });
 /**
- * UTC version of `addMonths`. Uses `setUTCMonth` instead of `setMonth`, so the month
- * boundary is resolved against UTC fields instead of the local time zone.
+ * UTC version of `addMonths`. Uses UTC date fields instead of local date fields.
+ * If the target month does not contain the original day, the last day of the target month is used.
  * @param {number} months - Number of months to add.
  * @return {Date} A new Date instance with the months added, in UTC.
  */
 Object.defineProperty(Date.prototype, 'addMonthsUTC', {
     value: function(this: Date, months: number): Date {
         const d = new Date(this.getTime());
+        const day = d.getUTCDate();
+
+        d.setUTCDate(1);
         d.setUTCMonth(d.getUTCMonth() + months);
+
+        const lastDay = new Date(
+            Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)
+        ).getUTCDate();
+
+        d.setUTCDate(Math.min(day, lastDay));
+
         return d;
     },
     writable: false,
@@ -1047,15 +1070,40 @@ Object.defineProperty(Date.prototype, 'addMonthsUTC', {
     enumerable: false
 });
 /**
- * Spain version of `addMonths`. Uses the Spain calendar instead of the local time zone.
+ * Spain version of `addMonths`. Uses the Europe/Madrid calendar instead of the local time zone.
+ * If the target month does not contain the original day, the last day of the target month is used.
  * @param {number} months - Number of months to add.
- * @return {Date} A new Date instance with the months added, in Spain time.
+ * @return {Date} A new Date instance with the months added, interpreted in Spain time.
  */
 Object.defineProperty(Date.prototype, 'addMonthsSpain', {
     value: function(this: Date, months: number): Date {
         const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
-        const target = new Date(Date.UTC(parts.year, parts.month - 1 + months, parts.day, parts.hour, parts.minute, parts.second, this.getMilliseconds()));
-        return new Date(target.getTime() - (getTimeZoneOffsetMinutes(target, SPAIN_TIME_ZONE) * 60 * 1000));
+        const targetMonth = parts.month - 1 + months;
+
+        const target = new Date(Date.UTC(
+            parts.year,
+            targetMonth,
+            1,
+            parts.hour,
+            parts.minute,
+            parts.second,
+            this.getMilliseconds()
+        ));
+
+        const lastDay = new Date(
+            Date.UTC(
+                target.getUTCFullYear(),
+                target.getUTCMonth() + 1,
+                0
+            )
+        ).getUTCDate();
+
+        target.setUTCDate(Math.min(parts.day, lastDay));
+
+        return new Date(
+            target.getTime() -
+            getTimeZoneOffsetMinutes(target, SPAIN_TIME_ZONE) * 60 * 1000
+        );
     },
     writable: false,
     configurable: false,
@@ -1063,13 +1111,22 @@ Object.defineProperty(Date.prototype, 'addMonthsSpain', {
 });
 /**
  * Adds the specified number of years to the date and returns a new Date instance.
+ * If the original date is February 29 and the target year is not a leap year, the result is February 28.
  * @param {number} years - Number of years to add.
  * @return {Date} A new Date instance with the years added.
  */
 Object.defineProperty(Date.prototype, 'addYears', {
     value: function(this: Date, years: number): Date {
         const d = new Date(this.getTime());
+        const originalMonth = d.getMonth();
+        const originalDate = d.getDate();
+
         d.setFullYear(d.getFullYear() + years);
+
+        if (originalMonth === 1 && originalDate === 29 && d.getMonth() !== 1) {
+            d.setDate(0);
+        }
+
         return d;
     },
     writable: false,
@@ -1077,15 +1134,23 @@ Object.defineProperty(Date.prototype, 'addYears', {
     enumerable: false
 });
 /**
- * UTC version of `addYears`. Uses `setUTCFullYear` instead of `setFullYear`, so the year
- * boundary is resolved against UTC fields instead of the local time zone.
+ * UTC version of `addYears`. Uses UTC date fields instead of local date fields.
+ * If the original date is February 29 and the target year is not a leap year, the result is February 28.
  * @param {number} years - Number of years to add.
- * @return {Date} A new Date instance with the years added, in UTC.
+ * @return {Date} A new Date instance with the years added.
  */
 Object.defineProperty(Date.prototype, 'addYearsUTC', {
     value: function(this: Date, years: number): Date {
         const d = new Date(this.getTime());
+        const originalMonth = d.getUTCMonth();
+        const originalDate = d.getUTCDate();
+
         d.setUTCFullYear(d.getUTCFullYear() + years);
+
+        if (originalMonth === 1 && originalDate === 29 && d.getUTCMonth() !== 1) {
+            d.setUTCDate(0);
+        }
+
         return d;
     },
     writable: false,
@@ -1094,14 +1159,33 @@ Object.defineProperty(Date.prototype, 'addYearsUTC', {
 });
 /**
  * Spain version of `addYears`. Uses the Spain calendar instead of the local time zone.
+ * If the original date is February 29 and the target year is not a leap year, the result is February 28.
  * @param {number} years - Number of years to add.
  * @return {Date} A new Date instance with the years added, in Spain time.
  */
 Object.defineProperty(Date.prototype, 'addYearsSpain', {
     value: function(this: Date, years: number): Date {
         const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
-        const target = new Date(Date.UTC(parts.year + years, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second, this.getMilliseconds()));
-        return new Date(target.getTime() - (getTimeZoneOffsetMinutes(target, SPAIN_TIME_ZONE) * 60 * 1000));
+        const year = parts.year + years;
+
+        if (parts.month === 2 && parts.day === 29 && new Date(Date.UTC(year, 1, 29)).getUTCMonth() !== 1) {
+            parts.day = 28;
+        }
+
+        const target = new Date(Date.UTC(
+            year,
+            parts.month - 1,
+            parts.day,
+            parts.hour,
+            parts.minute,
+            parts.second,
+            this.getMilliseconds()
+        ));
+
+        return new Date(
+            target.getTime() -
+            (getTimeZoneOffsetMinutes(target, SPAIN_TIME_ZONE) * 60 * 1000)
+        );
     },
     writable: false,
     configurable: false,

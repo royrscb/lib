@@ -391,38 +391,42 @@ declare global {
         addWeeks(this: Date, weeks: number): Date;
         /**
          * Adds the specified number of months to the date and returns a new Date instance.
+         * If the target month does not contain the original day, the last day of the target month is used.
          * @param {number} months - Number of months to add.
          * @return {Date} A new Date instance with the months added.
          */
         addMonths(this: Date, months: number): Date;
         /**
-         * UTC version of `addMonths`. Uses `setUTCMonth` instead of `setMonth`, so the month
-         * boundary is resolved against UTC fields instead of the local time zone.
+         * UTC version of `addMonths`. Uses UTC date fields instead of local date fields.
+         * If the target month does not contain the original day, the last day of the target month is used.
          * @param {number} months - Number of months to add.
          * @return {Date} A new Date instance with the months added, in UTC.
          */
         addMonthsUTC(this: Date, months: number): Date;
         /**
          * Spain version of `addMonths`. Uses the Europe/Madrid calendar instead of the local time zone.
+         * If the target month does not contain the original day, the last day of the target month is used.
          * @param {number} months - Number of months to add.
-         * @return {Date} A new Date instance with the months added, in Spain time.
+         * @return {Date} A new Date instance with the months added, interpreted in Spain time.
          */
         addMonthsSpain(this: Date, months: number): Date;
         /**
          * Adds the specified number of years to the date and returns a new Date instance.
+         * If the original date is February 29 and the target year is not a leap year, the result is February 28.
          * @param {number} years - Number of years to add.
          * @return {Date} A new Date instance with the years added.
          */
         addYears(this: Date, years: number): Date;
         /**
-         * UTC version of `addYears`. Uses `setUTCFullYear` instead of `setFullYear`, so the year
-         * boundary is resolved against UTC fields instead of the local time zone.
+         * UTC version of `addYears`. Uses UTC date fields instead of local date fields.
+         * If the original date is February 29 and the target year is not a leap year, the result is February 28.
          * @param {number} years - Number of years to add.
-         * @return {Date} A new Date instance with the years added, in UTC.
+         * @return {Date} A new Date instance with the years added.
          */
         addYearsUTC(this: Date, years: number): Date;
         /**
-         * Spain version of `addYears`. Uses the Europe/Madrid calendar instead of the local time zone.
+         * Spain version of `addYears`. Uses the Spain calendar instead of the local time zone.
+         * If the original date is February 29 and the target year is not a leap year, the result is February 28.
          * @param {number} years - Number of years to add.
          * @return {Date} A new Date instance with the years added, in Spain time.
          */
