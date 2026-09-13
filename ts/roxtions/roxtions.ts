@@ -256,13 +256,12 @@ Object.defineProperty(String.prototype, 'toPascalCase', {
 });
 /**
  * Converts string to snake_case.
- * Example: "hello world" -> "hello_world"
+ * Example: "HeLLo WoRld" -> "hello_world"
  * @return {string}
  */
 Object.defineProperty(String.prototype, 'toSnakeCase', { 
     value: function(this: string): string {
-        return this.split(' ')
-            .join('_');
+        return this.split(' ').join('_').toLowerCase();
     },
     writable: false,
     configurable: false,
@@ -270,13 +269,12 @@ Object.defineProperty(String.prototype, 'toSnakeCase', {
 });
 /**
  * Converts string to kebab-case.
- * Example: "hello world" -> "HELLO-WORLD"
+ * Example: "HeLLo WoRld" -> "hello-world"
  * @return {string}
  */
 Object.defineProperty(String.prototype, 'toKebabCase', { 
     value: function(this: string): string {
-        return this.split(' ')
-            .join('-');
+        return this.split(' ').join('-').toLowerCase();
     },
     writable: false,
     configurable: false,
@@ -371,6 +369,12 @@ Object.defineProperty(Array.prototype, 'skip', {
  */
 Object.defineProperty(Array.prototype, 'skipLast', {
     value: function<T>(this: T[], count: number = 1): T[] {
+        if (count < 0)
+            throw new Error("skipLast: count can not be less than 0");
+
+        if (count == 0)
+            return this;
+
         return this.slice(0, -count);
     },
     writable: false,
@@ -398,6 +402,12 @@ Object.defineProperty(Array.prototype, 'take', {
  */
 Object.defineProperty(Array.prototype, 'takeLast', {
     value: function<T>(this: T[], count: number = 1): T[] {
+        if (count < 0)
+            throw new Error("skipLast: count can not be less than 0");
+
+        if (count == 0)
+            return [];
+
         return this.slice(-count);
     },
     writable: false,
@@ -537,7 +547,10 @@ Object.defineProperty(Array.prototype, 'groupBy', {
  */
 Object.defineProperty(Array.prototype, 'chunk', {
     value: function<T>(this: T[], size: number): T[][] {
-        if (size <= 0) throw new Error("Chunk size must be greater than 0");
+        if (size <= 0)
+            throw new Error("chunk: size must be greater than 0");
+        if (!Number.isInteger(size))
+            throw new Error("chunk: size must be an integer");
 
         const chunks: T[][] = [];
         for (let i = 0; i < this.length; i += size) {
@@ -560,10 +573,16 @@ Object.defineProperty(Array.prototype, 'getDuplicates', {
     value: function<T>(this: T[], predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[] {
         if (this.isEmpty())
             return [];
-        if (!predicate && typeof this[0] != 'boolean' && typeof this[0] != 'number' && typeof this[0] != 'string' && this[0] !== null && this[0] !== undefined)
+        if (!predicate
+            && typeof this[0] != 'boolean'
+            && typeof this[0] != 'number'
+            && typeof this[0] != 'string'
+            && this[0] !== null
+            && this[0] !== undefined
+        )
             throw new Error("If no predicate provided. Array must be of type (string | null | undefined)[] or (number | null | undefined)[] or (boolean | null | undefined)[] but was "+typeof this[0]+"");
         
-        const fn = predicate ?? ((item: T, index: number) => item === null ? null : item === undefined ? undefined : String(item));
+        const fn = predicate ?? ((item: T, _: number) => item === null ? null : item === undefined ? undefined : String(item));
         const seen = new Set<boolean | number | string | null | undefined>();
         const duplicates = new Set<boolean | number | string | null | undefined>();
 
@@ -585,8 +604,7 @@ Object.defineProperty(Array.prototype, 'getDuplicates', {
     enumerable: false
 });
 /**
- * Return all elements that belong to duplicated keys (keep original order,
- * include each duplicate occurrence except the first one of each key).
+ * Return all elements that belong to duplicated keys (keep original order, include each duplicate occurrence).
  * Example: [1,1,1,1,2,2,3] -> [1,1,1,1,2,2]
  * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
  * @return {T[]} array with all duplicate occurrences (predicate called once per element)
@@ -1444,22 +1462,16 @@ Object.defineProperty(Date.prototype, 'format', {
             'ss':   pad(this.getSeconds()),
 
             // Month names
-            'MMMM': new Intl.DateTimeFormat(lang, { month: 'long' }).format(this)
-                .upperCaseFirst(),
-            'MMM':  new Intl.DateTimeFormat(lang, { month: 'short' }).format(this)
-                .slice(0, 3).replace('.', '').upperCaseFirst(),
+            'MMMM': new Intl.DateTimeFormat(lang, { month: 'long' }).format(this).upperCaseFirst(),
+            'MMM':  new Intl.DateTimeFormat(lang, { month: 'short' }).format(this).slice(0, 3).replace('.', '').upperCaseFirst(),
     
             // Weekday names
-            'dddd': new Intl.DateTimeFormat(lang, { weekday: 'long' }).format(this)
-                .upperCaseFirst(),
-            'ddd':  new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(this)
-                .slice(0, 2).replace('.', '').upperCaseFirst(),
+            'dddd': new Intl.DateTimeFormat(lang, { weekday: 'long' }).format(this).upperCaseFirst(),
+            'ddd':  new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(this).slice(0, 2).replace('.', '').upperCaseFirst(),
     
             // Timezone names
-            'z':  new Intl.DateTimeFormat(lang, { timeZoneName: 'short' }).formatToParts(this)
-                .find(p => p.type === 'timeZoneName')?.value || '',
-            'zz': new Intl.DateTimeFormat(lang, { timeZoneName: 'long' }).formatToParts(this)
-                .find(p => p.type === 'timeZoneName')?.value || '',
+            'z':  new Intl.DateTimeFormat(lang, { timeZoneName: 'short' }).formatToParts(this).find(p => p.type === 'timeZoneName')?.value || '',
+            'zz': new Intl.DateTimeFormat(lang, { timeZoneName: 'long' }).formatToParts(this).find(p => p.type === 'timeZoneName')?.value || '',
         } as Record<string, string>;
 
         // Numeric timezone offset
@@ -1500,22 +1512,16 @@ Object.defineProperty(Date.prototype, 'formatUTC', {
             'ss':   pad(this.getUTCSeconds()),
 
             // Month names
-            'MMMM': new Intl.DateTimeFormat(lang, { month: 'long', timeZone: 'UTC' }).format(this)
-                .upperCaseFirst(),
-            'MMM':  new Intl.DateTimeFormat(lang, { month: 'short', timeZone: 'UTC' }).format(this)
-                .slice(0, 3).replace('.', '').upperCaseFirst(),
+            'MMMM': new Intl.DateTimeFormat(lang, { month: 'long', timeZone: 'UTC' }).format(this).upperCaseFirst(),
+            'MMM':  new Intl.DateTimeFormat(lang, { month: 'short', timeZone: 'UTC' }).format(this).slice(0, 3).replace('.', '').upperCaseFirst(),
 
             // Weekday names
-            'dddd': new Intl.DateTimeFormat(lang, { weekday: 'long', timeZone: 'UTC' }).format(this)
-                .upperCaseFirst(),
-            'ddd':  new Intl.DateTimeFormat(lang, { weekday: 'short', timeZone: 'UTC' }).format(this)
-                .slice(0, 2).replace('.', '').upperCaseFirst(),
+            'dddd': new Intl.DateTimeFormat(lang, { weekday: 'long', timeZone: 'UTC' }).format(this).upperCaseFirst(),
+            'ddd':  new Intl.DateTimeFormat(lang, { weekday: 'short', timeZone: 'UTC' }).format(this).slice(0, 2).replace('.', '').upperCaseFirst(),
 
             // Timezone names
-            'z':  new Intl.DateTimeFormat(lang, { timeZoneName: 'short', timeZone: 'UTC' }).formatToParts(this)
-                .find(p => p.type === 'timeZoneName')?.value || '',
-            'zz': new Intl.DateTimeFormat(lang, { timeZoneName: 'long', timeZone: 'UTC' }).formatToParts(this)
-                .find(p => p.type === 'timeZoneName')?.value || '',
+            'z':  new Intl.DateTimeFormat(lang, { timeZoneName: 'short', timeZone: 'UTC' }).formatToParts(this).find(p => p.type === 'timeZoneName')?.value || '',
+            'zz': new Intl.DateTimeFormat(lang, { timeZoneName: 'long', timeZone: 'UTC' }).formatToParts(this).find(p => p.type === 'timeZoneName')?.value || '',
 
             // Numeric timezone offset (always UTC)
             'Z': '+00:00',
@@ -1606,7 +1612,8 @@ Object.defineProperty(Date.prototype, 'toDayKeyUTC', {
  */
 Object.defineProperty(Date.prototype, 'toDayKeySpain', {
     value: function(this: Date): string {
-        return dateToSpainDayKey(this);
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
     },
     writable: false,
     configurable: false,
@@ -2244,6 +2251,8 @@ Object.defineProperty(Date.prototype, 'daysInMonthSpain', {
 
 //#region Time zones help
 
+const SPAIN_TIME_ZONE = 'Europe/Madrid';
+
 function getTimeZoneOffsetMinutes(date: Date, timeZone: string): number {
     const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone,
@@ -2318,24 +2327,6 @@ function getPartsInTimeZone(date: Date, timeZone: string): {
 }
 
 //#endregion
-
-//#region Spanish help
-
-const SPAIN_TIME_ZONE = 'Europe/Madrid';
-
-function dateAtStartOfSpainDay(date: Date): Date {
-    const parts = getPartsInTimeZone(date, SPAIN_TIME_ZONE);
-    const offsetMinutes = getTimeZoneOffsetMinutes(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)), SPAIN_TIME_ZONE);
-    return new Date(Date.UTC(parts.year, parts.month - 1, parts.day) - (offsetMinutes * 60 * 1000));
-}
-
-function dateToSpainDayKey(date: Date): string {
-    const parts = getPartsInTimeZone(date, SPAIN_TIME_ZONE);
-    return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
-}
-
-//#endregion
-
 //#endregion
 
 //#region Promise ---------------------------------------------------------------------------------

@@ -110,13 +110,13 @@ declare global {
         toPascalCase(this: string): string;
         /**
          * Converts string to snake_case.
-         * Example: "hello world" -> "hello_world"
+         * Example: "HeLLo WoRld" -> "hello_world"
          * @return {string}
          */
         toSnakeCase(this: string): string;
         /**
          * Converts string to kebab-case.
-         * Example: "hello world" -> "hello-world"
+         * Example: "HeLLo WoRld" -> "hello-world"
          * @return {string}
          */
         toKebabCase(this: string): string;
@@ -231,8 +231,7 @@ declare global {
          */
         getDuplicates<T>(this: T[], predicate?: (item: T, index: number) => boolean | number | string | null | undefined): T[];
         /**
-         * Return all elements that belong to duplicated keys (keep original order,
-         * include each duplicate occurrence except the first one of each key).
+         * Return all elements that belong to duplicated keys (keep original order, include each duplicate occurrence).
          * Example: [1,1,1,1,2,2,3] -> [1,1,1,1,2,2]
          * @param {(item: T, index: number) => boolean | number | string | null | undefined} [predicate]
          * @return {T[]} array with all duplicate occurrences (predicate called once per element)
