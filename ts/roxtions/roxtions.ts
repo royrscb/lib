@@ -14,7 +14,7 @@
  */
 Object.defineProperty(Number.prototype, 'floor', {
     value: function(this: number): number {
-        return Math.floor(this)
+        return Math.floor(this);
     },
     writable: false,
     configurable: false,
@@ -40,7 +40,7 @@ Object.defineProperty(Number.prototype, 'round', {
  */
 Object.defineProperty(Number.prototype, 'ceil', {
     value: function(this: number): number {
-        return Math.ceil(this)
+        return Math.ceil(this);
     },
     writable: false,
     configurable: false,
