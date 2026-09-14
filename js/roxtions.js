@@ -788,71 +788,112 @@ Date['fromUnixTime'] = function (unixTime) {
     return new Date(unixTime * 1000);
 };
 /**
- * Calculates the number of whole months between two dates.
- * Positive if `b` is after `a`, negative if `b` is before `a`.
- * Ignores days and times; only year and month fields are used.
+ * Creates a Date from a local date string in YYYY-MM-DD format.
  *
- * @param {Date} a The starting date.
- * @param {Date} b The ending date.
- * @return {number} The signed number of months between `a` and `b`.
+ * @param {string} value A local date string.
+ * @return {Date} A Date representing midnight in the local timezone.
  *
  * @example
- * Date.monthsBetween(new Date(2025, 1, 25), new Date(2025, 2, 1)); // → 1
- * Date.monthsBetween(new Date(2025, 6, 10), new Date(2025, 4, 5)); // → -2
+ * Date.fromLocalDate('2026-01-18');
  */
-Date['monthsBetween'] = function (a, b) {
-    if (!(a instanceof Date) && typeof a !== 'number')
-        throw new Error(`a must be Date or number. Was ${typeof a}`);
-    if (!(b instanceof Date) && typeof b !== 'number')
-        throw new Error(`b must be Date or number. Was ${typeof b}`);
-    const aDate = a instanceof Date ? a : new Date(a);
-    const bDate = b instanceof Date ? b : new Date(b);
-    const years = bDate.getFullYear() - aDate.getFullYear();
-    const months = bDate.getMonth() - aDate.getMonth();
-    return years * 12 + months;
+Date['fromLocalDate'] = function (value) {
+    return Date.fromLocalDateTime(`${value} 00:00:00`);
 };
 /**
- * UTC version of `Date.monthsBetween`. Uses UTC year/month fields instead of local ones,
- * so the result doesn't shift depending on the caller's time zone.
+ * Creates a Date from a UTC date string in YYYY-MM-DD format.
  *
- * @param {Date} a The starting date.
- * @param {Date} b The ending date.
- * @return {number} The signed number of months between `a` and `b`, in UTC.
+ * @param {string} value A UTC date string.
+ * @return {Date} A Date representing midnight UTC of the specified date.
  *
  * @example
- * Date.monthsBetweenUTC(new Date(Date.UTC(2025, 1, 25)), new Date(Date.UTC(2025, 2, 1))); // → 1
+ * Date.fromUTCDate('2026-01-18');
  */
-Date['monthsBetweenUTC'] = function (a, b) {
-    if (!(a instanceof Date) && typeof a !== 'number')
-        throw new Error(`a must be Date or number. Was ${typeof a}`);
-    if (!(b instanceof Date) && typeof b !== 'number')
-        throw new Error(`b must be Date or number. Was ${typeof b}`);
-    const aDate = a instanceof Date ? a : new Date(a);
-    const bDate = b instanceof Date ? b : new Date(b);
-    const years = bDate.getUTCFullYear() - aDate.getUTCFullYear();
-    const months = bDate.getUTCMonth() - aDate.getUTCMonth();
-    return years * 12 + months;
+Date['fromUTCDate'] = function (value) {
+    return Date.fromUTCDateTime(`${value} 00:00:00`);
 };
 /**
- * Spain version of `Date.monthsBetween`. Uses Spain calendar year/month fields instead of local ones,
- * so the result is stable for the Europe/Madrid timezone.
+ * Creates a Date from a Spain date string in YYYY-MM-DD format.
  *
- * @param {Date} a The starting date.
- * @param {Date} b The ending date.
- * @return {number} The signed number of months between `a` and `b`, in Spain time.
+ * @param {string} value A Spain date string.
+ * @return {Date} A Date representing midnight in Europe/Madrid.
+ *
+ * @example
+ * Date.fromSpainDate('2026-01-18');
  */
-Date['monthsBetweenSpain'] = function (a, b) {
-    if (!(a instanceof Date) && typeof a !== 'number')
-        throw new Error(`a must be Date or number. Was ${typeof a}`);
-    if (!(b instanceof Date) && typeof b !== 'number')
-        throw new Error(`b must be Date or number. Was ${typeof b}`);
-    const aDate = a instanceof Date ? a : new Date(a);
-    const bDate = b instanceof Date ? b : new Date(b);
-    const aParts = getPartsInTimeZone(aDate, SPAIN_TIME_ZONE);
-    const bParts = getPartsInTimeZone(bDate, SPAIN_TIME_ZONE);
-    const years = bParts.year - aParts.year;
-    const months = bParts.month - aParts.month;
-    return years * 12 + months;
+Date['fromSpainDate'] = function (value) {
+    return Date.fromSpainDateTime(`${value} 00:00:00`);
+};
+/**
+ * Creates a Date from a local datetime string in YYYY-MM-DD HH:mm:ss format.
+ *
+ * @param {string} value A local datetime string.
+ * @return {Date} A Date representing the specified local datetime.
+ *
+ * @example
+ * Date.fromLocalDateTime('2026-01-18 19:54:24');
+ */
+Date['fromLocalDateTime'] = function (value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
+    if (!match)
+        throw new Error(`Invalid local datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const hour = Number(match[4]);
+    const minute = Number(match[5]);
+    const second = Number(match[6]);
+    return new Date(year, month - 1, day, hour, minute, second);
+};
+/**
+ * Creates a Date from a UTC datetime string in YYYY-MM-DD HH:mm:ss format.
+ *
+ * @param {string} value A UTC datetime string.
+ * @return {Date} A Date representing the specified UTC datetime.
+ *
+ * @example
+ * Date.fromUTCDateTime('2026-01-18 19:54:24');
+ */
+Date['fromUTCDateTime'] = function (value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
+    if (!match)
+        throw new Error(`Invalid UTC datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const hour = Number(match[4]);
+    const minute = Number(match[5]);
+    const second = Number(match[6]);
+    return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+};
+/**
+ * Creates a Date from a Spain datetime string in YYYY-MM-DD HH:mm:ss format.
+ *
+ * @param {string} value A Spain datetime string.
+ * @return {Date} A Date representing the specified Europe/Madrid datetime.
+ *
+ * @example
+ * Date.fromSpainDateTime('2026-01-18 19:54:24');
+ */
+Date['fromSpainDateTime'] = function (value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
+    if (!match)
+        throw new Error(`Invalid Spain datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const hour = Number(match[4]);
+    const minute = Number(match[5]);
+    const second = Number(match[6]);
+    // Initial UTC guess.
+    let timestamp = Date.UTC(year, month - 1, day, hour, minute, second);
+    // Correct the guess using the actual Europe/Madrid offset.
+    for (let i = 0; i < 3; i++) {
+        const parts = getPartsInTimeZone(new Date(timestamp), SPAIN_TIME_ZONE);
+        const actualAsUTC = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+        const desiredAsUTC = Date.UTC(year, month - 1, day, hour, minute, second);
+        timestamp += desiredAsUTC - actualAsUTC;
+    }
+    return new Date(timestamp);
 };
 // Instance -------------------------------------
 // Time change ---
@@ -1505,49 +1546,6 @@ Object.defineProperty(Date.prototype, 'formatSpain', {
     enumerable: false
 });
 /**
- * Returns the date formatted as YYYY-MM-DD.
- * @return {string} A string representing the date in YYYY-MM-DD format.
- */
-Object.defineProperty(Date.prototype, 'toDayKey', {
-    value: function () {
-        const year = this.getFullYear();
-        const month = String(this.getMonth() + 1).padStart(2, '0');
-        const day = String(this.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    },
-    writable: false,
-    configurable: false,
-    enumerable: false
-});
-/**
- * UTC version of `toDayKey`. Uses the UTC calendar day instead of the local one.
- * @return {string} A string representing the UTC date in YYYY-MM-DD format.
- */
-Object.defineProperty(Date.prototype, 'toDayKeyUTC', {
-    value: function () {
-        const year = this.getUTCFullYear();
-        const month = String(this.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(this.getUTCDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    },
-    writable: false,
-    configurable: false,
-    enumerable: false
-});
-/**
- * Spain version of `toDayKey`. Uses the Europe/Madrid calendar day instead of the local one.
- * @return {string} A string representing the Spain date in YYYY-MM-DD format.
- */
-Object.defineProperty(Date.prototype, 'toDayKeySpain', {
-    value: function () {
-        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
-        return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
-    },
-    writable: false,
-    configurable: false,
-    enumerable: false
-});
-/**
  * Returns the month and year formatted as YYYY-MM.
  * @return {string} A string representing the month in YYYY-MM format.
  */
@@ -1578,6 +1576,95 @@ Object.defineProperty(Date.prototype, 'toMonthKeyUTC', {
 Object.defineProperty(Date.prototype, 'toMonthKeySpain', {
     value: function () {
         return this.toDayKeySpain().slice(0, 7);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns the date formatted as YYYY-MM-DD.
+ * @return {string} A string representing the date in YYYY-MM-DD format.
+ */
+Object.defineProperty(Date.prototype, 'toDayKey', {
+    value: function () {
+        const year = this.getFullYear();
+        const month = String(this.getMonth() + 1).padStart(2, '0');
+        const day = String(this.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * UTC version of `toDayKey`. Uses the UTC calendar day instead of the local one.
+ * @return {string} A string representing the UTC date in YYYY-MM-DD format.
+ */
+Object.defineProperty(Date.prototype, 'toDayKeyUTC', {
+    value: function () {
+        return this.toISOString().slice(0, 10);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Spain version of `toDayKey`. Uses the Europe/Madrid calendar day instead of the local one.
+ * @return {string} A string representing the Spain date in YYYY-MM-DD format.
+ */
+Object.defineProperty(Date.prototype, 'toDayKeySpain', {
+    value: function () {
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using the local timezone.
+ *
+ * @return {string} A string representing the local datetime.
+ */
+Object.defineProperty(Date.prototype, 'toDateTime', {
+    value: function () {
+        const year = this.getFullYear();
+        const month = String(this.getMonth() + 1).padStart(2, '0');
+        const day = String(this.getDate()).padStart(2, '0');
+        const hour = String(this.getHours()).padStart(2, '0');
+        const minute = String(this.getMinutes()).padStart(2, '0');
+        const second = String(this.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using UTC.
+ *
+ * @return {string} A string representing the UTC datetime.
+ */
+Object.defineProperty(Date.prototype, 'toDateTimeUTC', {
+    value: function () {
+        return this.toISOString().slice(0, 19).replace('T', ' ');
+    },
+    writable: false,
+    configurable: false,
+    enumerable: false
+});
+/**
+ * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using Europe/Madrid.
+ *
+ * @return {string} A string representing the Spain datetime.
+ */
+Object.defineProperty(Date.prototype, 'toDateTimeSpain', {
+    value: function () {
+        const parts = getPartsInTimeZone(this, SPAIN_TIME_ZONE);
+        return [
+            `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`,
+            `${String(parts.hour).padStart(2, '0')}:${String(parts.minute).padStart(2, '0')}:${String(parts.second).padStart(2, '0')}`
+        ].join(' ');
     },
     writable: false,
     configurable: false,

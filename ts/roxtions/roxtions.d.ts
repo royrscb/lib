@@ -314,6 +314,68 @@ declare global {
         fromUnixTime(unixTime: number): Date;
 
         /**
+         * Creates a Date from a local date string in YYYY-MM-DD format.
+         *
+         * @param {string} value A local date string.
+         * @return {Date} A Date representing midnight in the local timezone.
+         *
+         * @example
+         * Date.fromLocalDate('2026-01-18');
+         */
+        fromLocalDate(value: string): Date;
+        /**
+         * Creates a Date from a UTC date string in YYYY-MM-DD format.
+         *
+         * @param {string} value A UTC date string.
+         * @return {Date} A Date representing midnight UTC of the specified date.
+         *
+         * @example
+         * Date.fromUTCDate('2026-01-18');
+         */
+        fromUTCDate(value: string): Date;
+        /**
+         * Creates a Date from a Spain date string in YYYY-MM-DD format.
+         *
+         * @param {string} value A Spain date string.
+         * @return {Date} A Date representing midnight in Europe/Madrid.
+         *
+         * @example
+         * Date.fromSpainDate('2026-01-18');
+         */
+        fromSpainDate(value: string): Date;
+
+        /**
+         * Creates a Date from a local datetime string in YYYY-MM-DD HH:mm:ss format.
+         *
+         * @param {string} value A local datetime string.
+         * @return {Date} A Date representing the specified local datetime.
+         *
+         * @example
+         * Date.fromLocalDateTime('2026-01-18 19:54:24');
+         */
+        fromLocalDateTime(value: string): Date;
+        /**
+         * Creates a Date from a UTC datetime string in YYYY-MM-DD HH:mm:ss format.
+         *
+         * @param {string} value A UTC datetime string.
+         * @return {Date} A Date representing the specified UTC datetime.
+         *
+         * @example
+         * Date.fromUTCDateTime('2026-01-18 19:54:24');
+         */
+        fromUTCDateTime(value: string): Date;
+        /**
+         * Creates a Date from a Spain datetime string in YYYY-MM-DD HH:mm:ss format.
+         *
+         * @param {string} value A Spain datetime string.
+         * @return {Date} A Date representing the specified Europe/Madrid datetime.
+         *
+         * @example
+         * Date.fromSpainDateTime('2026-01-18 19:54:24');
+         */
+        fromSpainDateTime(value: string): Date;
+
+        /**
          * Calculates the number of whole months between two dates.
          * Positive if `b` is after `a`, negative if `b` is before `a`.
          * Ignores days and times; only year and month fields are used.
@@ -607,21 +669,6 @@ declare global {
         formatSpain(this: Date, pattern: string, lang: string = 'es'): string;
 
         /**
-         * Returns the date formatted as YYYY-MM-DD.
-         * @return {string} A string representing the date in YYYY-MM-DD format.
-         */
-        toDayKey(this: Date): string;
-        /**
-         * UTC version of `toDayKey`. Uses the UTC calendar day instead of the local one.
-         * @return {string} A string representing the UTC date in YYYY-MM-DD format.
-         */
-        toDayKeyUTC(this: Date): string;
-        /**
-         * Spain version of `toDayKey`. Uses the Europe/Madrid calendar day instead of the local one.
-         * @return {string} A string representing the Spain date in YYYY-MM-DD format.
-         */
-        toDayKeySpain(this: Date): string;
-        /**
          * Returns the month and year formatted as YYYY-MM.
          * @return {string} A string representing the month in YYYY-MM format.
          */
@@ -636,6 +683,40 @@ declare global {
          * @return {string} A string representing the Spain month in YYYY-MM format.
          */
         toMonthKeySpain(this: Date): string;
+        /**
+         * Returns the date formatted as YYYY-MM-DD.
+         * @return {string} A string representing the date in YYYY-MM-DD format.
+         */
+        toDayKey(this: Date): string;
+        /**
+         * UTC version of `toDayKey`. Uses the UTC calendar day instead of the local one.
+         * @return {string} A string representing the UTC date in YYYY-MM-DD format.
+         */
+        toDayKeyUTC(this: Date): string;
+        /**
+         * Spain version of `toDayKey`. Uses the Europe/Madrid calendar day instead of the local one.
+         * @return {string} A string representing the Spain date in YYYY-MM-DD format.
+         */
+        toDayKeySpain(this: Date): string;
+
+        /**
+         * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using the local timezone.
+         *
+         * @return {string} A string representing the local datetime.
+         */
+        toDateTime(this: Date): string;
+        /**
+         * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using UTC.
+         *
+         * @return {string} A string representing the UTC datetime.
+         */
+        toDateTimeUTC(this: Date): string;
+        /**
+         * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using Europe/Madrid.
+         *
+         * @return {string} A string representing the Spain datetime.
+         */
+        toDateTimeSpain(this: Date): string;
 
         /**
          * Returns the date formatted for input[type="date"] value.
