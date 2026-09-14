@@ -1681,10 +1681,7 @@ Object.defineProperty(Date.prototype, 'toDayKey', {
  */
 Object.defineProperty(Date.prototype, 'toDayKeyUTC', {
     value: function(this: Date): string {
-        const year = this.getUTCFullYear();
-        const month = String(this.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(this.getUTCDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return this.toISOString().slice(0, 10);
     },
     writable: false,
     configurable: false,
