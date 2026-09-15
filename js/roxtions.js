@@ -788,51 +788,86 @@ Date['fromUnixTime'] = function (unixTime) {
     return new Date(unixTime * 1000);
 };
 /**
- * Creates a Date from a local date string in YYYY-MM-DD format.
+ * Creates a Date from a string in YYYY-MM-DD format interpreted as local time.
  *
- * @param {string} value A local date string.
+ * @param {string} value A date string in YYYY-MM-DD format.
  * @return {Date} A Date representing midnight in the local timezone.
- *
- * @example
- * Date.fromLocalDate('2026-01-18');
  */
-Date['fromLocalDate'] = function (value) {
-    return Date.fromLocalDateTime(`${value} 00:00:00`);
+Date['fromLocalDateStr'] = function (value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match)
+        throw new Error(`Invalid date. Expected YYYY-MM-DD. Was ${value}`);
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(year, month - 1, day);
+    if (date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day) {
+        throw new Error(`Invalid date. Was ${value}`);
+    }
+    return date;
 };
 /**
- * Creates a Date from a UTC date string in YYYY-MM-DD format.
+ * Creates a Date from a string in YYYY-MM-DD format interpreted as UTC.
  *
- * @param {string} value A UTC date string.
+ * @param {string} value A date string in YYYY-MM-DD format.
  * @return {Date} A Date representing midnight UTC of the specified date.
- *
- * @example
- * Date.fromUTCDate('2026-01-18');
  */
-Date['fromUTCDate'] = function (value) {
-    return Date.fromUTCDateTime(`${value} 00:00:00`);
+Date['fromUTCDateStr'] = function (value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match)
+        throw new Error(`Invalid date. Expected YYYY-MM-DD. Was ${value}`);
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() !== year ||
+        date.getUTCMonth() !== month - 1 ||
+        date.getUTCDate() !== day) {
+        throw new Error(`Invalid date. Was ${value}`);
+    }
+    return date;
 };
 /**
- * Creates a Date from a Spain date string in YYYY-MM-DD format.
+ * Creates a Date from a string in YYYY-MM-DD format interpreted as Europe/Madrid time.
  *
- * @param {string} value A Spain date string.
+ * @param {string} value A date string in YYYY-MM-DD format.
  * @return {Date} A Date representing midnight in Europe/Madrid.
- *
- * @example
- * Date.fromSpainDate('2026-01-18');
  */
-Date['fromSpainDate'] = function (value) {
-    return Date.fromSpainDateTime(`${value} 00:00:00`);
+Date['fromSpainDateStr'] = function (value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match)
+        throw new Error(`Invalid date. Expected YYYY-MM-DD. Was ${value}`);
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const requestedUTC = Date.UTC(year, month - 1, day);
+    let timestamp = requestedUTC;
+    for (let i = 0; i < 3; i++) {
+        const parts = getPartsInTimeZone(new Date(timestamp), SPAIN_TIME_ZONE);
+        const currentUTC = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+        timestamp += requestedUTC - currentUTC;
+    }
+    const date = new Date(timestamp);
+    const parts = getPartsInTimeZone(date, SPAIN_TIME_ZONE);
+    if (parts.year !== year ||
+        parts.month !== month ||
+        parts.day !== day ||
+        parts.hour !== 0 ||
+        parts.minute !== 0 ||
+        parts.second !== 0) {
+        throw new Error(`Invalid date. Was ${value}`);
+    }
+    return date;
 };
 /**
  * Creates a Date from a local datetime string in YYYY-MM-DD HH:mm:ss format.
  *
  * @param {string} value A local datetime string.
  * @return {Date} A Date representing the specified local datetime.
- *
- * @example
- * Date.fromLocalDateTime('2026-01-18 19:54:24');
  */
-Date['fromLocalDateTime'] = function (value) {
+Date['fromLocalDateTimeStr'] = function (value) {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
     if (!match)
         throw new Error(`Invalid local datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
@@ -842,18 +877,24 @@ Date['fromLocalDateTime'] = function (value) {
     const hour = Number(match[4]);
     const minute = Number(match[5]);
     const second = Number(match[6]);
-    return new Date(year, month - 1, day, hour, minute, second);
+    const date = new Date(year, month - 1, day, hour, minute, second);
+    if (date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day ||
+        date.getHours() !== hour ||
+        date.getMinutes() !== minute ||
+        date.getSeconds() !== second) {
+        throw new Error(`Invalid local datetime. Was ${value}`);
+    }
+    return date;
 };
 /**
  * Creates a Date from a UTC datetime string in YYYY-MM-DD HH:mm:ss format.
  *
  * @param {string} value A UTC datetime string.
  * @return {Date} A Date representing the specified UTC datetime.
- *
- * @example
- * Date.fromUTCDateTime('2026-01-18 19:54:24');
  */
-Date['fromUTCDateTime'] = function (value) {
+Date['fromUTCDateTimeStr'] = function (value) {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
     if (!match)
         throw new Error(`Invalid UTC datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
@@ -863,18 +904,24 @@ Date['fromUTCDateTime'] = function (value) {
     const hour = Number(match[4]);
     const minute = Number(match[5]);
     const second = Number(match[6]);
-    return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+    const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+    if (date.getUTCFullYear() !== year ||
+        date.getUTCMonth() !== month - 1 ||
+        date.getUTCDate() !== day ||
+        date.getUTCHours() !== hour ||
+        date.getUTCMinutes() !== minute ||
+        date.getUTCSeconds() !== second) {
+        throw new Error(`Invalid UTC datetime. Was ${value}`);
+    }
+    return date;
 };
 /**
  * Creates a Date from a Spain datetime string in YYYY-MM-DD HH:mm:ss format.
  *
  * @param {string} value A Spain datetime string.
  * @return {Date} A Date representing the specified Europe/Madrid datetime.
- *
- * @example
- * Date.fromSpainDateTime('2026-01-18 19:54:24');
  */
-Date['fromSpainDateTime'] = function (value) {
+Date['fromSpainDateTimeStr'] = function (value) {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
     if (!match)
         throw new Error(`Invalid Spain datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
@@ -884,16 +931,26 @@ Date['fromSpainDateTime'] = function (value) {
     const hour = Number(match[4]);
     const minute = Number(match[5]);
     const second = Number(match[6]);
+    const desiredAsUTC = Date.UTC(year, month - 1, day, hour, minute, second);
     // Initial UTC guess.
-    let timestamp = Date.UTC(year, month - 1, day, hour, minute, second);
+    let timestamp = desiredAsUTC;
     // Correct the guess using the actual Europe/Madrid offset.
     for (let i = 0; i < 3; i++) {
         const parts = getPartsInTimeZone(new Date(timestamp), SPAIN_TIME_ZONE);
         const actualAsUTC = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
-        const desiredAsUTC = Date.UTC(year, month - 1, day, hour, minute, second);
         timestamp += desiredAsUTC - actualAsUTC;
     }
-    return new Date(timestamp);
+    const date = new Date(timestamp);
+    const parts = getPartsInTimeZone(date, SPAIN_TIME_ZONE);
+    if (parts.year !== year ||
+        parts.month !== month ||
+        parts.day !== day ||
+        parts.hour !== hour ||
+        parts.minute !== minute ||
+        parts.second !== second) {
+        throw new Error(`Invalid Spain datetime. Was ${value}`);
+    }
+    return date;
 };
 // Instance -------------------------------------
 // Time change ---

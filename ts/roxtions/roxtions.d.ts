@@ -318,62 +318,44 @@ declare global {
          *
          * @param {string} value A local date string.
          * @return {Date} A Date representing midnight in the local timezone.
-         *
-         * @example
-         * Date.fromLocalDate('2026-01-18');
          */
-        fromLocalDate(value: string): Date;
+        fromLocalDateStr(value: string): Date;
         /**
          * Creates a Date from a UTC date string in YYYY-MM-DD format.
          *
          * @param {string} value A UTC date string.
          * @return {Date} A Date representing midnight UTC of the specified date.
-         *
-         * @example
-         * Date.fromUTCDate('2026-01-18');
          */
-        fromUTCDate(value: string): Date;
+        fromUTCDateStr(value: string): Date;
         /**
          * Creates a Date from a Spain date string in YYYY-MM-DD format.
          *
          * @param {string} value A Spain date string.
          * @return {Date} A Date representing midnight in Europe/Madrid.
-         *
-         * @example
-         * Date.fromSpainDate('2026-01-18');
          */
-        fromSpainDate(value: string): Date;
+        fromSpainDateStr(value: string): Date;
 
         /**
          * Creates a Date from a local datetime string in YYYY-MM-DD HH:mm:ss format.
          *
          * @param {string} value A local datetime string.
          * @return {Date} A Date representing the specified local datetime.
-         *
-         * @example
-         * Date.fromLocalDateTime('2026-01-18 19:54:24');
          */
-        fromLocalDateTime(value: string): Date;
+        fromLocalDateTimeStr(value: string): Date;
         /**
          * Creates a Date from a UTC datetime string in YYYY-MM-DD HH:mm:ss format.
          *
          * @param {string} value A UTC datetime string.
          * @return {Date} A Date representing the specified UTC datetime.
-         *
-         * @example
-         * Date.fromUTCDateTime('2026-01-18 19:54:24');
          */
-        fromUTCDateTime(value: string): Date;
+        fromUTCDateTimeStr(value: string): Date;
         /**
          * Creates a Date from a Spain datetime string in YYYY-MM-DD HH:mm:ss format.
          *
          * @param {string} value A Spain datetime string.
          * @return {Date} A Date representing the specified Europe/Madrid datetime.
-         *
-         * @example
-         * Date.fromSpainDateTime('2026-01-18 19:54:24');
          */
-        fromSpainDateTime(value: string): Date;
+        fromSpainDateTimeStr(value: string): Date;
 
         /**
          * Calculates the number of whole months between two dates.
