@@ -1,10 +1,11 @@
 // Author: royrscb.com
 // My custom extensions for basic JS types
-//-***********************************************************************************
-//- Build command in this file dir: tsc && sed -i '/^\/\/-/d' ../../js/roxtions.js   *
-//- The second part is to delete this 5 lines comment                                *
-//- Output will go to "./tsconfig.json".compilerOptions.outDir                       *
-//-***********************************************************************************
+
+//-*********************************************************************************
+//- Build command in this file dir: tsc && sed -i '/^\/\/-/d' ../../js/roxtions.js *
+//- The second part is to delete all lines starting with '//-' like this ones      *
+//- Output will go to "./tsconfig.json".compilerOptions.outDir                     *
+//-*********************************************************************************
 
 //#region Number ----------------------------------------------------------------------------------
 
