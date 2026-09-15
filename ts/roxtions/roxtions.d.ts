@@ -371,7 +371,6 @@ declare global {
          * Date.monthsBetween(new Date(2025, 6, 10), new Date(2025, 4, 5)); // → -2
          */
         monthsBetween(a: Date | number, b: Date | number): number;
-
         /**
          * UTC version of `Date.monthsBetween`. Uses UTC year/month fields instead of local ones,
          * so the result doesn't shift depending on the caller's time zone.
@@ -384,7 +383,6 @@ declare global {
          * Date.monthsBetweenUTC(new Date(Date.UTC(2025, 1, 25)), new Date(Date.UTC(2025, 2, 1))); // → 1
          */
         monthsBetweenUTC(a: Date | number, b: Date | number): number;
-
         /**
          * Spain version of `Date.monthsBetween`. Uses Europe/Madrid year/month fields instead of local ones.
          *

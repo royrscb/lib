@@ -952,6 +952,73 @@ Date['fromSpainDateTimeStr'] = function (value) {
     }
     return date;
 };
+/**
+ * Calculates the number of whole months between two dates.
+ * Positive if `b` is after `a`, negative if `b` is before `a`.
+ * Ignores days and times; only year and month fields are used.
+ *
+ * @param {Date} a The starting date.
+ * @param {Date} b The ending date.
+ * @return {number} The signed number of months between `a` and `b`.
+ *
+ * @example
+ * Date.monthsBetween(new Date(2025, 1, 25), new Date(2025, 2, 1)); // → 1
+ * Date.monthsBetween(new Date(2025, 6, 10), new Date(2025, 4, 5)); // → -2
+ */
+Date['monthsBetween'] = function (a, b) {
+    if (!(a instanceof Date) && typeof a !== 'number')
+        throw new Error(`a must be Date or number. Was ${typeof a}`);
+    if (!(b instanceof Date) && typeof b !== 'number')
+        throw new Error(`b must be Date or number. Was ${typeof b}`);
+    const aDate = a instanceof Date ? a : new Date(a);
+    const bDate = b instanceof Date ? b : new Date(b);
+    const years = bDate.getFullYear() - aDate.getFullYear();
+    const months = bDate.getMonth() - aDate.getMonth();
+    return years * 12 + months;
+};
+/**
+ * UTC version of `Date.monthsBetween`. Uses UTC year/month fields instead of local ones,
+ * so the result doesn't shift depending on the caller's time zone.
+ *
+ * @param {Date} a The starting date.
+ * @param {Date} b The ending date.
+ * @return {number} The signed number of months between `a` and `b`, in UTC.
+ *
+ * @example
+ * Date.monthsBetweenUTC(new Date(Date.UTC(2025, 1, 25)), new Date(Date.UTC(2025, 2, 1))); // → 1
+ */
+Date['monthsBetweenUTC'] = function (a, b) {
+    if (!(a instanceof Date) && typeof a !== 'number')
+        throw new Error(`a must be Date or number. Was ${typeof a}`);
+    if (!(b instanceof Date) && typeof b !== 'number')
+        throw new Error(`b must be Date or number. Was ${typeof b}`);
+    const aDate = a instanceof Date ? a : new Date(a);
+    const bDate = b instanceof Date ? b : new Date(b);
+    const years = bDate.getUTCFullYear() - aDate.getUTCFullYear();
+    const months = bDate.getUTCMonth() - aDate.getUTCMonth();
+    return years * 12 + months;
+};
+/**
+ * Spain version of `Date.monthsBetween`. Uses Spain calendar year/month fields instead of local ones,
+ * so the result is stable for the Europe/Madrid timezone.
+ *
+ * @param {Date} a The starting date.
+ * @param {Date} b The ending date.
+ * @return {number} The signed number of months between `a` and `b`, in Spain time.
+ */
+Date['monthsBetweenSpain'] = function (a, b) {
+    if (!(a instanceof Date) && typeof a !== 'number')
+        throw new Error(`a must be Date or number. Was ${typeof a}`);
+    if (!(b instanceof Date) && typeof b !== 'number')
+        throw new Error(`b must be Date or number. Was ${typeof b}`);
+    const aDate = a instanceof Date ? a : new Date(a);
+    const bDate = b instanceof Date ? b : new Date(b);
+    const aParts = getPartsInTimeZone(aDate, SPAIN_TIME_ZONE);
+    const bParts = getPartsInTimeZone(bDate, SPAIN_TIME_ZONE);
+    const years = bParts.year - aParts.year;
+    const months = bParts.month - aParts.month;
+    return years * 12 + months;
+};
 // Instance -------------------------------------
 // Time change ---
 /**
