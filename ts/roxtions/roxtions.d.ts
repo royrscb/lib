@@ -341,21 +341,21 @@ declare global {
          * @param {string} value A local datetime string.
          * @return {Date} A Date representing the specified local datetime.
          */
-        fromLocalDateTimeStr(value: string): Date;
+        fromLocalDatetimeStr(value: string): Date;
         /**
          * Creates a Date from a UTC datetime string in YYYY-MM-DD HH:mm:ss format.
          *
          * @param {string} value A UTC datetime string.
          * @return {Date} A Date representing the specified UTC datetime.
          */
-        fromUTCDateTimeStr(value: string): Date;
+        fromUTCDatetimeStr(value: string): Date;
         /**
          * Creates a Date from a Spain datetime string in YYYY-MM-DD HH:mm:ss format.
          *
          * @param {string} value A Spain datetime string.
          * @return {Date} A Date representing the specified Europe/Madrid datetime.
          */
-        fromSpainDateTimeStr(value: string): Date;
+        fromSpainDatetimeStr(value: string): Date;
 
         /**
          * Calculates the number of whole months between two dates.

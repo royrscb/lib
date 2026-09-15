@@ -867,7 +867,7 @@ Date['fromSpainDateStr'] = function (value) {
  * @param {string} value A local datetime string.
  * @return {Date} A Date representing the specified local datetime.
  */
-Date['fromLocalDateTimeStr'] = function (value) {
+Date['fromLocalDatetimeStr'] = function (value) {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
     if (!match)
         throw new Error(`Invalid local datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
@@ -894,7 +894,7 @@ Date['fromLocalDateTimeStr'] = function (value) {
  * @param {string} value A UTC datetime string.
  * @return {Date} A Date representing the specified UTC datetime.
  */
-Date['fromUTCDateTimeStr'] = function (value) {
+Date['fromUTCDatetimeStr'] = function (value) {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
     if (!match)
         throw new Error(`Invalid UTC datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
@@ -921,7 +921,7 @@ Date['fromUTCDateTimeStr'] = function (value) {
  * @param {string} value A Spain datetime string.
  * @return {Date} A Date representing the specified Europe/Madrid datetime.
  */
-Date['fromSpainDateTimeStr'] = function (value) {
+Date['fromSpainDatetimeStr'] = function (value) {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
     if (!match)
         throw new Error(`Invalid Spain datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
