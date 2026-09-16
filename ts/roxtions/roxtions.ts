@@ -1106,13 +1106,13 @@ Date['fromSpainDateTimeStr'] = function(value: string): Date {
 }
 
 /**
- * Calculates the number of whole months between two dates.
+ * Calculates the number of whole months between two dates using the local timezone.
  * Positive if `b` is after `a`, negative if `b` is before `a`.
- * Ignores days and times; only year and month fields are used.
+ * Ignores days and times; only local year and month fields are used.
  *
  * @param {Date} a The starting date.
  * @param {Date} b The ending date.
- * @return {number} The signed number of months between `a` and `b`.
+ * @return {number} The signed number of local months between `a` and `b`.
  *
  * @example
  * Date.monthsBetween(new Date(2025, 1, 25), new Date(2025, 2, 1)); // → 1
@@ -1132,12 +1132,13 @@ Date['monthsBetween'] = function(a: Date | number, b: Date | number): number {
     return years * 12 + months;
 }
 /**
- * UTC version of `Date.monthsBetween`. Uses UTC year/month fields instead of local ones,
- * so the result doesn't shift depending on the caller's time zone.
+ * Calculates the number of whole months between two dates using UTC year and month fields.
+ * Positive if `b` is after `a`, negative if `b` is before `a`.
+ * Ignores days and times; only UTC year and month fields are used.
  *
  * @param {Date} a The starting date.
  * @param {Date} b The ending date.
- * @return {number} The signed number of months between `a` and `b`, in UTC.
+ * @return {number} The signed number of UTC months between `a` and `b`.
  *
  * @example
  * Date.monthsBetweenUTC(new Date(Date.UTC(2025, 1, 25)), new Date(Date.UTC(2025, 2, 1))); // → 1
@@ -1156,12 +1157,13 @@ Date['monthsBetweenUTC'] = function(a: Date | number, b: Date | number): number 
     return years * 12 + months;
 }
 /**
- * Spain version of `Date.monthsBetween`. Uses Spain calendar year/month fields instead of local ones,
- * so the result is stable for the Europe/Madrid timezone.
+ * Calculates the number of whole months between two dates using Europe/Madrid year and month fields.
+ * Positive if `b` is after `a`, negative if `b` is before `a`.
+ * Ignores days and times; only Spain year and month fields are used.
  *
  * @param {Date} a The starting date.
  * @param {Date} b The ending date.
- * @return {number} The signed number of months between `a` and `b`, in Spain time.
+ * @return {number} The signed number of Spain months between `a` and `b`.
  */
 Date['monthsBetweenSpain'] = function(a: Date | number, b: Date | number): number {
     if (!(a instanceof Date) && typeof a !== 'number')
@@ -1263,10 +1265,11 @@ Object.defineProperty(Date.prototype, 'addWeeks', {
     enumerable: false
 });
 /**
- * Adds the specified number of months to the date and returns a new Date instance.
+ * Adds the specified number of months using local date fields.
  * If the target month does not contain the original day, the last day of the target month is used.
+ *
  * @param {number} months - Number of months to add.
- * @return {Date} A new Date instance with the months added.
+ * @return {Date} A new Date instance with the months added using local time.
  */
 Object.defineProperty(Date.prototype, 'addMonths', {
     value: function(this: Date, months: number): Date {
@@ -1291,10 +1294,11 @@ Object.defineProperty(Date.prototype, 'addMonths', {
     enumerable: false
 });
 /**
- * UTC version of `addMonths`. Uses UTC date fields instead of local date fields.
+ * Adds the specified number of months using UTC date fields.
  * If the target month does not contain the original day, the last day of the target month is used.
+ *
  * @param {number} months - Number of months to add.
- * @return {Date} A new Date instance with the months added, in UTC.
+ * @return {Date} A new Date instance with the months added using UTC.
  */
 Object.defineProperty(Date.prototype, 'addMonthsUTC', {
     value: function(this: Date, months: number): Date {
@@ -1317,10 +1321,11 @@ Object.defineProperty(Date.prototype, 'addMonthsUTC', {
     enumerable: false
 });
 /**
- * Spain version of `addMonths`. Uses the Europe/Madrid calendar instead of the local time zone.
+ * Adds the specified number of months using Europe/Madrid date fields.
  * If the target month does not contain the original day, the last day of the target month is used.
+ *
  * @param {number} months - Number of months to add.
- * @return {Date} A new Date instance with the months added, interpreted in Spain time.
+ * @return {Date} A new Date instance with the months added using Spain time.
  */
 Object.defineProperty(Date.prototype, 'addMonthsSpain', {
     value: function(this: Date, months: number): Date {
@@ -1357,10 +1362,11 @@ Object.defineProperty(Date.prototype, 'addMonthsSpain', {
     enumerable: false
 });
 /**
- * Adds the specified number of years to the date and returns a new Date instance.
+ * Adds the specified number of years using local date fields.
  * If the original date is February 29 and the target year is not a leap year, the result is February 28.
+ *
  * @param {number} years - Number of years to add.
- * @return {Date} A new Date instance with the years added.
+ * @return {Date} A new Date instance with the years added using local time.
  */
 Object.defineProperty(Date.prototype, 'addYears', {
     value: function(this: Date, years: number): Date {
@@ -1381,10 +1387,11 @@ Object.defineProperty(Date.prototype, 'addYears', {
     enumerable: false
 });
 /**
- * UTC version of `addYears`. Uses UTC date fields instead of local date fields.
+ * Adds the specified number of years using UTC date fields.
  * If the original date is February 29 and the target year is not a leap year, the result is February 28.
+ *
  * @param {number} years - Number of years to add.
- * @return {Date} A new Date instance with the years added.
+ * @return {Date} A new Date instance with the years added using UTC.
  */
 Object.defineProperty(Date.prototype, 'addYearsUTC', {
     value: function(this: Date, years: number): Date {
@@ -1405,10 +1412,11 @@ Object.defineProperty(Date.prototype, 'addYearsUTC', {
     enumerable: false
 });
 /**
- * Spain version of `addYears`. Uses the Spain calendar instead of the local time zone.
+ * Adds the specified number of years using Europe/Madrid date fields.
  * If the original date is February 29 and the target year is not a leap year, the result is February 28.
+ *
  * @param {number} years - Number of years to add.
- * @return {Date} A new Date instance with the years added, in Spain time.
+ * @return {Date} A new Date instance with the years added using Spain time.
  */
 Object.defineProperty(Date.prototype, 'addYearsSpain', {
     value: function(this: Date, years: number): Date {
@@ -1440,8 +1448,8 @@ Object.defineProperty(Date.prototype, 'addYearsSpain', {
 });
 
 /**
- * Returns a new Date representing the first hour of the day at 00:00:00.
- * @return {Date} A new Date at the start of the day.
+ * Returns a new Date representing 00:00:00 at the start of the local calendar day.
+ * @return {Date} A new Date at the start of the local day.
  */
 Object.defineProperty(Date.prototype, 'startOfDay', {
     value: function(this: Date): Date {
@@ -1452,8 +1460,8 @@ Object.defineProperty(Date.prototype, 'startOfDay', {
     enumerable: false
 });
 /**
- * UTC version of `startOfDay`. Returns 00:00:00 UTC of the same UTC calendar day.
- * @return {Date} A new Date at the start of the day, in UTC.
+ * Returns a new Date representing 00:00:00 UTC at the start of the UTC calendar day.
+ * @return {Date} A new Date at the start of the UTC day.
  */
 Object.defineProperty(Date.prototype, 'startOfDayUTC', {
     value: function(this: Date): Date {
@@ -1464,8 +1472,8 @@ Object.defineProperty(Date.prototype, 'startOfDayUTC', {
     enumerable: false
 });
 /**
- * Spain version of `startOfDay`. Returns 00:00:00 Europe/Madrid of the same Spain calendar day.
- * @return {Date} A new Date at the start of the day, in Spain time.
+ * Returns a new Date representing 00:00:00 Europe/Madrid at the start of the Spain calendar day.
+ * @return {Date} A new Date at the start of the Spain day.
  */
 Object.defineProperty(Date.prototype, 'startOfDaySpain', {
     value: function(this: Date): Date {
@@ -1477,9 +1485,9 @@ Object.defineProperty(Date.prototype, 'startOfDaySpain', {
     enumerable: false
 });
 /**
- * Returns a new Date representing the first day of the week at 00:00:00.
- * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @return {Date} A new Date at the start of the week.
+ * Returns a new Date representing the first day of the local week at 00:00:00.
+ * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
+ * @return {Date} A new Date at the start of the local week.
  */
 Object.defineProperty(Date.prototype, 'startOfWeek', {
     value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
@@ -1494,10 +1502,9 @@ Object.defineProperty(Date.prototype, 'startOfWeek', {
     enumerable: false
 });
 /**
- * UTC version of `startOfWeek`. Resolves the week's starting day against UTC fields
- * instead of the local time zone.
- * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @return {Date} A new Date at the start of the week, in UTC.
+ * Returns a new Date representing the first day of the UTC week at 00:00:00 UTC.
+ * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
+ * @return {Date} A new Date at the start of the UTC week.
  */
 Object.defineProperty(Date.prototype, 'startOfWeekUTC', {
     value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
@@ -1512,9 +1519,9 @@ Object.defineProperty(Date.prototype, 'startOfWeekUTC', {
     enumerable: false
 });
 /**
- * Spain version of `startOfWeek`. Resolves the week's starting day against Spain fields.
- * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @return {Date} A new Date at the start of the week, in Spain time.
+ * Returns a new Date representing the first day of the Spain week at 00:00:00 Europe/Madrid.
+ * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
+ * @return {Date} A new Date at the start of the Spain week.
  */
 Object.defineProperty(Date.prototype, 'startOfWeekSpain', {
     value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
@@ -1530,8 +1537,8 @@ Object.defineProperty(Date.prototype, 'startOfWeekSpain', {
     enumerable: false
 });
 /**
- * Returns a new Date representing the first day of the month at 00:00:00.
- * @return {Date} A new Date at the start of the month.
+ * Returns a new Date representing the first day of the local month at 00:00:00.
+ * @return {Date} A new Date at the start of the local month.
  */
 Object.defineProperty(Date.prototype, 'startOfMonth', {
     value: function(this: Date): Date {
@@ -1542,8 +1549,8 @@ Object.defineProperty(Date.prototype, 'startOfMonth', {
     enumerable: false
 });
 /**
- * UTC version of `startOfMonth`. Returns the 1st of the UTC calendar month at 00:00:00 UTC.
- * @return {Date} A new Date at the start of the month, in UTC.
+ * Returns a new Date representing the 1st of the UTC calendar month at 00:00:00 UTC.
+ * @return {Date} A new Date at the start of the UTC month.
  */
 Object.defineProperty(Date.prototype, 'startOfMonthUTC', {
     value: function(this: Date): Date {
@@ -1554,8 +1561,8 @@ Object.defineProperty(Date.prototype, 'startOfMonthUTC', {
     enumerable: false
 });
 /**
- * Spain version of `startOfMonth`. Returns the 1st of the Spain calendar month at 00:00:00 Europe/Madrid.
- * @return {Date} A new Date at the start of the month, in Spain time.
+ * Returns a new Date representing the 1st of the Spain calendar month at 00:00:00 Europe/Madrid.
+ * @return {Date} A new Date at the start of the Spain month.
  */
 Object.defineProperty(Date.prototype, 'startOfMonthSpain', {
     value: function(this: Date): Date {
@@ -1567,8 +1574,8 @@ Object.defineProperty(Date.prototype, 'startOfMonthSpain', {
     enumerable: false
 });
 /**
- * Returns a new Date representing January 1st of the year at 00:00:00.
- * @return {Date} A new Date at the start of the year.
+ * Returns a new Date representing January 1st of the local calendar year at 00:00:00.
+ * @return {Date} A new Date at the start of the local year.
  */
 Object.defineProperty(Date.prototype, 'startOfYear', {
     value: function(this: Date): Date {
@@ -1579,8 +1586,8 @@ Object.defineProperty(Date.prototype, 'startOfYear', {
     enumerable: false
 });
 /**
- * UTC version of `startOfYear`. Returns January 1st of the UTC calendar year at 00:00:00 UTC.
- * @return {Date} A new Date at the start of the year, in UTC.
+ * Returns a new Date representing January 1st of the UTC calendar year at 00:00:00 UTC.
+ * @return {Date} A new Date at the start of the UTC year.
  */
 Object.defineProperty(Date.prototype, 'startOfYearUTC', {
     value: function(this: Date): Date {
@@ -1591,8 +1598,8 @@ Object.defineProperty(Date.prototype, 'startOfYearUTC', {
     enumerable: false
 });
 /**
- * Spain version of `startOfYear`. Returns January 1st of the Spain calendar year at 00:00:00 Europe/Madrid.
- * @return {Date} A new Date at the start of the year, in Spain time.
+ * Returns a new Date representing January 1st of the Spain calendar year at 00:00:00 Europe/Madrid.
+ * @return {Date} A new Date at the start of the Spain year.
  */
 Object.defineProperty(Date.prototype, 'startOfYearSpain', {
     value: function(this: Date): Date {
@@ -1605,8 +1612,8 @@ Object.defineProperty(Date.prototype, 'startOfYearSpain', {
 });
 
 /**
- * Returns a new Date representing the last hour of the day at 23:59:59.999.
- * @return {Date} A new Date at the end of the day.
+ * Returns a new Date representing 23:59:59.999 at the end of the local calendar day.
+ * @return {Date} A new Date at the end of the local day.
  */
 Object.defineProperty(Date.prototype, 'endOfDay', {
     value: function(this: Date): Date {
@@ -1617,8 +1624,8 @@ Object.defineProperty(Date.prototype, 'endOfDay', {
     enumerable: false
 });
 /**
- * UTC version of `endOfDay`. Returns 23:59:59.999 UTC of the same UTC calendar day.
- * @return {Date} A new Date at the end of the day, in UTC.
+ * Returns a new Date representing 23:59:59.999 UTC at the end of the UTC calendar day.
+ * @return {Date} A new Date at the end of the UTC day.
  */
 Object.defineProperty(Date.prototype, 'endOfDayUTC', {
     value: function(this: Date): Date {
@@ -1629,8 +1636,8 @@ Object.defineProperty(Date.prototype, 'endOfDayUTC', {
     enumerable: false
 });
 /**
- * Spain version of `endOfDay`. Returns 23:59:59.999 Europe/Madrid of the same Spain calendar day.
- * @return {Date} A new Date at the end of the day, in Spain time.
+ * Returns a new Date representing 23:59:59.999 Europe/Madrid at the end of the Spain calendar day.
+ * @return {Date} A new Date at the end of the Spain day.
  */
 Object.defineProperty(Date.prototype, 'endOfDaySpain', {
     value: function(this: Date): Date {
@@ -1641,9 +1648,9 @@ Object.defineProperty(Date.prototype, 'endOfDaySpain', {
     enumerable: false
 });
 /**
- * Returns a new Date representing the last day of the week at 23:59:59.999.
- * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @return {Date} A new Date at the end of the week.
+ * Returns a new Date representing the last day of the local week at 23:59:59.999.
+ * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
+ * @return {Date} A new Date at the end of the local week.
  */
 Object.defineProperty(Date.prototype, 'endOfWeek', {
     value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
@@ -1654,10 +1661,9 @@ Object.defineProperty(Date.prototype, 'endOfWeek', {
     enumerable: false
 });
 /**
- * UTC version of `endOfWeek`. Resolves the week's end against UTC fields instead of
- * the local time zone.
- * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @return {Date} A new Date at the end of the week, in UTC.
+ * Returns a new Date representing the last day of the UTC week at 23:59:59.999 UTC.
+ * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
+ * @return {Date} A new Date at the end of the UTC week.
  */
 Object.defineProperty(Date.prototype, 'endOfWeekUTC', {
     value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
@@ -1668,9 +1674,9 @@ Object.defineProperty(Date.prototype, 'endOfWeekUTC', {
     enumerable: false
 });
 /**
- * Spain version of `endOfWeek`. Resolves the week's end against Spain fields.
- * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @return {Date} A new Date at the end of the week, in Spain time.
+ * Returns a new Date representing the last day of the Spain week at 23:59:59.999 Europe/Madrid.
+ * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
+ * @return {Date} A new Date at the end of the Spain week.
  */
 Object.defineProperty(Date.prototype, 'endOfWeekSpain', {
     value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
@@ -1681,8 +1687,8 @@ Object.defineProperty(Date.prototype, 'endOfWeekSpain', {
     enumerable: false
 });
 /**
- * Returns a new Date representing the last day of the month at 23:59:59.999.
- * @return {Date} A new Date at the end of the month.
+ * Returns a new Date representing the last day of the local month at 23:59:59.999.
+ * @return {Date} A new Date at the end of the local month.
  */
 Object.defineProperty(Date.prototype, 'endOfMonth', {
     value: function(this: Date): Date {
@@ -1693,8 +1699,8 @@ Object.defineProperty(Date.prototype, 'endOfMonth', {
     enumerable: false
 });
 /**
- * UTC version of `endOfMonth`. Returns the last instant of the UTC calendar month.
- * @return {Date} A new Date at the end of the month, in UTC.
+ * Returns a new Date representing the last instant of the UTC calendar month.
+ * @return {Date} A new Date at the end of the UTC month.
  */
 Object.defineProperty(Date.prototype, 'endOfMonthUTC', {
     value: function(this: Date): Date {
@@ -1705,8 +1711,8 @@ Object.defineProperty(Date.prototype, 'endOfMonthUTC', {
     enumerable: false
 });
 /**
- * Spain version of `endOfMonth`. Returns the last instant of the Spain calendar month.
- * @return {Date} A new Date at the end of the month, in Spain time.
+ * Returns a new Date representing the last instant of the Spain calendar month.
+ * @return {Date} A new Date at the end of the Spain month.
  */
 Object.defineProperty(Date.prototype, 'endOfMonthSpain', {
     value: function(this: Date): Date {
@@ -1717,8 +1723,8 @@ Object.defineProperty(Date.prototype, 'endOfMonthSpain', {
     enumerable: false
 });
 /**
- * Returns a new Date representing December 31st of the year at 23:59:59.999.
- * @return {Date} A new Date at the end of the year.
+ * Returns a new Date representing December 31st of the local calendar year at 23:59:59.999.
+ * @return {Date} A new Date at the end of the local year.
  */
 Object.defineProperty(Date.prototype, 'endOfYear', {
     value: function(this: Date): Date {
@@ -1729,8 +1735,8 @@ Object.defineProperty(Date.prototype, 'endOfYear', {
     enumerable: false
 });
 /**
- * UTC version of `endOfYear`. Returns the last instant of the UTC calendar year.
- * @return {Date} A new Date at the end of the year, in UTC.
+ * Returns a new Date representing the last instant of the UTC calendar year.
+ * @return {Date} A new Date at the end of the UTC year.
  */
 Object.defineProperty(Date.prototype, 'endOfYearUTC', {
     value: function(this: Date): Date {
@@ -1741,8 +1747,8 @@ Object.defineProperty(Date.prototype, 'endOfYearUTC', {
     enumerable: false
 });
 /**
- * Spain version of `endOfYear`. Returns the last instant of the Spain calendar year.
- * @return {Date} A new Date at the end of the year, in Spain time.
+ * Returns a new Date representing the last instant of the Spain calendar year.
+ * @return {Date} A new Date at the end of the Spain year.
  */
 Object.defineProperty(Date.prototype, 'endOfYearSpain', {
     value: function(this: Date): Date {
@@ -1756,7 +1762,7 @@ Object.defineProperty(Date.prototype, 'endOfYearSpain', {
 // Format ---
 
 /**
- * Formats a Date instance into a custom string pattern with locale support.
+ * Formats a Date instance into a custom string pattern using local date/time fields and locale support.
  *
  * Supported tokens:
  *  - YYYY : full year
@@ -1776,7 +1782,7 @@ Object.defineProperty(Date.prototype, 'endOfYearSpain', {
  *
  * @param {string} pattern Format pattern string
  * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
- * @return {string} The formatted date.
+ * @return {string} The formatted local date.
  */
 Object.defineProperty(Date.prototype, 'format', {
     value: function(this: Date, pattern: string, lang: string = 'en'): string {
@@ -1820,13 +1826,12 @@ Object.defineProperty(Date.prototype, 'format', {
     enumerable: false
 });
 /**
- * UTC version of `format`. Uses UTC date/time components and formats month/weekday/timezone
- * names against the UTC time zone, so the result doesn't depend on the caller's local time zone.
+ * Formats a Date instance into a custom string pattern using UTC date/time fields and locale support.
  * Supports the same tokens as `format`. The `Z` token is always "+00:00".
  *
  * @param {string} pattern Format pattern string
  * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
- * @return {string} The formatted date, in UTC.
+ * @return {string} The formatted UTC date.
  */
 Object.defineProperty(Date.prototype, 'formatUTC', {
     value: function(this: Date, pattern: string, lang: string = 'en'): string {
@@ -1865,12 +1870,12 @@ Object.defineProperty(Date.prototype, 'formatUTC', {
     enumerable: false
 });
 /**
- * Spain version of `format`. Uses Spain calendar/timezone fields and Spain locale formatting.
- * Supports the same tokens as `format` and uses the Europe/Madrid timezone.
+ * Formats a Date instance into a custom string pattern using Europe/Madrid date/time fields and Spain locale support.
+ * Supports the same tokens as `format`.
  *
  * @param {string} pattern Format pattern string
  * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
- * @return {string} The formatted date, in Spain time.
+ * @return {string} The formatted Spain date.
  */
 Object.defineProperty(Date.prototype, 'formatSpain', {
     value: function(this: Date, pattern: string, lang: string = 'es'): string {
@@ -1908,8 +1913,8 @@ Object.defineProperty(Date.prototype, 'formatSpain', {
 });
 
 /**
- * Returns the month and year formatted as YYYY-MM.
- * @return {string} A string representing the month in YYYY-MM format.
+ * Returns the local month and year formatted as YYYY-MM.
+ * @return {string} A string representing the local month in YYYY-MM format.
  */
 Object.defineProperty(Date.prototype, 'toMonthKey', {
     value: function(this: Date): string {
@@ -1920,7 +1925,7 @@ Object.defineProperty(Date.prototype, 'toMonthKey', {
     enumerable: false
 });
 /**
- * UTC version of `toMonthKey`. Uses the UTC calendar month instead of the local one.
+ * Returns the UTC month and year formatted as YYYY-MM.
  * @return {string} A string representing the UTC month in YYYY-MM format.
  */
 Object.defineProperty(Date.prototype, 'toMonthKeyUTC', {
@@ -1932,7 +1937,7 @@ Object.defineProperty(Date.prototype, 'toMonthKeyUTC', {
     enumerable: false
 });
 /**
- * Spain version of `toMonthKey`. Uses the Europe/Madrid calendar month instead of the local one.
+ * Returns the Spain month and year formatted as YYYY-MM.
  * @return {string} A string representing the Spain month in YYYY-MM format.
  */
 Object.defineProperty(Date.prototype, 'toMonthKeySpain', {
@@ -1944,8 +1949,8 @@ Object.defineProperty(Date.prototype, 'toMonthKeySpain', {
     enumerable: false
 });
 /**
- * Returns the date formatted as YYYY-MM-DD.
- * @return {string} A string representing the date in YYYY-MM-DD format.
+ * Returns the local date formatted as YYYY-MM-DD.
+ * @return {string} A string representing the local date in YYYY-MM-DD format.
  */
 Object.defineProperty(Date.prototype, 'toDayKey', {
     value: function(this: Date): string {
@@ -1959,7 +1964,7 @@ Object.defineProperty(Date.prototype, 'toDayKey', {
     enumerable: false
 });
 /**
- * UTC version of `toDayKey`. Uses the UTC calendar day instead of the local one.
+ * Returns the UTC date formatted as YYYY-MM-DD.
  * @return {string} A string representing the UTC date in YYYY-MM-DD format.
  */
 Object.defineProperty(Date.prototype, 'toDayKeyUTC', {
@@ -1971,7 +1976,7 @@ Object.defineProperty(Date.prototype, 'toDayKeyUTC', {
     enumerable: false
 });
 /**
- * Spain version of `toDayKey`. Uses the Europe/Madrid calendar day instead of the local one.
+ * Returns the Spain date formatted as YYYY-MM-DD.
  * @return {string} A string representing the Spain date in YYYY-MM-DD format.
  */
 Object.defineProperty(Date.prototype, 'toDayKeySpain', {
@@ -2037,8 +2042,8 @@ Object.defineProperty(Date.prototype, 'toDateTimeSpain', {
 });
 
 /**
- * Returns the date formatted for input[type="date"] value.
- * @return {string} A string in YYYY-MM-DD format.
+ * Returns the local date formatted for an input[type="date"] value.
+ * @return {string} A string in YYYY-MM-DD format using local date fields.
  */
 Object.defineProperty(Date.prototype, 'toInputDateValue', {
     value: function(this: Date): string {
@@ -2055,10 +2060,8 @@ Object.defineProperty(Date.prototype, 'toInputDateValue', {
     enumerable: false
 });
 /**
- * UTC version of `toInputDateValue`. Useful when the Date represents a date-only value
- * anchored at UTC midnight (e.g. coming from an API), so it doesn't shift a day depending
- * on the browser's local time zone.
- * @return {string} A string in YYYY-MM-DD format, from UTC fields.
+ * Returns the UTC date formatted for an input[type="date"] value.
+ * @return {string} A string in YYYY-MM-DD format using UTC date fields.
  */
 Object.defineProperty(Date.prototype, 'toInputDateValueUTC', {
     value: function(this: Date): string {
@@ -2075,9 +2078,8 @@ Object.defineProperty(Date.prototype, 'toInputDateValueUTC', {
     enumerable: false
 });
 /**
- * Spain version of `toInputDateValue`. Uses the Europe/Madrid date fields, so it does not shift
- * depending on the machine's local time zone.
- * @return {string} A string in YYYY-MM-DD format, from Spain fields.
+ * Returns the Spain date formatted for an input[type="date"] value.
+ * @return {string} A string in YYYY-MM-DD format using Spain date fields.
  */
 Object.defineProperty(Date.prototype, 'toInputDateValueSpain', {
     value: function(this: Date): string {
@@ -2092,8 +2094,8 @@ Object.defineProperty(Date.prototype, 'toInputDateValueSpain', {
     enumerable: false
 });
 /**
- * Returns the date formatted for input[type="datetime-local"] value.
- * @return {string} A string in YYYY-MM-DDTHH:MM format.
+ * Returns the local date formatted for an input[type="datetime-local"] value.
+ * @return {string} A string in YYYY-MM-DDTHH:MM format using local date and time fields.
  */
 Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValue', {
     value: function(this: Date): string {
@@ -2114,9 +2116,8 @@ Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValue', {
     enumerable: false
 });
 /**
- * UTC version of `toInputDateTimeLocalValue`. Builds the same input[type="datetime-local"]
- * shaped string, but from UTC fields instead of the local time zone.
- * @return {string} A string in YYYY-MM-DDTHH:MM format, from UTC fields.
+ * Returns the UTC date formatted for an input[type="datetime-local"] value.
+ * @return {string} A string in YYYY-MM-DDTHH:MM format using UTC date and time fields.
  */
 Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValueUTC', {
     value: function(this: Date): string {
@@ -2137,9 +2138,8 @@ Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValueUTC', {
     enumerable: false
 });
 /**
- * Spain version of `toInputDateTimeLocalValue`. Builds the same input[type="datetime-local"]
- * shaped string, but using the Europe/Madrid timezone instead of the host local zone.
- * @return {string} A string in YYYY-MM-DDTHH:MM format, from Spain fields.
+ * Returns the Spain date formatted for an input[type="datetime-local"] value.
+ * @return {string} A string in YYYY-MM-DDTHH:MM format using Spain date and time fields.
  */
 Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValueSpain', {
     value: function(this: Date): string {
@@ -2182,9 +2182,9 @@ Object.defineProperty(Date.prototype, 'isFuture', {
 });
 
 /**
- * Checks if two dates are on the same day.
+ * Checks if two dates are on the same local day.
  * @param {Date | number} other - The date to compare against.
- * @return {boolean} True if both dates share the same year, month, and day; otherwise false.
+ * @return {boolean} True if both dates share the same local year, month, and day; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameDay', {
     value: function(this: Date, other: Date | number): boolean {
@@ -2202,7 +2202,7 @@ Object.defineProperty(Date.prototype, 'isSameDay', {
     enumerable: false
 });
 /**
- * UTC version of `isSameDay`. Compares UTC year/month/day fields instead of local ones.
+ * Checks if two dates are on the same UTC day.
  * @param {Date | number} other - The date to compare against.
  * @return {boolean} True if both dates share the same UTC year, month, and day; otherwise false.
  */
@@ -2222,7 +2222,7 @@ Object.defineProperty(Date.prototype, 'isSameDayUTC', {
     enumerable: false
 });
 /**
- * Spain version of `isSameDay`. Compares the Spain calendar year/month/day fields.
+ * Checks if two dates are on the same Spain day.
  * @param {Date | number} other - The date to compare against.
  * @return {boolean} True if both dates share the same Spain year, month, and day; otherwise false.
  */
@@ -2244,10 +2244,10 @@ Object.defineProperty(Date.prototype, 'isSameDaySpain', {
     enumerable: false
 });
 /**
- * Checks if two dates are on the same week.
+ * Checks if two dates are in the same local week.
  * @param {Date | number} other - The date to compare against.
- * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
- * @return {boolean} True if both dates are in the same week; otherwise false.
+ * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
+ * @return {boolean} True if both dates are in the same local week; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameWeek', {
     value: function(this: Date, other: Date | number, weekStartsOnMonday: boolean = false): boolean {
@@ -2264,10 +2264,9 @@ Object.defineProperty(Date.prototype, 'isSameWeek', {
     enumerable: false
 });
 /**
- * UTC version of `isSameWeek`. Resolves each week's start against UTC fields instead of
- * the local time zone.
+ * Checks if two dates are in the same UTC week.
  * @param {Date | number} other - The date to compare against.
- * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
  * @return {boolean} True if both dates are in the same UTC week; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameWeekUTC', {
@@ -2285,9 +2284,9 @@ Object.defineProperty(Date.prototype, 'isSameWeekUTC', {
     enumerable: false
 });
 /**
- * Spain version of `isSameWeek`. Resolves each week's start against Spain fields.
+ * Checks if two dates are in the same Spain week.
  * @param {Date | number} other - The date to compare against.
- * @param {boolean} weekStartsOnMonday - The day of the week to start. Default on sunday.
+ * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
  * @return {boolean} True if both dates are in the same Spain week; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameWeekSpain', {
@@ -2305,9 +2304,9 @@ Object.defineProperty(Date.prototype, 'isSameWeekSpain', {
     enumerable: false
 });
 /**
- * Checks if two dates are on the same month.
+ * Checks if two dates are in the same local month.
  * @param {Date | number} other - The date to compare against.
- * @return {boolean} True if both dates share the same year and month; otherwise false.
+ * @return {boolean} True if both dates share the same local year and month; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameMonth', {
     value: function(this: Date, other: Date | number): boolean {
@@ -2324,7 +2323,7 @@ Object.defineProperty(Date.prototype, 'isSameMonth', {
     enumerable: false
 });
 /**
- * UTC version of `isSameMonth`. Compares UTC year/month fields instead of local ones.
+ * Checks if two dates are in the same UTC month.
  * @param {Date | number} other - The date to compare against.
  * @return {boolean} True if both dates share the same UTC year and month; otherwise false.
  */
@@ -2343,7 +2342,7 @@ Object.defineProperty(Date.prototype, 'isSameMonthUTC', {
     enumerable: false
 });
 /**
- * Spain version of `isSameMonth`. Compares Spain year/month fields.
+ * Checks if two dates are in the same Spain month.
  * @param {Date | number} other - The date to compare against.
  * @return {boolean} True if both dates share the same Spain year and month; otherwise false.
  */
@@ -2364,9 +2363,9 @@ Object.defineProperty(Date.prototype, 'isSameMonthSpain', {
     enumerable: false
 });
 /**
- * Checks if two dates are on the same year.
+ * Checks if two dates are in the same local year.
  * @param {Date | number} other - The date to compare against.
- * @return {boolean} True if both dates share the same year; otherwise false.
+ * @return {boolean} True if both dates share the same local year; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameYear', {
     value: function(this: Date, other: Date | number): boolean {
@@ -2382,7 +2381,7 @@ Object.defineProperty(Date.prototype, 'isSameYear', {
     enumerable: false
 });
 /**
- * UTC version of `isSameYear`. Compares the UTC year field instead of the local one.
+ * Checks if two dates are in the same UTC year.
  * @param {Date | number} other - The date to compare against.
  * @return {boolean} True if both dates share the same UTC year; otherwise false.
  */
@@ -2400,7 +2399,7 @@ Object.defineProperty(Date.prototype, 'isSameYearUTC', {
     enumerable: false
 });
 /**
- * Spain version of `isSameYear`. Compares the Spain year field.
+ * Checks if two dates are in the same Spain year.
  * @param {Date | number} other - The date to compare against.
  * @return {boolean} True if both dates share the same Spain year; otherwise false.
  */
@@ -2418,8 +2417,8 @@ Object.defineProperty(Date.prototype, 'isSameYearSpain', {
 });
 
 /**
- * Indicates whether the date falls on a weekend (Saturday or Sunday).
- * @return {boolean} true if the day is Saturday (6) or Sunday (0), otherwise false.
+ * Indicates whether the date falls on a local weekend (Saturday or Sunday).
+ * @return {boolean} true if the local day is Saturday (6) or Sunday (0), otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isWeekend', {
     value: function(this: Date): boolean {
@@ -2430,7 +2429,7 @@ Object.defineProperty(Date.prototype, 'isWeekend', {
     enumerable: false
 });
 /**
- * UTC version of `isWeekend`. Uses the UTC weekday instead of the local one.
+ * Indicates whether the date falls on a UTC weekend (Saturday or Sunday).
  * @return {boolean} true if the UTC day is Saturday (6) or Sunday (0), otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isWeekendUTC', {
@@ -2442,7 +2441,7 @@ Object.defineProperty(Date.prototype, 'isWeekendUTC', {
     enumerable: false
 });
 /**
- * Spain version of `isWeekend`. Uses the Spain weekday instead of the local one.
+ * Indicates whether the date falls on a Spain weekend (Saturday or Sunday).
  * @return {boolean} true if the Spain day is Saturday (6) or Sunday (0), otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isWeekendSpain', {
@@ -2527,12 +2526,12 @@ Object.defineProperty(Date.prototype, 'getTimestampSpain', {
 });
 
 /**
- * Calculates the number of whole months between this date and another date.
+ * Calculates the number of whole months between this date and another date using local year and month fields.
  * Positive if the other date is in the future, negative if it is in the past.
- * Day and time components are ignored; only year and month differences are considered.
+ * Day and time components are ignored; only local year and month differences are considered.
  *
  * @param {Date} other The target date to compare with.
- * @return {number} The signed number of months from this date until the given date.
+ * @return {number} The signed number of local months from this date until the given date.
  *
  * @example
  * new Date(2025, 1, 25).monthsUntil(new Date(2025, 2, 1)); // → 1
@@ -2552,8 +2551,9 @@ Object.defineProperty(Date.prototype, 'monthsUntil', {
     enumerable: false
 });
 /**
- * UTC version of `monthsUntil`. Delegates to `Date.monthsBetweenUTC`, so year/month
- * fields are read in UTC instead of local time.
+ * Calculates the number of whole months between this date and another date using UTC year and month fields.
+ * Positive if the other date is in the future, negative if it is in the past.
+ * Day and time components are ignored; only UTC year and month differences are considered.
  *
  * @param {Date} other The target date to compare with.
  * @return {number} The signed number of UTC months from this date until the given date.
@@ -2575,7 +2575,10 @@ Object.defineProperty(Date.prototype, 'monthsUntilUTC', {
     enumerable: false
 });
 /**
- * Spain version of `monthsUntil`. Delegates to `Date.monthsBetweenSpain` using Europe/Madrid fields.
+ * Calculates the number of whole months between this date and another date using Europe/Madrid year and month fields.
+ * Positive if the other date is in the future, negative if it is in the past.
+ * Day and time components are ignored; only Spain year and month differences are considered.
+ *
  * @param {Date} other The target date to compare with.
  * @return {number} The signed number of Spain months from this date until the given date.
  */
@@ -2593,8 +2596,8 @@ Object.defineProperty(Date.prototype, 'monthsUntilSpain', {
 });
 
 /**
- * Returns the number of days in the current month of the date.
- * @return {number} The total number of days in the month.
+ * Returns the number of days in the current local month of the date.
+ * @return {number} The total number of days in the local month.
  */
 Object.defineProperty(Date.prototype, 'daysInMonth', {
     value: function(this: Date): number {
@@ -2605,7 +2608,7 @@ Object.defineProperty(Date.prototype, 'daysInMonth', {
     enumerable: false
 });
 /**
- * UTC version of `daysInMonth`. Uses the UTC calendar month instead of the local one.
+ * Returns the number of days in the current UTC month of the date.
  * @return {number} The total number of days in the UTC month.
  */
 Object.defineProperty(Date.prototype, 'daysInMonthUTC', {
@@ -2617,7 +2620,7 @@ Object.defineProperty(Date.prototype, 'daysInMonthUTC', {
     enumerable: false
 });
 /**
- * Spain version of `daysInMonth`. Uses the Europe/Madrid calendar month instead of the local one.
+ * Returns the number of days in the current Spain month of the date.
  * @return {number} The total number of days in the Spain month.
  */
 Object.defineProperty(Date.prototype, 'daysInMonthSpain', {
