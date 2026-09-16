@@ -860,9 +860,9 @@ Date['fromUnixTime'] = function(unixTime: number): Date {
 };
 
 /**
- * Creates a Date from a string in YYYY-MM-DD format interpreted as local time.
+ * Creates a Date from a local date string in YYYY-MM-DD format.
  *
- * @param {string} value A date string in YYYY-MM-DD format.
+ * @param {string} value A local date string.
  * @return {Date} A Date representing midnight in the local timezone.
  */
 Date['fromDateStr'] = function(value: string): Date {
@@ -888,9 +888,9 @@ Date['fromDateStr'] = function(value: string): Date {
     return date;
 }
 /**
- * Creates a Date from a string in YYYY-MM-DD format interpreted as UTC.
+ * Creates a Date from a UTC date string in YYYY-MM-DD format.
  *
- * @param {string} value A date string in YYYY-MM-DD format.
+ * @param {string} value A UTC date string.
  * @return {Date} A Date representing midnight UTC of the specified date.
  */
 Date['fromUTCDateStr'] = function(value: string): Date {
@@ -916,10 +916,10 @@ Date['fromUTCDateStr'] = function(value: string): Date {
     return date;
 }
 /**
- * Creates a Date from a string in YYYY-MM-DD format interpreted as Europe/Madrid time.
+ * Creates a Date from a Spain:Europe/Madrid date string in YYYY-MM-DD format.
  *
- * @param {string} value A date string in YYYY-MM-DD format.
- * @return {Date} A Date representing midnight in Europe/Madrid.
+ * @param {string} value A Spain:Europe/Madrid date string.
+ * @return {Date} A Date representing midnight in Spain:Europe/Madrid.
  */
 Date['fromSpainDateStr'] = function(value: string): Date {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
@@ -1039,10 +1039,10 @@ Date['fromUTCDateTimeStr'] = function(value: string): Date {
     return date;
 }
 /**
- * Creates a Date from a Spain dateTime string in YYYY-MM-DD HH:mm:ss format.
+ * Creates a Date from a Spain:Europe/Madrid dateTime string in YYYY-MM-DD HH:mm:ss format.
  *
- * @param {string} value A Spain dateTime string.
- * @return {Date} A Date representing the specified Europe/Madrid dateTime.
+ * @param {string} value A Spain:Europe/Madrid dateTime string.
+ * @return {Date} A Date representing the specified Spain:Europe/Madrid dateTime.
  */
 Date['fromSpainDateTimeStr'] = function(value: string): Date {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
@@ -1157,13 +1157,13 @@ Date['monthsBetweenUTC'] = function(a: Date | number, b: Date | number): number 
     return years * 12 + months;
 }
 /**
- * Calculates the number of whole months between two dates using Europe/Madrid year and month fields.
+ * Calculates the number of whole months between two dates using Spain:Europe/Madrid year and month fields.
  * Positive if `b` is after `a`, negative if `b` is before `a`.
- * Ignores days and times; only Spain year and month fields are used.
+ * Ignores days and times; only Spain:Europe/Madrid year and month fields are used.
  *
  * @param {Date} a The starting date.
  * @param {Date} b The ending date.
- * @return {number} The signed number of Spain months between `a` and `b`.
+ * @return {number} The signed number of Spain:Europe/Madrid months between `a` and `b`.
  */
 Date['monthsBetweenSpain'] = function(a: Date | number, b: Date | number): number {
     if (!(a instanceof Date) && typeof a !== 'number')
@@ -1321,11 +1321,11 @@ Object.defineProperty(Date.prototype, 'addMonthsUTC', {
     enumerable: false
 });
 /**
- * Adds the specified number of months using Europe/Madrid date fields.
+ * Adds the specified number of months using Spain:Europe/Madrid date fields.
  * If the target month does not contain the original day, the last day of the target month is used.
  *
  * @param {number} months - Number of months to add.
- * @return {Date} A new Date instance with the months added using Spain time.
+ * @return {Date} A new Date instance with the months added using Spain:Europe/Madrid time.
  */
 Object.defineProperty(Date.prototype, 'addMonthsSpain', {
     value: function(this: Date, months: number): Date {
@@ -1412,11 +1412,11 @@ Object.defineProperty(Date.prototype, 'addYearsUTC', {
     enumerable: false
 });
 /**
- * Adds the specified number of years using Europe/Madrid date fields.
+ * Adds the specified number of years using Spain:Europe/Madrid date fields.
  * If the original date is February 29 and the target year is not a leap year, the result is February 28.
  *
  * @param {number} years - Number of years to add.
- * @return {Date} A new Date instance with the years added using Spain time.
+ * @return {Date} A new Date instance with the years added using Spain:Europe/Madrid time.
  */
 Object.defineProperty(Date.prototype, 'addYearsSpain', {
     value: function(this: Date, years: number): Date {
@@ -1472,8 +1472,8 @@ Object.defineProperty(Date.prototype, 'startOfDayUTC', {
     enumerable: false
 });
 /**
- * Returns a new Date representing 00:00:00 Europe/Madrid at the start of the Spain calendar day.
- * @return {Date} A new Date at the start of the Spain day.
+ * Returns a new Date representing 00:00:00 Spain:Europe/Madrid at the start of the Spain:Europe/Madrid calendar day.
+ * @return {Date} A new Date at the start of the Spain:Europe/Madrid day.
  */
 Object.defineProperty(Date.prototype, 'startOfDaySpain', {
     value: function(this: Date): Date {
@@ -1519,9 +1519,9 @@ Object.defineProperty(Date.prototype, 'startOfWeekUTC', {
     enumerable: false
 });
 /**
- * Returns a new Date representing the first day of the Spain week at 00:00:00 Europe/Madrid.
+ * Returns a new Date representing the first day of the Spain:Europe/Madrid week at 00:00:00 Spain:Europe/Madrid.
  * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
- * @return {Date} A new Date at the start of the Spain week.
+ * @return {Date} A new Date at the start of the Spain:Europe/Madrid week.
  */
 Object.defineProperty(Date.prototype, 'startOfWeekSpain', {
     value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
@@ -1561,8 +1561,8 @@ Object.defineProperty(Date.prototype, 'startOfMonthUTC', {
     enumerable: false
 });
 /**
- * Returns a new Date representing the 1st of the Spain calendar month at 00:00:00 Europe/Madrid.
- * @return {Date} A new Date at the start of the Spain month.
+ * Returns a new Date representing the 1st of the Spain:Europe/Madrid calendar month at 00:00:00 Spain:Europe/Madrid.
+ * @return {Date} A new Date at the start of the Spain:Europe/Madrid month.
  */
 Object.defineProperty(Date.prototype, 'startOfMonthSpain', {
     value: function(this: Date): Date {
@@ -1598,8 +1598,8 @@ Object.defineProperty(Date.prototype, 'startOfYearUTC', {
     enumerable: false
 });
 /**
- * Returns a new Date representing January 1st of the Spain calendar year at 00:00:00 Europe/Madrid.
- * @return {Date} A new Date at the start of the Spain year.
+ * Returns a new Date representing January 1st of the Spain:Europe/Madrid calendar year at 00:00:00 Spain:Europe/Madrid.
+ * @return {Date} A new Date at the start of the Spain:Europe/Madrid year.
  */
 Object.defineProperty(Date.prototype, 'startOfYearSpain', {
     value: function(this: Date): Date {
@@ -1636,8 +1636,8 @@ Object.defineProperty(Date.prototype, 'endOfDayUTC', {
     enumerable: false
 });
 /**
- * Returns a new Date representing 23:59:59.999 Europe/Madrid at the end of the Spain calendar day.
- * @return {Date} A new Date at the end of the Spain day.
+ * Returns a new Date representing 23:59:59.999 Spain:Europe/Madrid at the end of the Spain:Europe/Madrid calendar day.
+ * @return {Date} A new Date at the end of the Spain:Europe/Madrid day.
  */
 Object.defineProperty(Date.prototype, 'endOfDaySpain', {
     value: function(this: Date): Date {
@@ -1674,9 +1674,9 @@ Object.defineProperty(Date.prototype, 'endOfWeekUTC', {
     enumerable: false
 });
 /**
- * Returns a new Date representing the last day of the Spain week at 23:59:59.999 Europe/Madrid.
+ * Returns a new Date representing the last day of the Spain:Europe/Madrid week at 23:59:59.999 Spain:Europe/Madrid.
  * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
- * @return {Date} A new Date at the end of the Spain week.
+ * @return {Date} A new Date at the end of the Spain:Europe/Madrid week.
  */
 Object.defineProperty(Date.prototype, 'endOfWeekSpain', {
     value: function(this: Date, weekStartsOnMonday: boolean = false): Date {
@@ -1711,8 +1711,8 @@ Object.defineProperty(Date.prototype, 'endOfMonthUTC', {
     enumerable: false
 });
 /**
- * Returns a new Date representing the last instant of the Spain calendar month.
- * @return {Date} A new Date at the end of the Spain month.
+ * Returns a new Date representing the last instant of the Spain:Europe/Madrid calendar month.
+ * @return {Date} A new Date at the end of the Spain:Europe/Madrid month.
  */
 Object.defineProperty(Date.prototype, 'endOfMonthSpain', {
     value: function(this: Date): Date {
@@ -1747,8 +1747,8 @@ Object.defineProperty(Date.prototype, 'endOfYearUTC', {
     enumerable: false
 });
 /**
- * Returns a new Date representing the last instant of the Spain calendar year.
- * @return {Date} A new Date at the end of the Spain year.
+ * Returns a new Date representing the last instant of the Spain:Europe/Madrid calendar year.
+ * @return {Date} A new Date at the end of the Spain:Europe/Madrid year.
  */
 Object.defineProperty(Date.prototype, 'endOfYearSpain', {
     value: function(this: Date): Date {
@@ -1870,12 +1870,11 @@ Object.defineProperty(Date.prototype, 'formatUTC', {
     enumerable: false
 });
 /**
- * Formats a Date instance into a custom string pattern using Europe/Madrid date/time fields and Spain locale support.
- * Supports the same tokens as `format`.
+ * Formats a Date instance into a custom string pattern using Spain:Europe/Madrid date/time fields and Spain:Europe/Madrid locale support.
  *
  * @param {string} pattern Format pattern string
  * @param {string} lang Locale language in 2 letters format. e.g. 'ca', 'es', 'en'.
- * @return {string} The formatted Spain date.
+ * @return {string} The formatted Spain:Europe/Madrid date.
  */
 Object.defineProperty(Date.prototype, 'formatSpain', {
     value: function(this: Date, pattern: string, lang: string = 'es'): string {
@@ -1937,8 +1936,8 @@ Object.defineProperty(Date.prototype, 'toMonthKeyUTC', {
     enumerable: false
 });
 /**
- * Returns the Spain month and year formatted as YYYY-MM.
- * @return {string} A string representing the Spain month in YYYY-MM format.
+ * Returns the Spain:Europe/Madrid month and year formatted as YYYY-MM.
+ * @return {string} A string representing the Spain:Europe/Madrid month in YYYY-MM format.
  */
 Object.defineProperty(Date.prototype, 'toMonthKeySpain', {
     value: function(this: Date): string {
@@ -1976,8 +1975,8 @@ Object.defineProperty(Date.prototype, 'toDayKeyUTC', {
     enumerable: false
 });
 /**
- * Returns the Spain date formatted as YYYY-MM-DD.
- * @return {string} A string representing the Spain date in YYYY-MM-DD format.
+ * Returns the Spain:Europe/Madrid date formatted as YYYY-MM-DD.
+ * @return {string} A string representing the Spain:Europe/Madrid date in YYYY-MM-DD format.
  */
 Object.defineProperty(Date.prototype, 'toDayKeySpain', {
     value: function(this: Date): string {
@@ -2023,9 +2022,9 @@ Object.defineProperty(Date.prototype, 'toDateTimeUTC', {
     enumerable: false
 });
 /**
- * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using Europe/Madrid.
+ * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using Spain:Europe/Madrid.
  *
- * @return {string} A string representing the Spain dateTime.
+ * @return {string} A string representing the Spain:Europe/Madrid dateTime.
  */
 Object.defineProperty(Date.prototype, 'toDateTimeSpain', {
     value: function(this: Date): string {
@@ -2078,8 +2077,8 @@ Object.defineProperty(Date.prototype, 'toInputDateValueUTC', {
     enumerable: false
 });
 /**
- * Returns the Spain date formatted for an input[type="date"] value.
- * @return {string} A string in YYYY-MM-DD format using Spain date fields.
+ * Returns the Spain:Europe/Madrid date formatted for an input[type="date"] value.
+ * @return {string} A string in YYYY-MM-DD format using Spain:Europe/Madrid date fields.
  */
 Object.defineProperty(Date.prototype, 'toInputDateValueSpain', {
     value: function(this: Date): string {
@@ -2138,8 +2137,8 @@ Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValueUTC', {
     enumerable: false
 });
 /**
- * Returns the Spain date formatted for an input[type="datetime-local"] value.
- * @return {string} A string in YYYY-MM-DDTHH:MM format using Spain date and time fields.
+ * Returns the Spain:Europe/Madrid date formatted for an input[type="datetime-local"] value.
+ * @return {string} A string in YYYY-MM-DDTHH:MM format using Spain:Europe/Madrid date and time fields.
  */
 Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValueSpain', {
     value: function(this: Date): string {
@@ -2222,9 +2221,9 @@ Object.defineProperty(Date.prototype, 'isSameDayUTC', {
     enumerable: false
 });
 /**
- * Checks if two dates are on the same Spain day.
+ * Checks if two dates are on the same Spain:Europe/Madrid day.
  * @param {Date | number} other - The date to compare against.
- * @return {boolean} True if both dates share the same Spain year, month, and day; otherwise false.
+ * @return {boolean} True if both dates share the same Spain:Europe/Madrid year, month, and day; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameDaySpain', {
     value: function(this: Date, other: Date | number): boolean {
@@ -2284,10 +2283,10 @@ Object.defineProperty(Date.prototype, 'isSameWeekUTC', {
     enumerable: false
 });
 /**
- * Checks if two dates are in the same Spain week.
+ * Checks if two dates are in the same Spain:Europe/Madrid week.
  * @param {Date | number} other - The date to compare against.
  * @param {boolean} weekStartsOnMonday - Whether the week starts on Monday. Defaults to Sunday.
- * @return {boolean} True if both dates are in the same Spain week; otherwise false.
+ * @return {boolean} True if both dates are in the same Spain:Europe/Madrid week; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameWeekSpain', {
     value: function(this: Date, other: Date | number, weekStartsOnMonday: boolean = false): boolean {
@@ -2342,9 +2341,9 @@ Object.defineProperty(Date.prototype, 'isSameMonthUTC', {
     enumerable: false
 });
 /**
- * Checks if two dates are in the same Spain month.
+ * Checks if two dates are in the same Spain:Europe/Madrid month.
  * @param {Date | number} other - The date to compare against.
- * @return {boolean} True if both dates share the same Spain year and month; otherwise false.
+ * @return {boolean} True if both dates share the same Spain:Europe/Madrid year and month; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameMonthSpain', {
     value: function(this: Date, other: Date | number): boolean {
@@ -2399,9 +2398,9 @@ Object.defineProperty(Date.prototype, 'isSameYearUTC', {
     enumerable: false
 });
 /**
- * Checks if two dates are in the same Spain year.
+ * Checks if two dates are in the same Spain:Europe/Madrid year.
  * @param {Date | number} other - The date to compare against.
- * @return {boolean} True if both dates share the same Spain year; otherwise false.
+ * @return {boolean} True if both dates share the same Spain:Europe/Madrid year; otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isSameYearSpain', {
     value: function(this: Date, other: Date | number): boolean {
@@ -2441,8 +2440,8 @@ Object.defineProperty(Date.prototype, 'isWeekendUTC', {
     enumerable: false
 });
 /**
- * Indicates whether the date falls on a Spain weekend (Saturday or Sunday).
- * @return {boolean} true if the Spain day is Saturday (6) or Sunday (0), otherwise false.
+ * Indicates whether the date falls on a Spain:Europe/Madrid weekend (Saturday or Sunday).
+ * @return {boolean} true if the Spain:Europe/Madrid day is Saturday (6) or Sunday (0), otherwise false.
  */
 Object.defineProperty(Date.prototype, 'isWeekendSpain', {
     value: function(this: Date): boolean {
@@ -2506,9 +2505,9 @@ Object.defineProperty(Date.prototype, 'getTimestampUTC', {
     enumerable: false
 });
 /**
- * Returns the date in standard ISO 8601 format for the Europe/Madrid timezone.
+ * Returns the date in standard ISO 8601 format for the Spain:Europe/Madrid timezone.
  * Example: "2026-07-22T12:34:56.789+02:00"
- * @return {string} ISO 8601 string in Spain time.
+ * @return {string} ISO 8601 string in Spain:Europe/Madrid time.
  */
 Object.defineProperty(Date.prototype, 'getTimestampSpain', {
     value: function(this: Date): string {
@@ -2575,12 +2574,12 @@ Object.defineProperty(Date.prototype, 'monthsUntilUTC', {
     enumerable: false
 });
 /**
- * Calculates the number of whole months between this date and another date using Europe/Madrid year and month fields.
+ * Calculates the number of whole months between this date and another date using Spain:Europe/Madrid year and month fields.
  * Positive if the other date is in the future, negative if it is in the past.
- * Day and time components are ignored; only Spain year and month differences are considered.
+ * Day and time components are ignored; only Spain:Europe/Madrid year and month differences are considered.
  *
  * @param {Date} other The target date to compare with.
- * @return {number} The signed number of Spain months from this date until the given date.
+ * @return {number} The signed number of Spain:Europe/Madrid months from this date until the given date.
  */
 Object.defineProperty(Date.prototype, 'monthsUntilSpain', {
     value: function(this: Date, other: Date | number): number {
@@ -2620,8 +2619,8 @@ Object.defineProperty(Date.prototype, 'daysInMonthUTC', {
     enumerable: false
 });
 /**
- * Returns the number of days in the current Spain month of the date.
- * @return {number} The total number of days in the Spain month.
+ * Returns the number of days in the current Spain:Europe/Madrid month of the date.
+ * @return {number} The total number of days in the Spain:Europe/Madrid month.
  */
 Object.defineProperty(Date.prototype, 'daysInMonthSpain', {
     value: function(this: Date): number {
