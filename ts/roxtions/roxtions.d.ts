@@ -319,7 +319,7 @@ declare global {
          * @param {string} value A local date string.
          * @return {Date} A Date representing midnight in the local timezone.
          */
-        fromLocalDateStr(value: string): Date;
+        fromDateStr(value: string): Date;
         /**
          * Creates a Date from a UTC date string in YYYY-MM-DD format.
          *
@@ -336,26 +336,26 @@ declare global {
         fromSpainDateStr(value: string): Date;
 
         /**
-         * Creates a Date from a local datetime string in YYYY-MM-DD HH:mm:ss format.
+         * Creates a Date from a local dateTime string in YYYY-MM-DD HH:mm:ss format.
          *
-         * @param {string} value A local datetime string.
-         * @return {Date} A Date representing the specified local datetime.
+         * @param {string} value A local dateTime string.
+         * @return {Date} A Date representing the specified local dateTime.
          */
-        fromLocalDatetimeStr(value: string): Date;
+        fromDateTimeStr(value: string): Date;
         /**
-         * Creates a Date from a UTC datetime string in YYYY-MM-DD HH:mm:ss format.
+         * Creates a Date from a UTC dateTime string in YYYY-MM-DD HH:mm:ss format.
          *
-         * @param {string} value A UTC datetime string.
-         * @return {Date} A Date representing the specified UTC datetime.
+         * @param {string} value A UTC dateTime string.
+         * @return {Date} A Date representing the specified UTC dateTime.
          */
-        fromUTCDatetimeStr(value: string): Date;
+        fromUTCDateTimeStr(value: string): Date;
         /**
-         * Creates a Date from a Spain datetime string in YYYY-MM-DD HH:mm:ss format.
+         * Creates a Date from a Spain dateTime string in YYYY-MM-DD HH:mm:ss format.
          *
-         * @param {string} value A Spain datetime string.
-         * @return {Date} A Date representing the specified Europe/Madrid datetime.
+         * @param {string} value A Spain dateTime string.
+         * @return {Date} A Date representing the specified Europe/Madrid dateTime.
          */
-        fromSpainDatetimeStr(value: string): Date;
+        fromSpainDateTimeStr(value: string): Date;
 
         /**
          * Calculates the number of whole months between two dates.
@@ -682,19 +682,19 @@ declare global {
         /**
          * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using the local timezone.
          *
-         * @return {string} A string representing the local datetime.
+         * @return {string} A string representing the local dateTime.
          */
         toDateTime(this: Date): string;
         /**
          * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using UTC.
          *
-         * @return {string} A string representing the UTC datetime.
+         * @return {string} A string representing the UTC dateTime.
          */
         toDateTimeUTC(this: Date): string;
         /**
          * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using Europe/Madrid.
          *
-         * @return {string} A string representing the Spain datetime.
+         * @return {string} A string representing the Spain dateTime.
          */
         toDateTimeSpain(this: Date): string;
 
@@ -719,19 +719,19 @@ declare global {
          * Returns the date formatted for input[type="datetime-local"] value.
          * @return {string} A string in YYYY-MM-DDTHH:MM format.
          */
-        toInputDatetimeLocalValue(this: Date): string;
+        toInputDateTimeLocalValue(this: Date): string;
         /**
-         * UTC version of `toInputDatetimeLocalValue`. Builds the same input[type="datetime-local"]
+         * UTC version of `toInputDateTimeLocalValue`. Builds the same input[type="datetime-local"]
          * shaped string, but from UTC fields instead of the local time zone.
          * @return {string} A string in YYYY-MM-DDTHH:MM format, from UTC fields.
          */
-        toInputDatetimeLocalValueUTC(this: Date): string;
+        toInputDateTimeLocalValueUTC(this: Date): string;
         /**
-         * Spain version of `toInputDatetimeLocalValue`. Builds the same input[type="datetime-local"]
+         * Spain version of `toInputDateTimeLocalValue`. Builds the same input[type="datetime-local"]
          * shaped string, but using the Europe/Madrid timezone instead of the host local zone.
          * @return {string} A string in YYYY-MM-DDTHH:MM format, from Spain fields.
          */
-        toInputDatetimeLocalValueSpain(this: Date): string;
+        toInputDateTimeLocalValueSpain(this: Date): string;
 
         // Comparation ---
 

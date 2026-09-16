@@ -865,7 +865,7 @@ Date['fromUnixTime'] = function(unixTime: number): Date {
  * @param {string} value A date string in YYYY-MM-DD format.
  * @return {Date} A Date representing midnight in the local timezone.
  */
-Date['fromLocalDateStr'] = function(value: string): Date {
+Date['fromDateStr'] = function(value: string): Date {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
 
     if (!match)
@@ -971,16 +971,16 @@ Date['fromSpainDateStr'] = function(value: string): Date {
 }
 
 /**
- * Creates a Date from a local datetime string in YYYY-MM-DD HH:mm:ss format.
+ * Creates a Date from a local dateTime string in YYYY-MM-DD HH:mm:ss format.
  *
- * @param {string} value A local datetime string.
- * @return {Date} A Date representing the specified local datetime.
+ * @param {string} value A local dateTime string.
+ * @return {Date} A Date representing the specified local dateTime.
  */
-Date['fromLocalDatetimeStr'] = function(value: string): Date {
+Date['fromDateTimeStr'] = function(value: string): Date {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
 
     if (!match)
-        throw new Error(`Invalid local datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
+        throw new Error(`Invalid local dateTime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
 
     const year = Number(match[1]);
     const month = Number(match[2]);
@@ -999,22 +999,22 @@ Date['fromLocalDatetimeStr'] = function(value: string): Date {
         date.getMinutes() !== minute ||
         date.getSeconds() !== second
     ) {
-        throw new Error(`Invalid local datetime. Was ${value}`);
+        throw new Error(`Invalid local dateTime. Was ${value}`);
     }
 
     return date;
 }
 /**
- * Creates a Date from a UTC datetime string in YYYY-MM-DD HH:mm:ss format.
+ * Creates a Date from a UTC dateTime string in YYYY-MM-DD HH:mm:ss format.
  *
- * @param {string} value A UTC datetime string.
- * @return {Date} A Date representing the specified UTC datetime.
+ * @param {string} value A UTC dateTime string.
+ * @return {Date} A Date representing the specified UTC dateTime.
  */
-Date['fromUTCDatetimeStr'] = function(value: string): Date {
+Date['fromUTCDateTimeStr'] = function(value: string): Date {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
 
     if (!match)
-        throw new Error(`Invalid UTC datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
+        throw new Error(`Invalid UTC dateTime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
 
     const year = Number(match[1]);
     const month = Number(match[2]);
@@ -1033,22 +1033,22 @@ Date['fromUTCDatetimeStr'] = function(value: string): Date {
         date.getUTCMinutes() !== minute ||
         date.getUTCSeconds() !== second
     ) {
-        throw new Error(`Invalid UTC datetime. Was ${value}`);
+        throw new Error(`Invalid UTC dateTime. Was ${value}`);
     }
 
     return date;
 }
 /**
- * Creates a Date from a Spain datetime string in YYYY-MM-DD HH:mm:ss format.
+ * Creates a Date from a Spain dateTime string in YYYY-MM-DD HH:mm:ss format.
  *
- * @param {string} value A Spain datetime string.
- * @return {Date} A Date representing the specified Europe/Madrid datetime.
+ * @param {string} value A Spain dateTime string.
+ * @return {Date} A Date representing the specified Europe/Madrid dateTime.
  */
-Date['fromSpainDatetimeStr'] = function(value: string): Date {
+Date['fromSpainDateTimeStr'] = function(value: string): Date {
     const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(value);
 
     if (!match)
-        throw new Error(`Invalid Spain datetime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
+        throw new Error(`Invalid Spain dateTime. Expected YYYY-MM-DD HH:mm:ss. Was ${value}`);
 
     const year = Number(match[1]);
     const month = Number(match[2]);
@@ -1099,7 +1099,7 @@ Date['fromSpainDatetimeStr'] = function(value: string): Date {
         parts.minute !== minute ||
         parts.second !== second
     ) {
-        throw new Error(`Invalid Spain datetime. Was ${value}`);
+        throw new Error(`Invalid Spain dateTime. Was ${value}`);
     }
 
     return date;
@@ -1987,7 +1987,7 @@ Object.defineProperty(Date.prototype, 'toDayKeySpain', {
 /**
  * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using the local timezone.
  *
- * @return {string} A string representing the local datetime.
+ * @return {string} A string representing the local dateTime.
  */
 Object.defineProperty(Date.prototype, 'toDateTime', {
     value: function(this: Date): string {
@@ -2007,7 +2007,7 @@ Object.defineProperty(Date.prototype, 'toDateTime', {
 /**
  * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using UTC.
  *
- * @return {string} A string representing the UTC datetime.
+ * @return {string} A string representing the UTC dateTime.
  */
 Object.defineProperty(Date.prototype, 'toDateTimeUTC', {
     value: function(this: Date): string {
@@ -2020,7 +2020,7 @@ Object.defineProperty(Date.prototype, 'toDateTimeUTC', {
 /**
  * Returns the date and time formatted as YYYY-MM-DD HH:mm:ss using Europe/Madrid.
  *
- * @return {string} A string representing the Spain datetime.
+ * @return {string} A string representing the Spain dateTime.
  */
 Object.defineProperty(Date.prototype, 'toDateTimeSpain', {
     value: function(this: Date): string {
@@ -2095,7 +2095,7 @@ Object.defineProperty(Date.prototype, 'toInputDateValueSpain', {
  * Returns the date formatted for input[type="datetime-local"] value.
  * @return {string} A string in YYYY-MM-DDTHH:MM format.
  */
-Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValue', {
+Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValue', {
     value: function(this: Date): string {
         if (!this || isNaN(this.getTime()))
             return '';
@@ -2114,11 +2114,11 @@ Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValue', {
     enumerable: false
 });
 /**
- * UTC version of `toInputDatetimeLocalValue`. Builds the same input[type="datetime-local"]
+ * UTC version of `toInputDateTimeLocalValue`. Builds the same input[type="datetime-local"]
  * shaped string, but from UTC fields instead of the local time zone.
  * @return {string} A string in YYYY-MM-DDTHH:MM format, from UTC fields.
  */
-Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValueUTC', {
+Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValueUTC', {
     value: function(this: Date): string {
         if (!this || isNaN(this.getTime()))
             return '';
@@ -2137,11 +2137,11 @@ Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValueUTC', {
     enumerable: false
 });
 /**
- * Spain version of `toInputDatetimeLocalValue`. Builds the same input[type="datetime-local"]
+ * Spain version of `toInputDateTimeLocalValue`. Builds the same input[type="datetime-local"]
  * shaped string, but using the Europe/Madrid timezone instead of the host local zone.
  * @return {string} A string in YYYY-MM-DDTHH:MM format, from Spain fields.
  */
-Object.defineProperty(Date.prototype, 'toInputDatetimeLocalValueSpain', {
+Object.defineProperty(Date.prototype, 'toInputDateTimeLocalValueSpain', {
     value: function(this: Date): string {
         if (!this || isNaN(this.getTime()))
             return '';
