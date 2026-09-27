@@ -397,18 +397,15 @@
 		else return $date_spain;
 	}
 
-	function parse_bool($bool){
-
+	function parse_bool(bool|int|string $bool): ?bool {
 		if(is_bool($bool)) return $bool;
-		else if(is_numeric($bool)){
-
+		if(is_numeric($bool)){
 			if($bool == 0) return false;
-			else if($bool == 1) return true;
+			if($bool == 1) return true;
 		}
-		else if(is_string($bool)){
-
+		if(is_string($bool)){
 			if(strtolower($bool) === 'true') return true;
-			else if(strtolower($bool) === 'false') return false;
+			if(strtolower($bool) === 'false') return false;
 		}
 
 		return null;
@@ -497,10 +494,6 @@
 
 	// UTIL ---------------------------------------------------------------------------------------
 	function je($value){ return json_encode($value); }
-	function no($var){
-
-		return !isset($var) || is_null($var) || empty($var);
-	}
 	function reduce_image_width($src, $width_to_reduce){
 
         try{ $img = new Imagick($src); }

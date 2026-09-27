@@ -1,125 +1,11 @@
 <?php
 
-	require_once __DIR__.'/la.php';
-	require_once __DIR__.'/modelCRUD.php';
-
-	const LANGS = ['en, es, ca'];
-
-	class Data {
-
-		private $conn;
-
-		private const TABLENAME = 'data';
-		
-		public const DATA_TYPES = [
-
-			'number' => 'number',
-			'bool' => 'bool',
-			'string' => 'string',
-			'datetime' => 'datetime',
-			'json' => 'json'
-		];
-
-		private function get_type($value){
-
-			if(is_numeric($value)) $type = self::DATA_TYPES['number'];
-			else if(is_bool(parse_bool($value))) $type = self::DATA_TYPES['bool'];
-			else if(is_string($value)){
-
-				// YYYY-MM-DD HH:ii:ss
-				$timestampRegex = '/[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9]$/';
-
-				if(preg_match($timestampRegex, $value)) $type = self::DATA_TYPES['datetime'];
-				else $type = self::DATA_TYPES['string'];
-			}
-			else if(is_array($value)) $type = self::DATA_TYPES['json'];
-			else throwException(500, 'Unknown type of data for value: "'.json_encode($value).'"');
-
-			return $type;
-		}
-		private function parse_value($type, $value){
-			
-			if(no($value)) $value = null;
-			// Default is string (for string or datetime)
-			else if($type == self::DATA_TYPES['string'] || $type == self::DATA_TYPES['datetime']);
-			else if($type == self::DATA_TYPES['number']) $value = floatval($value);
-			else if($type == self::DATA_TYPES['bool']) $value = parse_bool($value);
-			else if($type == self::DATA_TYPES['json']) $value = json_decode($value, true);
-			else throwException(500, 'Unknown type of data: "'.$type.'"');
-
-			return $value;
-		}
-
-		function __construct($conn){
-
-            $this->conn = $conn;
-        }
-
-		function create($key, $value, $type = null){
-
-			if(!$type){
-
-				$type = $this->get_type($value);
-				if($type == self::DATA_TYPES['json']) $value = json_encode($value);
-			}
-			else if(!self::DATA_TYPES[$type]) throwException(500, "Not allowed value type: \"$type\"");
-
-			$sql = "INSERT INTO ".self::TABLENAME." (`key`, value, type) VALUES('$key', '$value', '$type')";
-			$result = $this->conn->query($sql);
-
-			if($result === TRUE) return $this->read($key);
-			else throwException(500, 'MySQL INSERT '.self::TABLENAME.':<br>'.$this->conn->error.'<br><br><b>SQL:</b> <i>'.$sql.'</i>');
-		}
-
-        function read($key = null){
-
-            $sql = 'SELECT * FROM '.self::TABLENAME;
-            if(!is_null($key)) $sql .= " WHERE `key` = '$key'";
-            $result = $this->conn->query($sql);
-
-            $data_object = [];
-            while($row = $result->fetch_assoc()){
-
-				$data_object[$row['key']] = $this->parse_value($row['type'], $row['value']);
-			}
-
-			if(!is_null($key)) return $data_object[$key] ?? null;
-            else return empty($data_object) ? new stdClass() : $data_object;
-        }
-
-        function update($key, $value){
-
-			$type_sql = "SELECT type FROM ".self::TABLENAME." WHERE `key` = '$key'";
-			$result = $this->conn->query($type_sql);
-			if($row = $result->fetch_assoc()) $type = $row['type'];
-			else throwException(500, 'UPDATE '.self::TABLENAME.":<br>key: \"$key\" does not exist");
-
-			$new_type = $this->get_type($value);
-			if($type != $new_type) throwException(500, 'UPDATE '.self::TABLENAME.":<br>type for \"$key\" was \"$type\" and now is \"$new_type\"");
-
-			if($type == self::DATA_TYPES['json']) $value = json_encode($value);
-
-            $sql = "UPDATE ".self::TABLENAME." SET value = '$value' WHERE `key` = '$key'";
-
-			if($this->conn->query($sql) === TRUE) return $this->read($key);
-            else throwException(500, 'MySQL UPDATE '.self::TABLENAME.':<br>'.$this->conn->error.'<br><br><b>SQL:</b> <i>'.$sql.'</i>');
-        }
-
-		function delete($key){
-
-			$sql = "DELETE FROM ".self::TABLENAME." WHERE `key` = '$key'";
-
-			if($this->conn->query($sql) === TRUE) return true;
-            else throwException(500, 'MySQL DELETE '.self::TABLENAME.':<br>'.$this->conn->error.'<br><br><b>SQL:</b> <i>'.$sql.'</i>');
-		}
-    }
-
     class User extends ModelCrud {
-        protected function foreach_row_on_read(array &$user) {
+        protected function foreach_row_on_read(array &$user): void {
             unset($user['hashword']);
         }
 
-		public function readHashword(int|string $id_or_email) {
+		public function readHashword(int|string $id_or_email): ?string {
 
 			$sql = is_numeric($id_or_email)
                 ? $this->buildSelectSql($id_or_email, null, null, null)
@@ -133,7 +19,7 @@
 
 			return $row['hashword'];
 		}
-		public function updateHashword(int|string $id_or_email, string $hashword) {
+		public function updateHashword(int|string $id_or_email, string $hashword): bool {
 
 			$sql = "UPDATE $this->tableName SET hashword=".(!is_null($hashword) ? "'$hashword'" : 'NULL').
 				' WHERE '.(is_numeric($id_or_email)
@@ -147,7 +33,8 @@
 
 			return true;
 		}
-		public function readByEmail(string $email) {
+
+		public function readByEmail(string $email): ?array {
 
 			$res = $this->read(null, null, null, "email='".$this->real_escape_string($email)."'");
 
@@ -158,65 +45,171 @@
 		}
     }
 
+    enum MiscDataType: string {
+        case Number = 'number';
+        case Bool = 'bool';
+        case String = 'string';
+        case Date = 'date';
+        case DateTime = 'dateTime';
+        case Json = 'json';
+    }
+    final class MiscData {
+
+        private const string tableName = 'misc_data';
+
+        private mysqli $conn;
+
+        // Constructor --------------------------
+        public function __construct(mysqli $conn) {
+            $this->conn = $conn;
+        }
+
+        // public -------------------------------
+
+        public function create(string $type, string $key, Mixed $value): Mixed{
+            $typeEnum = MiscDataType::tryFrom($type);
+
+            if($typeEnum === null)
+                throw new InvalidArgumentException("Invalid MiscData type: '$type'");
+
+            if($typeEnum === MiscDataType::Json)
+                $value = json_encode($value, JSON_THROW_ON_ERROR);
+
+            $sql = "INSERT INTO ".self::tableName." (type, `key`, value) VALUES('$type', '$key', '$value')";
+            $this->executeQuery($sql);
+
+            return $this->read($key);
+        }
+
+        public function read(?string $key = null): Mixed {
+            $sql = 'SELECT * FROM '.self::tableName;
+
+            if($key !== null) {
+                $sql .= " WHERE `key` = '$key'";
+            }
+
+            $res = $this->executeQuery($sql);
+
+            $dataObj = [];
+            while ($row = $res->fetch_assoc()){
+                $dataObj[$row['key']] = $this->parseValue($row['type'], $row['value']);
+            }
+
+            if($key !== null) // Single object
+                return $dataObj[$key] ?? null;
+
+            return empty($dataObj) ? new stdClass() : $dataObj;
+        }
+
+        public function update(string $key, Mixed $value): Mixed{
+            $typeSql = "SELECT type FROM ".self::tableName." WHERE `key` = '$key'";
+            $res = $this->executeQuery($typeSql);
+
+            if(!($row = $res->fetch_assoc()))
+                throw new OutOfBoundsException('UPDATE '.self::tableName.":<br>key: \"$key\" does not exist");
+
+            $type = MiscDataType::tryFrom($row['type']);
+
+            if($type === MiscDataType::Json)
+                $value = json_encode($value, JSON_THROW_ON_ERROR);
+
+            $sql = "UPDATE ".self::tableName." SET value = '$value' WHERE `key` = '$key'";
+            $this->executeQuery($sql);
+
+            return $this->read($key);
+        }
+
+        public function delete(string $key): void{
+            $sql = "DELETE FROM ".self::tableName." WHERE `key` = '$key'";
+            $this->executeQuery($sql);
+        }
+
+        // private ------------------------------
+
+        private function parseValue(string $type, ?string $value): Mixed {
+            if ($value === null)
+                return null;
+
+            $typeEnum = MiscDataType::tryFrom($type);
+
+            if ($typeEnum === null)
+                throw new UnexpectedValueException("Unknown MiscData type: '$type'");
+
+            return match ($typeEnum) {
+                MiscDataType::String, MiscDataType::Date, MiscDataType::DateTime => $value,
+                MiscDataType::Number => (float)$value,
+                MiscDataType::Bool => $value !== '0',
+                MiscDataType::Json => json_decode($value, true, 512, JSON_THROW_ON_ERROR),
+            };
+        }
+
+        private function executeQuery(string $sql): bool|mysqli_result {
+            $upperSql = strtoupper($sql);
+
+            if(strpos($upperSql, 'DROP ') !== false)
+                throw new InvalidArgumentException('DROP statement blocked');
+            else if(strpos($upperSql, 'ALTER ') !== false)
+                throw new InvalidArgumentException('ALTER statement blocked');
+            else if(strpos($sql, ';') !== false)
+                throw new InvalidArgumentException("';' character blocked");
+
+            $res = $this->conn->query($sql);
+            
+            if($res === false) {
+                $method = explode(' ', $upperSql)[0];
+                throw new mysqli_sql_exception(
+                    "❗MySQL $method error on table [".self::tableName."]: $this->conn->error",
+                    $this->conn->errno
+                );
+            }
+
+            return $res;
+        }
+    }
 
     final class Database{
 
-		private static object $instance;
-        private object $conn;
+		private static ?self $instance = null;
+        private mysqli $conn;
+        
+        public static function instance(): self {
+            return self::$instance ??= new Self();
+        }
+           
+        // Tables ---
+        public ?MiscData $misc_data = null; public function miscData(): MiscData { return $this->misc_data ??= new MiscData($this->conn); }
 
-		public object $data,
-            $user;
+        public ?User $user = null; public function user(): User { return $this->user ??= new User($this->conn, $this); }
+        // ---
 
-		private final function connect(){
+        private function __construct() {
+            $this->conn = $this->connect();
+        }
 
-			if($_SERVER['HTTP_HOST'] == 'localhost') {
+		private function connect(): mysqli {
 
+            $servername = "localhost";
+            $username = "name";
+            $password = "pass";
+            $dbname = "name";
+
+			if (($_SERVER['HTTP_HOST'] ?? '') === 'localhost') {
 				$servername = "localhost";
 				$username = "name";
 				$password = "xxx";
 				$dbname = "name";
 			}
-			else {
 
-				$servername = "localhost";
-				$username = "name";
-				$password = "pass";
-				$dbname = "name";
-			}
+            $conn = mysqli_init();
+            $conn->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true);
 
-			// Create connection
-			$conn = new mysqli($servername, $username, $password, $dbname);
-			if($conn->connect_error) throwException(500, 'Database connection error: '.$conn->connect_error);
+            if (!$conn->real_connect($servername, $username, $password, $dbname))
+                throw new mysqli_sql_exception($conn->connect_error, $conn->connect_errno);
 
-			$conn->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, TRUE);
-			if($_SERVER['HTTP_HOST'] == 'localhost') mysqli_set_charset($conn, "utf8mb4");
+            $conn->set_charset('utf8mb4');
 
-			return $conn;
+            return $conn;
 		}
-
-        private final function __construct() {
-
-            $this->conn = $this->connect();
-
-			$this->data = new Data($this->conn);
-
-            $this->user = new User($this->conn, $this);
-        }
-
-		public final static function instance(){
-
-			if(!isset(self::$instance)) {
-				self::$instance = new Database();
-			}
-
-			return self::$instance;
-		}
-
-		final function __destruct(){
-			if (isset($this->conn)) {
-				$this->conn->close();
-			}
-        }
     }
 
 ?>
