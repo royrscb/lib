@@ -636,8 +636,8 @@
 
 		logAndTelegramProblem($code, $text.generate_report(true), 'exception', $log, $telegram);
 
-		header("HTTP/1.1 $code $text", true, 401);
-		exit();
+		http_response_code($code);
+        exit($text);
 	}
 
 	function echoDebug($msg){

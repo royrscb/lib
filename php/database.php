@@ -5,7 +5,7 @@
 
 	const LANGS = ['en, es, ca'];
 
-	class Data{
+	class Data {
 
 		private $conn;
 
@@ -114,24 +114,69 @@
 		}
     }
 
+    class User extends ModelCrud {
+        protected function foreach_row_on_read(array &$user) {
+            unset($user['hashword']);
+        }
+
+		public function readHashword(int|string $id_or_email) {
+
+			$sql = is_numeric($id_or_email)
+                ? $this->buildSelectSql($id_or_email, null, null, null)
+				: $this->buildSelectSql(null, null, "email='".$this->real_escape_string($id_or_email)."'", null);
+
+            $row = $this->executeQuery($sql)
+                ->fetch_assoc();
+
+            if (!isset($row['hashword']))
+                return null;
+
+			return $row['hashword'];
+		}
+		public function updateHashword(int|string $id_or_email, string $hashword) {
+
+			$sql = "UPDATE $this->tableName SET hashword=".(!is_null($hashword) ? "'$hashword'" : 'NULL').
+				' WHERE '.(is_numeric($id_or_email)
+                    ? "id=$id_or_email"
+                    : "email='".$this->real_escape_string($id_or_email)."'"
+                );
+            $res = $this->executeQuery($sql);
+
+            if ($res !== true)
+                throwException(500, 'Error updating hashword of user with email: '.$id_or_email);
+
+			return true;
+		}
+		public function readByEmail(string $email) {
+
+			$res = $this->read(null, null, null, "email='".$this->real_escape_string($email)."'");
+
+            if (empty($res))
+                return null;
+
+			return $res[0];
+		}
+    }
+
 
     final class Database{
 
-		private static $instance;
-        private $conn;
+		private static object $instance;
+        private object $conn;
 
-		public $data;
+		public object $data,
+            $user;
 
 		private final function connect(){
 
-			if($_SERVER['HTTP_HOST'] == 'localhost'){
+			if($_SERVER['HTTP_HOST'] == 'localhost') {
 
 				$servername = "localhost";
 				$username = "name";
 				$password = "xxx";
 				$dbname = "name";
 			}
-			else{
+			else {
 
 				$servername = "localhost";
 				$username = "name";
@@ -154,11 +199,13 @@
             $this->conn = $this->connect();
 
 			$this->data = new Data($this->conn);
+
+            $this->user = new User($this->conn, $this);
         }
 
 		public final static function instance(){
 
-			if(!isset(self::$instance)){
+			if(!isset(self::$instance)) {
 				self::$instance = new Database();
 			}
 
@@ -166,7 +213,7 @@
 		}
 
 		final function __destruct(){
-			if (isset($this->conn)){
+			if (isset($this->conn)) {
 				$this->conn->close();
 			}
         }
