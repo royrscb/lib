@@ -1,6 +1,6 @@
 <?php
 
-	class ModelCrud{
+	class ModelCrud {
 
 		// Atributes ----------------------------
 
@@ -194,7 +194,6 @@
  
 		private function __construct(string $message, int $code, ?string $sql = null) {
 			parent::__construct($message, $code);
-
             $this->sql = $sql;
 		}
 
@@ -204,7 +203,6 @@
 				500
 			);
 		}
- 
 		public static function noValidFields(string $tableName, array $providedFields, ?int $id = null): self {
 			$rowInfo = $id !== null ? " for row with id [$id]" : '';
 			return new self(
@@ -212,7 +210,6 @@
 				422
 			);
 		}
- 
 		public static function sqlError(string $method, string $tableName, string $sql, string $mysqlError): self {
 			return new self(
 				"❗MySQL $method error on table [$tableName]: $mysqlError",
@@ -220,7 +217,6 @@
                 $sql
 			);
 		}
- 
 		public static function forbiddenQuery(string $reason, string $tableName, string $sql): self {
 			return new self(
 				"⚠️ Blocked query on table [$tableName]: $reason",
