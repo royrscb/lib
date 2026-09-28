@@ -1,13 +1,17 @@
 <?php
 
+require_once __DIR__ . '/Env.php';
 require_once __DIR__ . '/ModelCrud.php';
 
-final class User extends ModelCrud {
-    protected function foreach_row_on_read(array &$user): void {
+final class User extends ModelCrud
+{
+    protected function foreach_row_on_read(array &$user): void
+    {
         unset($user['hashword']);
     }
 
-    public function readHashword(int|string $id_or_email): ?string {
+    public function readHashword(int|string $id_or_email): ?string
+    {
         $sql = is_numeric($id_or_email)
             ? $this->buildSelectSql($id_or_email, null, null, null)
             : $this->buildSelectSql(null, null, "email='".$this->real_escape_string($id_or_email)."'", null);
@@ -20,7 +24,8 @@ final class User extends ModelCrud {
 
         return $row['hashword'];
     }
-    public function updateHashword(int|string $id_or_email, string $hashword): void {
+    public function updateHashword(int|string $id_or_email, string $hashword): void
+    {
         $escHashword = $this->real_escape_string($hashword);
         $sql = "UPDATE $this->tableName SET hashword='$escHashword'".
             ' WHERE '.(is_numeric($id_or_email)
@@ -31,7 +36,8 @@ final class User extends ModelCrud {
         $this->executeQuery($sql);
     }
 
-    public function readByEmail(string $email): ?array {
+    public function readByEmail(string $email): ?array
+    {
         $escEmail = $this->real_escape_string($email);
         $res = $this->read(null, null, null, "email='$escEmail'");
 
@@ -42,7 +48,8 @@ final class User extends ModelCrud {
     }
 }
 
-enum MiscDataType: string {
+enum MiscDataType: string
+{
     case Number = 'number';
     case Bool = 'bool';
     case String = 'string';
@@ -50,20 +57,22 @@ enum MiscDataType: string {
     case DateTime = 'dateTime';
     case Json = 'json';
 }
-final class MiscData {
-
+final class MiscData
+{
     private const string tableName = 'misc_data';
 
     private mysqli $conn;
 
     // Constructor --------------------------
-    public function __construct(mysqli $conn) {
+    public function __construct(mysqli $conn)
+    {
         $this->conn = $conn;
     }
 
     // public -------------------------------
 
-    public function create(string $type, string $key, Mixed $value): Mixed{
+    public function create(string $type, string $key, Mixed $value): Mixed
+    {
         $typeEnum = MiscDataType::tryFrom($type);
 
         if ($typeEnum === null)
@@ -81,7 +90,8 @@ final class MiscData {
         return $this->read($key);
     }
 
-    public function read(?string $key = null): Mixed {
+    public function read(?string $key = null): Mixed
+    {
         $sql = 'SELECT * FROM '.self::tableName;
 
         if ($key !== null) {
@@ -102,7 +112,8 @@ final class MiscData {
         return empty($dataObj) ? new stdClass() : $dataObj;
     }
 
-    public function update(string $key, Mixed $value): Mixed{
+    public function update(string $key, Mixed $value): Mixed
+    {
         $escKey = $this->conn->real_escape_string($key);
         $typeSql = "SELECT type FROM ".self::tableName." WHERE `key` = '$escKey'";
         $res = $this->executeQuery($typeSql);
@@ -123,7 +134,8 @@ final class MiscData {
         return $this->read($key);
     }
 
-    public function delete(string $key): void{
+    public function delete(string $key): void
+    {
         $escKey = $this->conn->real_escape_string($key);
         $sql = "DELETE FROM ".self::tableName." WHERE `key` = '$escKey'";
         $this->executeQuery($sql);
@@ -131,7 +143,8 @@ final class MiscData {
 
     // private ------------------------------
 
-    private function parseValue(string $type, ?string $value): Mixed {
+    private function parseValue(string $type, ?string $value): Mixed
+    {
         if ($value === null)
             return null;
 
@@ -148,7 +161,8 @@ final class MiscData {
         };
     }
 
-    private function executeQuery(string $sql): bool|mysqli_result {
+    private function executeQuery(string $sql): bool|mysqli_result
+    {
         $upperSql = strtoupper($sql);
 
         if (strpos($upperSql, 'DROP ') !== false)
@@ -172,43 +186,40 @@ final class MiscData {
     }
 }
 
-final class Database {
-
+final class Database
+{
     private static ?self $instance = null;
     private mysqli $conn;
-    
+        
     // Tables ---
     private ?MiscData $misc_data = null; public function miscData(): MiscData { return $this->misc_data ??= new MiscData($this->conn); }
-    
+
     private ?User $user = null; public function user(): User { return $this->user ??= new User($this->conn, $this); }
     // ---
 
-    public static function instance(): self {
+    public static function instance(): self
+    {
         return self::$instance ??= new Self();
     }
 
-    private function __construct() {
+    private function __construct()
+    {
+        Env::load(__DIR__ . '/../.env');
         $this->conn = $this->connect();
     }
 
-    private function connect(): mysqli {
-
-        $servername = "localhost";
-        $username = "name";
-        $password = "pass";
-        $dbname = "name";
-
-        if (($_SERVER['HTTP_HOST'] ?? '') === 'localhost') {
-            $servername = "localhost";
-            $username = "name";
-            $password = "xxx";
-            $dbname = "name";
-        }
+    private function connect(): mysqli
+    {
+        $servername = getenv('DB_HOST');
+        $username = getenv('DB_USER');
+        $password = getenv('DB_PASSWORD');
+        $dbname = getenv('DB_NAME');
+        $port = (int)getenv('DB_PORT');
 
         $conn = mysqli_init();
         $conn->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true);
 
-        if (!$conn->real_connect($servername, $username, $password, $dbname))
+        if (!$conn->real_connect($servername, $username, $password, $dbname, $port))
             throw new mysqli_sql_exception($conn->connect_error, $conn->connect_errno);
 
         $conn->set_charset('utf8mb4');

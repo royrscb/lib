@@ -1,7 +1,7 @@
 <?php
 
-abstract class ModelCrud {
-
+abstract class ModelCrud
+{
     // Atributes ----------------------------
 
     // private
@@ -17,7 +17,8 @@ abstract class ModelCrud {
     protected bool $prevent_foreach_row = false;
 
     // Constructor --------------------------
-    public final function __construct(object $conn, object $db, ?string $tableName = null) {
+    public final function __construct(object $conn, object $db, ?string $tableName = null)
+    {
         $this->conn = $conn;
         $this->db = $db;
         $this->tableName = $tableName ?? strtolower(get_class($this));
@@ -26,7 +27,8 @@ abstract class ModelCrud {
     // public -------------------------------
 
     // CRUD
-    public function create(array $data): ?array {
+    public function create(array $data): ?array
+    {
         if (empty($this->creatable_fields))
             throw ModelCrudException::invalidFieldsConfig($this->tableName, 'creatable_fields');
 
@@ -35,7 +37,8 @@ abstract class ModelCrud {
 
         return $this->read($this->conn->insert_id);
     }
-    public function read(?int $id = null, ?string $fkName = null, ?string $filter = null, ?string $order = null): ?array {
+    public function read(?int $id = null, ?string $fkName = null, ?string $filter = null, ?string $order = null): ?array
+    {
         $sql = $this->buildSelectSql($id, $fkName, $filter, $order);
         $res = $this->executeQuery($sql);
 
@@ -54,7 +57,8 @@ abstract class ModelCrud {
         }
         else return $all_rows;
     }
-    public function update(int $id, array $data): ?array {
+    public function update(int $id, array $data): ?array
+    {
         if (empty($this->updatable_fields))
             throw ModelCrudException::invalidFieldsConfig($this->tableName, 'updatable_fields');
 
@@ -64,7 +68,8 @@ abstract class ModelCrud {
 
         return $this->read($id);
     }
-    public function delete(int $id): void {
+    public function delete(int $id): void
+    {
         $sql = $this->buildDeleteSql($id);
         $this->executeQuery($sql);
     }
@@ -72,8 +77,8 @@ abstract class ModelCrud {
     // protected ----------------------------
 
     // Build CRUD SQLs
-    protected final function buildInsertSql(array $fields, array $data): string {
-
+    protected final function buildInsertSql(array $fields, array $data): string
+    {
         $insertFields = [];
         $insertValues = [];
 
@@ -93,7 +98,8 @@ abstract class ModelCrud {
 
         return $sql;
     }
-    protected final function buildSelectSql(?int $id = null, ?string $fkName = null, ?string $filter = null, ?string $order = null): string {
+    protected final function buildSelectSql(?int $id = null, ?string $fkName = null, ?string $filter = null, ?string $order = null): string
+    {
         $sql = "SELECT * FROM $this->tableName";
 
         if (isset($id)) {
@@ -112,8 +118,8 @@ abstract class ModelCrud {
 
         return $sql;
     }
-    protected final function buildUpdateSql(int $id, array $fields, array $data): string {
-
+    protected final function buildUpdateSql(int $id, array $fields, array $data): string
+    {
         $fieldValues = [];
 
         foreach($fields as $field) {
@@ -131,16 +137,19 @@ abstract class ModelCrud {
 
         return $sql;
     }
-    protected final function buildDeleteSql(int $id): string {
+    protected final function buildDeleteSql(int $id): string
+    {
         return "DELETE FROM $this->tableName WHERE id=$id";
     }
     // ---
 
-    protected final function real_escape_string(string $s): string {
+    protected final function real_escape_string(string $s): string
+    {
         return $this->conn->real_escape_string($s);
     }
     
-    protected final function executeQuery(string $sql): bool|object {
+    protected final function executeQuery(string $sql): bool|object
+    {
         if (strpos(strtoupper($sql), 'DROP ') !== false)
             throw ModelCrudException::forbiddenQuery('DROP statement blocked', $this->tableName, $sql);
         if (strpos(strtoupper($sql), 'ALTER ') !== false)
@@ -161,7 +170,8 @@ abstract class ModelCrud {
 
     // private ------------------------------
 
-    private function parseUnknownDataElementToSql(mixed $element): string {
+    private function parseUnknownDataElementToSql(mixed $element): string
+    {
         if (is_bool($element)) {
             return $element ? '1' : '0';
         }
@@ -186,38 +196,43 @@ abstract class ModelCrud {
     }
 }
 
-class ModelCrudException extends RuntimeException {
-
+class ModelCrudException extends RuntimeException
+{
     // ⚠️❗
 
     private ?string $sql = null;
 
-    private function __construct(string $message, int $code, ?string $sql = null) {
+    private function __construct(string $message, int $code, ?string $sql = null)
+    {
         parent::__construct($message, $code);
         $this->sql = $sql;
     }
 
-    public static function invalidFieldsConfig(string $tableName, string $property): self {
+    public static function invalidFieldsConfig(string $tableName, string $property): self
+    {
         return new self(
             "⚠️ [$property] array does not exist or is empty for table [$tableName]",
             500
         );
     }
-    public static function noValidFields(string $tableName, array $providedFields, ?int $id = null): self {
+    public static function noValidFields(string $tableName, array $providedFields, ?int $id = null): self
+    {
         $rowInfo = $id !== null ? " for row with id [$id]" : '';
         return new self(
             "⚠️ No valid field to write in table [$tableName]$rowInfo. Provided fields: ".implode(', ', $providedFields),
             422
         );
     }
-    public static function sqlError(string $method, string $tableName, string $sql, string $mysqlError): self {
+    public static function sqlError(string $method, string $tableName, string $sql, string $mysqlError): self
+    {
         return new self(
             "❗MySQL $method error on table [$tableName]: $mysqlError",
             409,
             $sql
         );
     }
-    public static function forbiddenQuery(string $reason, string $tableName, string $sql): self {
+    public static function forbiddenQuery(string $reason, string $tableName, string $sql): self
+    {
         return new self(
             "⚠️ Blocked query on table [$tableName]: $reason",
             500,
@@ -225,7 +240,8 @@ class ModelCrudException extends RuntimeException {
         );
     }
 
-    public function getSql(): ?string {
+    public function getSql(): ?string
+    {
         return $this->sql;
     }
 }
