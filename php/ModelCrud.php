@@ -1,6 +1,6 @@
 <?php
 
-	class ModelCrud {
+	abstract class ModelCrud {
 
 		// Atributes ----------------------------
 
