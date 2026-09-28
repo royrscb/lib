@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__.'/modelCrud.php';
+require_once __DIR__.'/ModelCrud.php';
 
 final class User extends ModelCrud {
     protected function foreach_row_on_read(array &$user): void {
