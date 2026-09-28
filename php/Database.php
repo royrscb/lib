@@ -177,15 +177,15 @@
 		private static ?self $instance = null;
         private mysqli $conn;
         
+        // Tables ---
+        private ?MiscData $misc_data = null; public function miscData(): MiscData { return $this->misc_data ??= new MiscData($this->conn); }
+        
+        private ?User $user = null; public function user(): User { return $this->user ??= new User($this->conn, $this); }
+        // ---
+        
         public static function instance(): self {
             return self::$instance ??= new Self();
         }
-           
-        // Tables ---
-        private ?MiscData $misc_data = null; public function miscData(): MiscData { return $this->misc_data ??= new MiscData($this->conn); }
-
-        private ?User $user = null; public function user(): User { return $this->user ??= new User($this->conn, $this); }
-        // ---
 
         private function __construct() {
             $this->conn = $this->connect();
