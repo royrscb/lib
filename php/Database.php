@@ -211,16 +211,15 @@ final class Database
 
     private function connect(): mysqli
     {
-        $servername = getenv('DB_HOST');
-        $username = getenv('DB_USER');
+        $hostname = getenv('DB_HOSTNAME');
+        $username = getenv('DB_USERNAME');
         $password = getenv('DB_PASSWORD');
-        $dbname = getenv('DB_NAME');
-        $port = (int)getenv('DB_PORT');
+        $database = getenv('DB_DATABASE');
 
         $conn = mysqli_init();
         $conn->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true);
 
-        if (!$conn->real_connect($servername, $username, $password, $dbname, $port))
+        if (!$conn->real_connect($hostname, $username, $password, $database))
             throw new mysqli_sql_exception($conn->connect_error, $conn->connect_errno);
 
         $conn->set_charset('utf8mb4');

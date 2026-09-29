@@ -98,8 +98,8 @@
 
 		private function connect($live){
 
-            if($live) $stripe = new \Stripe\StripeClient('');
-            else $stripe = new \Stripe\StripeClient('');
+            if($live) $stripe = new \Stripe\StripeClient(''); // TODO: With getenv
+            else $stripe = new \Stripe\StripeClient(''); // TODO: With getenv
 
 			return $stripe;
 		}
