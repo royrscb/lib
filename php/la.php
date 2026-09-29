@@ -16,9 +16,7 @@ enum TelegramChatId_EnvName: string {
 
 // parse input vars ---------------------------------------------------------------------------
 function getInputVars() {
-
     if(isset($_SERVER['REQUEST_METHOD'])) {
-
         if($_SERVER['REQUEST_METHOD'] == 'GET' && !empty($_GET)) return $_GET;
         else if($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) return $_POST;
     }
@@ -28,8 +26,9 @@ function getInputVars() {
     $vars = null;
 
     if(!empty($input)) {
-
-        if(isset($_SERVER['CONTENT_TYPE']) && strpos(strtolower($_SERVER['CONTENT_TYPE']), 'application/json') !== false) $vars = json_decode($input, true);
+        if(isset($_SERVER['CONTENT_TYPE']) && str_contains(strtolower($_SERVER['CONTENT_TYPE']), 'application/json')) {
+            $vars = json_decode($input, true);
+        }
         else parse_str($input, $vars);
     }
 

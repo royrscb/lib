@@ -108,9 +108,9 @@ abstract class ModelCrud
         }
 
         if (isset($filter)) {
-            $sql .= strpos(strtoupper($sql), 'WHERE ') === false 
-                ? " WHERE $filter"
-                : " AND ($filter)";
+            $sql .= str_contains(strtoupper($sql), 'WHERE ')
+                ? " AND ($filter)"
+                : " WHERE $filter";
         }
         if (isset($order)) {
             $sql .= " ORDER BY $order";
@@ -150,11 +150,11 @@ abstract class ModelCrud
     
     protected final function executeQuery(string $sql): bool|object
     {
-        if (strpos(strtoupper($sql), 'DROP ') !== false)
+        if (str_contains(strtoupper($sql), 'DROP '))
             throw ModelCrudException::forbiddenQuery('DROP statement blocked', $this->tableName, $sql);
-        if (strpos(strtoupper($sql), 'ALTER ') !== false)
+        if (str_contains(strtoupper($sql), 'ALTER '))
             throw ModelCrudException::forbiddenQuery('ALTER statement blocked', $this->tableName, $sql);
-        if (strpos($sql, ';') !== false)
+        if (str_contains($sql, ';'))
             throw ModelCrudException::forbiddenQuery("';' character blocked", $this->tableName, $sql);
 
         $res = $this->conn->query($sql);

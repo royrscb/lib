@@ -165,11 +165,11 @@ final class MiscData
     {
         $upperSql = strtoupper($sql);
 
-        if (strpos($upperSql, 'DROP ') !== false)
+        if (str_contains($upperSql, 'DROP '))
             throw new InvalidArgumentException('DROP statement blocked');
-        else if (strpos($upperSql, 'ALTER ') !== false)
+        else if (str_contains($upperSql, 'ALTER '))
             throw new InvalidArgumentException('ALTER statement blocked');
-        else if (strpos($sql, ';') !== false)
+        else if (str_contains($sql, ';'))
             throw new InvalidArgumentException("';' character blocked");
 
         $res = $this->conn->query($sql);
