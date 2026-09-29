@@ -159,11 +159,8 @@ abstract class ModelCrud
 
         $res = $this->conn->query($sql);
 
-        // throw;
-        if ($res === false) {
-            $method = explode(' ', strtoupper($sql))[0];
-            throw ModelCrudException::sqlError($method, $this->tableName, $sql, $this->conn->error);
-        }
+        if ($res === false)
+            throw ModelCrudException::sqlError(explode(' ', $sql)[0], $this->tableName, $sql, $this->conn->error);
 
         return $res;
     }

@@ -174,6 +174,7 @@ final class MiscData
 
         $res = $this->conn->query($sql);
         
+        // throw;
         if ($res === false) {
             $method = explode(' ', $upperSql)[0];
             throw new mysqli_sql_exception(
