@@ -2,21 +2,21 @@
 
 final class User extends ModelCrud
 {
-    protected $creatable_fields =
+    protected $creatableFields =
     [
         'name',
         'email',
         'phone',
         'hashword',
     ];
-    protected $updatable_fields =
+    protected $updatableFields =
     [
         'name',
         'email',
         'phone',
     ];
 
-    protected function foreach_row_on_read(array &$user): void
+    protected function onReadRow(array &$user): void
     {
         unset($user['hashword']);
     }
@@ -25,7 +25,7 @@ final class User extends ModelCrud
     {
         $sql = is_numeric($id_or_email)
             ? $this->buildSelectSql($id_or_email, null, null, null)
-            : $this->buildSelectSql(null, null, "email='".$this->real_escape_string($id_or_email)."'", null);
+            : $this->buildSelectSql(null, null, "email='".$this->realEscapeString($id_or_email)."'", null);
 
         $row = $this->executeQuery($sql)
             ->fetch_assoc();
@@ -37,11 +37,11 @@ final class User extends ModelCrud
     }
     public function updateHashword(int|string $id_or_email, string $hashword): void
     {
-        $escHashword = $this->real_escape_string($hashword);
+        $escHashword = $this->realEscapeString($hashword);
         $sql = "UPDATE $this->tableName SET hashword='$escHashword'".
             ' WHERE '.(is_numeric($id_or_email)
                 ? "id=$id_or_email"
-                : "email='".$this->real_escape_string($id_or_email)."'"
+                : "email='".$this->realEscapeString($id_or_email)."'"
             );
 
         $this->executeQuery($sql);
@@ -49,7 +49,7 @@ final class User extends ModelCrud
 
     public function readByEmail(string $email): ?array
     {
-        $escEmail = $this->real_escape_string($email);
+        $escEmail = $this->realEscapeString($email);
         $res = $this->read(null, null, null, "email='$escEmail'");
 
         if (empty($res))
