@@ -2,59 +2,107 @@
 
 final class User extends ModelCrud
 {
-    protected $creatableFields =
+    protected array $creatableFields =
     [
-        'name',
+        'username',
         'email',
-        'phone',
         'hashword',
     ];
-    protected $updatableFields =
+    protected array $updatableFields =
     [
-        'name',
+        'username',
         'email',
-        'phone',
     ];
 
+    // public -----------------------------------
+
+    /**
+     * Creates a user. The client sends a plain 'password' and only its hash is stored;
+     * a 'hashword' sent by the client is ignored.
+     *
+     * @return array|null The created user (without hashword), as returned by ModelCrud::create().
+     */
+    public function create(array $data): ?array
+    {
+        unset($data['hashword']);
+
+        if (isset($data['password']))
+            $data['hashword'] = password_hash($data['password'], PASSWORD_DEFAULT);
+
+        unset($data['password']);
+
+        return parent::create($data);
+    }
+
+    /**
+     * Finds a user by email.
+     *
+     * @return array|null The user (without hashword), or null if there is no such email.
+     */
+    public function readByEmail(string $email): ?array
+    {
+        return $this->read(where: 'email = ?', params: [$email])[0] ?? null;
+    }
+
+    /**
+     * Finds a user by username.
+     *
+     * @return array|null The user (without hashword), or null if there is no such username.
+     */
+    public function readByUsername(string $username): ?array
+    {
+        return $this->read(where: 'username = ?', params: [$username])[0] ?? null;
+    }
+
+    /**
+     * Stores a plain password hash. Does nothing if the id does not exist.
+     */
+    public function setPassword(int $id, string $password): void
+    {
+        $hashword = password_hash($password, PASSWORD_DEFAULT);
+
+        $this->query(
+            "UPDATE `$this->tableName` SET hashword = ? WHERE id = ?",
+            [$hashword, $id]
+        );
+    }
+
+    /**
+     * Checks a plain password against the user's stored hash (for login).
+     * If the hashing algorithm has changed since the hash was created, the hash is upgraded.
+     *
+     * To log in by email or username, find the user first with readByEmail() / readByUsername() and pass its id here.
+     *
+     * @return bool false if the password is wrong, the user has no password, or the id does not exist.
+     */
+    public function verifyPassword(int $id, string $password): bool
+    {
+        $hashword = $this->query(
+            "SELECT hashword FROM `$this->tableName` WHERE id = ?",
+            [$id]
+        )->fetch_column();
+
+        // false = no such user, null = user created without a password
+        if (!is_string($hashword) || !password_verify($password, $hashword))
+            return false;
+
+        // Direct update instead of setPassword(): the password was already accepted, so a
+        // stricter length policy must not make existing users fail to log in
+        if (password_needs_rehash($hashword, PASSWORD_DEFAULT)) {
+            $this->query(
+                "UPDATE `$this->tableName` SET hashword = ? WHERE id = ?",
+                [password_hash($password, PASSWORD_DEFAULT), $id]
+            );
+        }
+
+        return true;
+    }
+
+    // protected --------------------------------
+
+    // override. The password hash never leaves through the CRUD
     protected function onReadRow(array &$user): void
     {
         unset($user['hashword']);
-    }
-
-    public function readHashword(int|string $id_or_email): ?string
-    {
-        $sql = is_numeric($id_or_email)
-            ? $this->buildSelectSql($id_or_email, null, null, null)
-            : $this->buildSelectSql(null, null, "email='".$this->realEscapeString($id_or_email)."'", null);
-
-        $row = $this->executeQuery($sql)
-            ->fetch_assoc();
-
-        if (!isset($row['hashword']))
-            return null;
-
-        return $row['hashword'];
-    }
-    public function updateHashword(int|string $id_or_email, string $hashword): void
-    {
-        $escHashword = $this->realEscapeString($hashword);
-        $sql = "UPDATE $this->tableName SET hashword='$escHashword'".
-            ' WHERE '.(is_numeric($id_or_email)
-                ? "id=$id_or_email"
-                : "email='".$this->realEscapeString($id_or_email)."'"
-            );
-
-        $this->executeQuery($sql);
-    }
-
-    public function readByEmail(string $email): ?array
-    {
-        $escEmail = $this->realEscapeString($email);
-        $res = $this->read(null, null, null, "email='$escEmail'");
-
-        if (empty($res))
-            return null;
-
-        return $res[0];
     }
 }

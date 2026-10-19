@@ -1,43 +1,116 @@
 <?php
 
-require_once __DIR__ . '/Env.php';
-require_once __DIR__ . '/ModelCrud.php';
-
 final class Database
 {
     private static ?self $instance = null;
-    private mysqli $conn;
-        
-    // Tables ---
-    private ?MiscData $misc_data = null; public function miscData(): MiscData { return $this->misc_data ??= new MiscData($this->conn); }
 
-    private ?User $user = null; public function user(): User { return $this->user ??= new User($this->conn, $this); }
-    // ---
+    private mysqli $conn;
+
+    private int $lastInsertId = 0;
+    private int $affectedRows = 0;
+
+    private ?MiscData $miscData = null;
+    /** @var array<string, ModelCrud> */
+    private array $models = [];
+
+    // Constructor and Instance -----------------
 
     public static function instance(): self
     {
-        return self::$instance ??= new Self();
+        return self::$instance ??= new self();
     }
 
     private function __construct()
     {
-        Env::load(__DIR__ . '/../.env');
-        $this->conn = $this->connect();
+        $this->conn = self::connect();
     }
 
-    private function connect(): mysqli
+    // public -----------------------------------
+
+    /**
+     * @template T of ModelCrud
+     * @param class-string<T> $class
+     * @return T
+     */
+    public function model(string $class): ModelCrud
     {
-        $hostname = getenv('DB_HOSTNAME');
-        $username = getenv('DB_USERNAME');
-        $password = getenv('DB_PASSWORD');
-        $database = getenv('DB_DATABASE');
+        if (!is_subclass_of($class, ModelCrud::class))
+            throw new InvalidArgumentException("$class is not a ModelCrud");
+
+        return $this->models[$class] ??= new $class($this);
+    }
+
+    public function miscData(): MiscData
+    {
+        return $this->miscData ??= new MiscData($this);
+    }
+
+    /**
+     * Prepared statement. Values must ALWAYS go in $params, never inside the SQL.
+     *
+     * @param array<int, int|float|string|null> $params
+     * @return mysqli_result|true Result set for a SELECT, true for INSERT/UPDATE/DELETE
+     * @throws mysqli_sql_exception if the statement fails
+     *
+     * @example
+     *   // SELECT: iterate the result
+     *   $result = $db->query('SELECT * FROM `user` WHERE email = ? AND id > ?', ['a@b.com', 10]);
+     *   while ($row = $result->fetch_assoc()) { ... }
+     *
+     *   // INSERT: read the new id afterwards
+     *   $db->query('INSERT INTO `user` (name, email) VALUES (?, ?)', ['Ana', 'ana@b.com']);
+     *   $id = $db->lastInsertId();
+     *
+     *   // WRONG: never concatenate user data into the SQL
+     *   $db->query("SELECT * FROM `user` WHERE email = '$email'");
+     */
+    public function query(string $sql, array $params = []): mysqli_result|true
+    {
+        $stmt = $this->conn->prepare($sql);
+
+        if ($params) {
+            $types = '';
+            foreach ($params as $param)
+                $types .= match (true) { is_int($param) => 'i', is_float($param) => 'd', default => 's' };
+
+            $stmt->bind_param($types, ...$params);
+        }
+
+        $stmt->execute();
+
+        $this->lastInsertId = (int)$stmt->insert_id;
+        $this->affectedRows = (int)$stmt->affected_rows;
+
+        $result = $stmt->get_result(); // false when the statement returns no rows
+        $stmt->close();
+
+        return $result === false ? true : $result;
+    }
+
+    public function lastInsertId(): int
+    {
+        return $this->lastInsertId;
+    }
+
+    public function affectedRows(): int
+    {
+        return $this->affectedRows;
+    }
+
+    // private ----------------------------------
+    private static function connect(): mysqli
+    {
+        // Failures throw mysqli_sql_exception
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
         $conn = mysqli_init();
         $conn->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true);
-
-        if (!$conn->real_connect($hostname, $username, $password, $database))
-            throw new mysqli_sql_exception($conn->connect_error, $conn->connect_errno);
-
+        $conn->real_connect(
+            Env::get('DB_HOSTNAME'),
+            Env::get('DB_USERNAME'),
+            Env::get('DB_PASSWORD'),
+            Env::get('DB_DATABASE')
+        );
         $conn->set_charset('utf8mb4');
 
         return $conn;
