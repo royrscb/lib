@@ -1,6 +1,6 @@
 <?php
 
-final class User extends ModelCrud
+final class User extends DbTable
 {
     protected array $creatableFields =
     [
@@ -41,7 +41,7 @@ final class User extends ModelCrud
      */
     public function readByEmail(string $email): ?array
     {
-        return $this->readAll('email = ?', [$email])[0] ?? null;
+        return $this->readOne('email = ?', [$email]);
     }
 
     /**
@@ -51,7 +51,7 @@ final class User extends ModelCrud
      */
     public function readByUsername(string $username): ?array
     {
-        return $this->readAll('username = ?', [$username])[0] ?? null;
+        return $this->readOne('username = ?', [$username]);
     }
 
     /**

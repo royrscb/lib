@@ -10,8 +10,8 @@ final class Database
     private int $affectedRows = 0;
 
     private ?MiscData $miscData = null;
-    /** @var array<string, ModelCrud> */
-    private array $models = [];
+    /** @var array<string, DbTable> */
+    private array $tables = [];
 
     // Constructor and Instance -----------------
 
@@ -28,16 +28,16 @@ final class Database
     // public -----------------------------------
 
     /**
-     * @template T of ModelCrud
+     * @template T of DbTable
      * @param class-string<T> $class
      * @return T
      */
-    public function model(string $class): ModelCrud
+    public function table(string $class): DbTable
     {
-        if (!is_subclass_of($class, ModelCrud::class))
-            throw new InvalidArgumentException("$class is not a ModelCrud");
+        if (!is_subclass_of($class, DbTable::class))
+            throw new InvalidArgumentException("$class is not a DbTable");
 
-        return $this->models[$class] ??= new $class($this);
+        return $this->tables[$class] ??= new $class($this);
     }
 
     public function miscData(): MiscData

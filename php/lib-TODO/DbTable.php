@@ -1,6 +1,6 @@
 <?php
 
-abstract class ModelCrud
+abstract class DbTable
 {
     // Atributes -----------------------------------------------------------------------------------
 
@@ -11,15 +11,15 @@ abstract class ModelCrud
     protected readonly Database $db;
 
     // Columns (snake_case) the generic CRUD may write. Anything not listed here can not be touched from outside.
-    protected array $creatableFields = [];
-    protected array $updatableFields = [];
+    protected array $creatableColumns = [];
+    protected array $updatableColumns = [];
 
     protected bool $preventForeachRow = false;
 
     // Constructor ---------------------------------------------------------------------------------
 
     /**
-     * @param Database    $db        Connection used by every query of the model.
+     * @param Database    $db        Whole database.
      * @param string|null $tableName Defaults to the class name in snake_case (OrderItem => order_item).
      */
     public final function __construct(Database $db, ?string $tableName = null)
@@ -31,29 +31,30 @@ abstract class ModelCrud
     // public --------------------------------------------------------------------------------------
 
     /**
-     * Inserts a row using the fields of $data listed in $creatableFields (any other is ignored).
+     * Inserts a row using the entries of $data whose key is listed in $creatableColumns
+     * (any other is ignored).
      *
      * @return array|null The created row.
-     * @throws ModelCrudException 500 if $creatableFields is empty, 422 if $data has no creatable
-     *                            field, 409 on a duplicate key.
+     * @throws DbTableException 500 if $creatableColumns is empty, 422 if $data has none of them,
+     *                          409 on a duplicate key.
      */
     public function create(array $data): ?array
     {
-        if (empty($this->creatableFields))
-            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'creatableFields');
+        if (empty($this->creatableColumns))
+            throw DbTableException::invalidColumnsConfig($this->tableName, 'creatableColumns');
 
         $columns = [];
         $params = [];
 
-        foreach ($this->creatableFields as $field) {
-            if (key_exists($field, $data)) {
-                $columns[] = "`$field`";
-                $params[] = $this->toDbValue($data[$field]);
+        foreach ($this->creatableColumns as $column) {
+            if (key_exists($column, $data)) {
+                $columns[] = "`$column`";
+                $params[] = $this->toDbValue($data[$column]);
             }
         }
 
         if (empty($columns))
-            throw ModelCrudException::noValidFields($this->tableName, array_keys($data));
+            throw DbTableException::noValidFields($this->tableName, array_keys($data));
 
         $columnList = implode(', ', $columns);
         $placeholders = implode(', ', array_fill(0, count($columns), '?'));
@@ -65,19 +66,9 @@ abstract class ModelCrud
     }
 
     /**
-     * Reads the row with that id.
-     *
-     * @return array|null The row, or null if it does not exist.
-     */
-    public function readById(int $id): ?array
-    {
-        return $this->readAll('id = ?', [$id])[0] ?? null;
-    }
-
-    /**
      * Reads the rows that match $where (all of them if there is no $where).
      *
-     * To filter by a foreign key use $where: readAll(where: 'user_id = ?', params: [$userId]).
+     * To filter by a foreign key use $where: read(where: 'user_id = ?', params: [$userId]).
      *
      * @param string|null $where  YOUR OWN SQL fragment with ? placeholders ('email = ?'); never put
      *                            user data inside it.
@@ -86,7 +77,7 @@ abstract class ModelCrud
      * @return array List of rows (empty array if there are none).
      * @throws InvalidArgumentException If $order is not valid.
      */
-    public function readAll(?string $where = null, array $params = [], ?string $order = null): array
+    public function read(?string $where = null, array $params = [], ?string $order = null): array
     {
         $sql = "SELECT * FROM `$this->tableName`";
 
@@ -113,32 +104,58 @@ abstract class ModelCrud
 
         return $rows;
     }
+    
+    /**
+     * Reads the row with that id.
+     *
+     * @return array|null The row, or null if it does not exist.
+     */
+    public function readById(int $id): ?array
+    {
+        return $this->readOne('id = ?', [$id]);
+    }
 
     /**
-     * Updates the row with that id using the fields of $data listed in $updatableFields
-     * (any other is ignored).
+     * Reads the first row that matches $where.
+     *
+     * Meant for conditions that match a single row (a unique column): it reads every match and
+     * keeps the first one.
+     *
+     * @param string $where  YOUR OWN SQL fragment with ? placeholders ('email = ?'); never put
+     *                       user data inside it.
+     * @param array  $params Values for the ? placeholders of $where.
+     * @return array|null The row, or null if none matches.
+     */
+    public function readOne(string $where, array $params = []): ?array
+    {
+        return $this->read($where, $params)[0] ?? null;
+    }
+
+    /**
+     * Updates the row with that id using the entries of $data whose key is listed in
+     * $updatableColumns (any other is ignored).
      *
      * @return array|null The updated row.
-     * @throws ModelCrudException 500 if $updatableFields is empty, 422 if $data has no updatable
-     *                            field, 409 on a duplicate key.
+     * @throws DbTableException 500 if $updatableColumns is empty, 422 if $data has none of them,
+     *                          409 on a duplicate key.
      */
     public function update(int $id, array $data): ?array
     {
-        if (empty($this->updatableFields))
-            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'updatableFields');
+        if (empty($this->updatableColumns))
+            throw DbTableException::invalidColumnsConfig($this->tableName, 'updatableColumns');
 
         $assignments = [];
         $params = [];
 
-        foreach ($this->updatableFields as $field) {
-            if (key_exists($field, $data)) {
-                $assignments[] = "`$field` = ?";
-                $params[] = $this->toDbValue($data[$field]);
+        foreach ($this->updatableColumns as $column) {
+            if (key_exists($column, $data)) {
+                $assignments[] = "`$column` = ?";
+                $params[] = $this->toDbValue($data[$column]);
             }
         }
 
         if (empty($assignments))
-            throw ModelCrudException::noValidFields($this->tableName, array_keys($data), $id);
+            throw DbTableException::noValidFields($this->tableName, array_keys($data), $id);
 
         $params[] = $id;
         $this->query("UPDATE `$this->tableName` SET ".implode(', ', $assignments).' WHERE id = ?', $params);
@@ -160,7 +177,7 @@ abstract class ModelCrud
     protected function onReadRow(array &$row): void
     { }
 
-    // Prepared statement for the own methods of a model (total(), byMonth()...).
+    // Prepared statement for the own methods of a db table (total(), byMonth()...).
     // Values always go in $params: query('SELECT ... WHERE date >= ?', [$from])
     protected final function query(string $sql, array $params = []): mysqli_result|true
     {
@@ -168,7 +185,7 @@ abstract class ModelCrud
             return $this->db->query($sql, $params);
         }
         catch (mysqli_sql_exception $e) {
-            throw ModelCrudException::sqlError(strtok(ltrim($sql), ' '), $this->tableName, $sql, $e->getMessage(), (int)$e->getCode());
+            throw DbTableException::sqlError(strtok(ltrim($sql), ' '), $this->tableName, $sql, $e->getMessage(), (int)$e->getCode());
         }
     }
 
@@ -209,7 +226,7 @@ abstract class ModelCrud
     }
 }
 
-class ModelCrudException extends RuntimeException
+class DbTableException extends RuntimeException
 {
     // ⚠️❗
 
@@ -222,9 +239,9 @@ class ModelCrudException extends RuntimeException
     }
 
     /**
-     * The model's $property array is empty (programming error, 500).
+     * The db table's $property array is empty (programming error, 500).
      */
-    public static function invalidFieldsConfig(string $tableName, string $property): self
+    public static function invalidColumnsConfig(string $tableName, string $property): self
     {
         return new self(
             "⚠️ [$property] array does not exist or is empty for table [$tableName]",
