@@ -2,194 +2,210 @@
 
 abstract class ModelCrud
 {
-    // Atributes ----------------------------
+    // Atributes -----------------------------------------------------------------------------------
 
-    // private
-    private object $conn;
+    // public ---
+    public readonly string $tableName;
 
-    // protected
-    protected object $db;
-    protected string $tableName;
+    // protected ---
+    protected readonly Database $db;
 
-    protected array $creatable_fields = [];
-    protected array $updatable_fields = [];
+    // Columns (snake_case) the generic CRUD may write. Anything not listed here can not be touched from outside.
+    protected array $creatableFields = [];
+    protected array $updatableFields = [];
 
-    protected bool $prevent_foreach_row = false;
+    protected bool $preventForeachRow = false;
 
-    // Constructor --------------------------
-    public final function __construct(object $conn, object $db, ?string $tableName = null)
+    // Constructor ---------------------------------------------------------------------------------
+
+    /**
+     * @param Database    $db        Connection used by every query of the model.
+     * @param string|null $tableName Defaults to the class name in snake_case (OrderItem => order_item).
+     */
+    public final function __construct(Database $db, ?string $tableName = null)
     {
-        $this->conn = $conn;
         $this->db = $db;
-        $this->tableName = $tableName ?? strtolower(get_class($this));
+        $this->tableName = $tableName ?? self::toSnakeCase(static::class);
     }
 
-    // public -------------------------------
+    // public --------------------------------------------------------------------------------------
 
-    // CRUD
+    /**
+     * Inserts a row using the fields of $data listed in $creatableFields (any other is ignored).
+     *
+     * @return array|null The created row.
+     * @throws ModelCrudException 500 if $creatableFields is empty, 422 if $data has no creatable
+     *                            field, 409 on a duplicate key.
+     */
     public function create(array $data): ?array
     {
-        if (empty($this->creatable_fields))
-            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'creatable_fields');
+        if (empty($this->creatableFields))
+            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'creatableFields');
 
-        $sql = $this->buildInsertSql($this->creatable_fields, $data);
-        $this->executeQuery($sql);
+        $columns = [];
+        $params = [];
 
-        return $this->read($this->conn->insert_id);
-    }
-    public function read(?int $id = null, ?string $fkName = null, ?string $filter = null, ?string $order = null): ?array
-    {
-        $sql = $this->buildSelectSql($id, $fkName, $filter, $order);
-        $res = $this->executeQuery($sql);
-
-        $all_rows = [];
-        while ($row = $res->fetch_assoc()) {
-            if (method_exists($this, 'foreach_row_on_read') && !$this->prevent_foreach_row) {
-                $this->foreach_row_on_read($row);
-            }
-
-            array_push($all_rows, $row);
-        }
-
-        if (isset($id) && !isset($fkName)) { // Query 1
-            if (empty($all_rows)) return null;
-            else return $all_rows[0];
-        }
-        else return $all_rows;
-    }
-    public function update(int $id, array $data): ?array
-    {
-        if (empty($this->updatable_fields))
-            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'updatable_fields');
-
-        $sql = $this->buildUpdateSql($id, $this->updatable_fields, $data);
-        
-        $this->executeQuery($sql);
-
-        return $this->read($id);
-    }
-    public function delete(int $id): void
-    {
-        $sql = $this->buildDeleteSql($id);
-        $this->executeQuery($sql);
-    }
-
-    // protected ----------------------------
-
-    // Build CRUD SQLs
-    protected final function buildInsertSql(array $fields, array $data): string
-    {
-        $insertFields = [];
-        $insertValues = [];
-
-        foreach($fields as $field) {
+        foreach ($this->creatableFields as $field) {
             if (key_exists($field, $data)) {
-                array_push($insertFields, $field);
-                array_push($insertValues, $this->parseUnknownDataElementToSql($data[$field]));
+                $columns[] = "`$field`";
+                $params[] = $this->toDbValue($data[$field]);
             }
         }
 
-        if (empty($insertFields))
+        if (empty($columns))
             throw ModelCrudException::noValidFields($this->tableName, array_keys($data));
 
-        $sqlInsertFields = implode(', ', $insertFields);
-        $sqlInsertValues = implode(', ', $insertValues);
-        $sql = "INSERT INTO $this->tableName ($sqlInsertFields) VALUES ($sqlInsertValues)";
+        $columnList = implode(', ', $columns);
+        $placeholders = implode(', ', array_fill(0, count($columns), '?'));
+        $sql = "INSERT INTO `$this->tableName` ($columnList) VALUES ($placeholders)";
 
-        return $sql;
+        $this->query($sql, $params);
+
+        return $this->readById($this->db->lastInsertId());
     }
-    protected final function buildSelectSql(?int $id = null, ?string $fkName = null, ?string $filter = null, ?string $order = null): string
+
+    /**
+     * Reads the row with that id.
+     *
+     * @return array|null The row, or null if it does not exist.
+     */
+    public function readById(int $id): ?array
     {
-        $sql = "SELECT * FROM $this->tableName";
+        return $this->readAll('id = ?', [$id])[0] ?? null;
+    }
 
-        if (isset($id)) {
-            if (isset($fkName)) $sql .= " WHERE ".$fkName."_id=$id";
-            else $sql .= " WHERE id=$id";
-        }
+    /**
+     * Reads the rows that match $where (all of them if there is no $where).
+     *
+     * To filter by a foreign key use $where: readAll(where: 'user_id = ?', params: [$userId]).
+     *
+     * @param string|null $where  YOUR OWN SQL fragment with ? placeholders ('email = ?'); never put
+     *                            user data inside it.
+     * @param array       $params Values for the ? placeholders of $where.
+     * @param string|null $order  'name', 'name DESC, id'... (validated).
+     * @return array List of rows (empty array if there are none).
+     * @throws InvalidArgumentException If $order is not valid.
+     */
+    public function readAll(?string $where = null, array $params = [], ?string $order = null): array
+    {
+        $sql = "SELECT * FROM `$this->tableName`";
 
-        if (isset($filter)) {
-            $sql .= str_contains(strtoupper($sql), 'WHERE ')
-                ? " AND ($filter)"
-                : " WHERE $filter";
-        }
-        if (isset($order)) {
+        if ($where !== null)
+            $sql .= " WHERE $where";
+
+        if ($order !== null) {
+            if (!preg_match('/^[\w`.]+(\s+(ASC|DESC))?(\s*,\s*[\w`.]+(\s+(ASC|DESC))?)*$/i', $order))
+                throw new InvalidArgumentException("Invalid order: $order", 500);
+
             $sql .= " ORDER BY $order";
         }
 
-        return $sql;
-    }
-    protected final function buildUpdateSql(int $id, array $fields, array $data): string
-    {
-        $fieldValues = [];
+        $result = $this->query($sql, $params);
 
-        foreach($fields as $field) {
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            if (!$this->preventForeachRow) {
+                $this->onReadRow($row);
+            }
+
+            $rows[] = $row;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Updates the row with that id using the fields of $data listed in $updatableFields
+     * (any other is ignored).
+     *
+     * @return array|null The updated row.
+     * @throws ModelCrudException 500 if $updatableFields is empty, 422 if $data has no updatable
+     *                            field, 409 on a duplicate key.
+     */
+    public function update(int $id, array $data): ?array
+    {
+        if (empty($this->updatableFields))
+            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'updatableFields');
+
+        $assignments = [];
+        $params = [];
+
+        foreach ($this->updatableFields as $field) {
             if (key_exists($field, $data)) {
-                $value = $this->parseUnknownDataElementToSql($data[$field]);
-                array_push($fieldValues, $field.'='.$value);
+                $assignments[] = "`$field` = ?";
+                $params[] = $this->toDbValue($data[$field]);
             }
         }
 
-        if (empty($fieldValues))
+        if (empty($assignments))
             throw ModelCrudException::noValidFields($this->tableName, array_keys($data), $id);
 
-        $sqlUpdateFieldsValues = implode(', ', $fieldValues);
-        $sql = "UPDATE $this->tableName SET $sqlUpdateFieldsValues WHERE id=$id";
+        $params[] = $id;
+        $this->query("UPDATE `$this->tableName` SET ".implode(', ', $assignments).' WHERE id = ?', $params);
 
-        return $sql;
-    }
-    protected final function buildDeleteSql(int $id): string
-    {
-        return "DELETE FROM $this->tableName WHERE id=$id";
-    }
-    // ---
-
-    protected final function real_escape_string(string $s): string
-    {
-        return $this->conn->real_escape_string($s);
-    }
-    
-    protected final function executeQuery(string $sql): bool|object
-    {
-        if (str_contains(strtoupper($sql), 'DROP '))
-            throw ModelCrudException::forbiddenQuery('DROP statement blocked', $this->tableName, $sql);
-        if (str_contains(strtoupper($sql), 'ALTER '))
-            throw ModelCrudException::forbiddenQuery('ALTER statement blocked', $this->tableName, $sql);
-        if (str_contains($sql, ';'))
-            throw ModelCrudException::forbiddenQuery("';' character blocked", $this->tableName, $sql);
-
-        $res = $this->conn->query($sql);
-
-        if ($res === false)
-            throw ModelCrudException::sqlError(explode(' ', $sql)[0], $this->tableName, $sql, $this->conn->error);
-
-        return $res;
+        return $this->readById($id);
     }
 
-    // private ------------------------------
-
-    private function parseUnknownDataElementToSql(mixed $element): string
+    /**
+     * Deletes the row with that id. Does nothing if it does not exist.
+     */
+    public function delete(int $id): void
     {
-        if (is_bool($element)) {
-            return $element ? '1' : '0';
+        $this->query("DELETE FROM `$this->tableName` WHERE id = ?", [$id]);
+    }
+
+    // protected -----------------------------------------------------------------------------------
+
+    // Virtual method to override in child classes. Runs for every row read: hide or transform columns here.
+    protected function onReadRow(array &$row): void
+    { }
+
+    // Prepared statement for the own methods of a model (total(), byMonth()...).
+    // Values always go in $params: query('SELECT ... WHERE date >= ?', [$from])
+    protected final function query(string $sql, array $params = []): mysqli_result|true
+    {
+        try {
+            return $this->db->query($sql, $params);
         }
-        else if (is_numeric($element) && !(is_string($element) && ($element[0] == '+' || $element[0] == '0' && $element != '0'))) {
-            return (string)$element;
+        catch (mysqli_sql_exception $e) {
+            throw ModelCrudException::sqlError(strtok(ltrim($sql), ' '), $this->tableName, $sql, $e->getMessage(), (int)$e->getCode());
         }
-        else if (is_string($element) && !empty($element)) {
-            return "'".$this->conn->real_escape_string($element)."'";
-        }
-        else if (is_array($element)) {
-            array_walk_recursive($element, function(&$value){
-                if (is_string($value)){
-                    if (strtolower($value) == 'null' || empty($value)) $value = null;
-                    else if (strtolower($value) == 'true') $value = true;
-                    else if (strtolower($value) == 'false') $value = false;
+    }
+
+    // private -------------------------------------------------------------------------------------
+
+    // Converts HolaQue_Tal into hola_que_tal
+    private static function toSnakeCase(string $string): string
+    {
+        $string = preg_replace('/(?<!^)[A-Z]/', '_$0', $string);
+        return strtolower(preg_replace('/_+/', '_', $string));
+    }
+
+    // Prepares a client value to be stored in the database. Empty string => NULL
+    private function toDbValue(mixed $value): int|float|string|null
+    {
+        if (is_bool($value))
+            return $value ? 1 : 0;
+
+        if (is_int($value) || is_float($value))
+            return $value;
+
+        if (is_string($value))
+            return $value === '' ? null : $value;
+
+        if (is_array($value)) { // Stored as JSON
+            array_walk_recursive($value, function (&$v) {
+                if (is_string($v)) {
+                    if (strtolower($v) === 'null' || $v === '') $v = null;
+                    else if (strtolower($v) === 'true') $v = true;
+                    else if (strtolower($v) === 'false') $v = false;
                 }
             });
 
-            return "'".$this->conn->real_escape_string(json_encode($element, JSON_NUMERIC_CHECK))."'";
+            return json_encode($value, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
         }
-        else return 'NULL';
+
+        return null;
     }
 }
 
@@ -205,6 +221,9 @@ class ModelCrudException extends RuntimeException
         $this->sql = $sql;
     }
 
+    /**
+     * The model's $property array is empty (programming error, 500).
+     */
     public static function invalidFieldsConfig(string $tableName, string $property): self
     {
         return new self(
@@ -212,6 +231,10 @@ class ModelCrudException extends RuntimeException
             500
         );
     }
+
+    /**
+     * None of the provided fields can be written (client error, 422).
+     */
     public static function noValidFields(string $tableName, array $providedFields, ?int $id = null): self
     {
         $rowInfo = $id !== null ? " for row with id [$id]" : '';
@@ -220,23 +243,26 @@ class ModelCrudException extends RuntimeException
             422
         );
     }
-    public static function sqlError(string $method, string $tableName, string $sql, string $mysqlError): self
+
+    /**
+     * Wraps a MySQL error: a duplicate key (1062) is a 409, anything else a 500.
+     */
+    public static function sqlError(string $method, string $tableName, string $sql, string $mysqlError, int $mysqlErrno = 0): self
     {
+        // 1062 = duplicate key: a client conflict, not a server failure
+        if ($mysqlErrno === 1062)
+            return new self("Duplicate entry on table [$tableName]", 409, $sql);
+
         return new self(
             "❗MySQL $method error on table [$tableName]: $mysqlError",
-            409,
-            $sql
-        );
-    }
-    public static function forbiddenQuery(string $reason, string $tableName, string $sql): self
-    {
-        return new self(
-            "⚠️ Blocked query on table [$tableName]: $reason",
             500,
             $sql
         );
     }
 
+    /**
+     * The SQL that failed, if there is one.
+     */
     public function getSql(): ?string
     {
         return $this->sql;

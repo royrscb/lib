@@ -41,7 +41,7 @@ final class User extends ModelCrud
      */
     public function readByEmail(string $email): ?array
     {
-        return $this->read(where: 'email = ?', params: [$email])[0] ?? null;
+        return $this->readAll('email = ?', [$email])[0] ?? null;
     }
 
     /**
@@ -51,7 +51,7 @@ final class User extends ModelCrud
      */
     public function readByUsername(string $username): ?array
     {
-        return $this->read(where: 'username = ?', params: [$username])[0] ?? null;
+        return $this->readAll('username = ?', [$username])[0] ?? null;
     }
 
     /**

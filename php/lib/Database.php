@@ -78,10 +78,10 @@ final class Database
 
         $stmt->execute();
 
-        $this->lastInsertId = (int)$stmt->insert_id;
-        $this->affectedRows = (int)$stmt->affected_rows;
+        $this->lastInsertId = $stmt->insert_id;
+        $this->affectedRows = $stmt->affected_rows;
 
-        $result = $stmt->get_result(); // false when the statement returns no rows
+        $result = $stmt->get_result();
         $stmt->close();
 
         return $result === false ? true : $result;
