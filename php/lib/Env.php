@@ -10,8 +10,8 @@ final class Env
 {
     private const array REQUIRED_VARS = [
         'APP_ENV',
-        'PROJECT_EMOJI',
         'PROJECT_NAME',
+        'PROJECT_SLUG',
     ];
 
     private static bool $loaded = false;

@@ -2,39 +2,37 @@
 
 abstract class ModelCrud
 {
-    // Atributes ----------------------------------------------------------------------------------
+    // Atributes ----------------------------
 
-    // private ---
+    // private
     private object $conn;
 
-    // protected ---
+    // protected
     protected object $db;
-    
-    protected array $creatableFields = [];
-    protected array $updatableFields = [];
-    
-    protected bool $preventForeachRow = false;
+    protected string $tableName;
 
-    // public ---
-    public string $tableName;
+    protected array $creatable_fields = [];
+    protected array $updatable_fields = [];
 
-    // Constructor --------------------------------------------------------------------------------
+    protected bool $prevent_foreach_row = false;
+
+    // Constructor --------------------------
     public final function __construct(object $conn, object $db, ?string $tableName = null)
     {
         $this->conn = $conn;
         $this->db = $db;
-        $this->tableName = $tableName ?? self::toSnakeCase(get_class($this));
+        $this->tableName = $tableName ?? strtolower(get_class($this));
     }
 
-    // public -------------------------------------------------------------------------------------
+    // public -------------------------------
 
     // CRUD
     public function create(array $data): ?array
     {
-        if (empty($this->creatableFields))
-            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'creatableFields');
+        if (empty($this->creatable_fields))
+            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'creatable_fields');
 
-        $sql = $this->buildInsertSql($this->creatableFields, $data);
+        $sql = $this->buildInsertSql($this->creatable_fields, $data);
         $this->executeQuery($sql);
 
         return $this->read($this->conn->insert_id);
@@ -44,27 +42,27 @@ abstract class ModelCrud
         $sql = $this->buildSelectSql($id, $fkName, $filter, $order);
         $res = $this->executeQuery($sql);
 
-        $allRows = [];
+        $all_rows = [];
         while ($row = $res->fetch_assoc()) {
-            if (!$this->preventForeachRow) {
-                $this->onReadRow($row);
+            if (method_exists($this, 'foreach_row_on_read') && !$this->prevent_foreach_row) {
+                $this->foreach_row_on_read($row);
             }
 
-            array_push($allRows, $row);
+            array_push($all_rows, $row);
         }
 
         if (isset($id) && !isset($fkName)) { // Query 1
-            if (empty($allRows)) return null;
-            else return $allRows[0];
+            if (empty($all_rows)) return null;
+            else return $all_rows[0];
         }
-        else return $allRows;
+        else return $all_rows;
     }
     public function update(int $id, array $data): ?array
     {
-        if (empty($this->updatableFields))
-            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'updatableFields');
+        if (empty($this->updatable_fields))
+            throw ModelCrudException::invalidFieldsConfig($this->tableName, 'updatable_fields');
 
-        $sql = $this->buildUpdateSql($id, $this->updatableFields, $data);
+        $sql = $this->buildUpdateSql($id, $this->updatable_fields, $data);
         
         $this->executeQuery($sql);
 
@@ -76,13 +74,9 @@ abstract class ModelCrud
         $this->executeQuery($sql);
     }
 
-    // protected ----------------------------------------------------------------------------------
+    // protected ----------------------------
 
-    // virtual method to override for classes that inherits
-    protected function onReadRow(array &$row)
-    { }
-
-    // Build CRUD SQLs ---
+    // Build CRUD SQLs
     protected final function buildInsertSql(array $fields, array $data): string
     {
         $insertFields = [];
@@ -149,9 +143,9 @@ abstract class ModelCrud
     }
     // ---
 
-    protected final function realEscapeString(string $s): string
+    protected final function real_escape_string(string $s): string
     {
-        return $this->conn->realEscapeString($s);
+        return $this->conn->real_escape_string($s);
     }
     
     protected final function executeQuery(string $sql): bool|object
@@ -171,14 +165,7 @@ abstract class ModelCrud
         return $res;
     }
 
-    // private ------------------------------------------------------------------------------------
-
-    // Converts HolaQue_Tal into hola_que_tal
-    private static function toSnakeCase(string $string): string
-    {
-        $string = preg_replace('/(?<!^)[A-Z]/', '_$0', $string);
-        return strtolower(preg_replace('/_+/', '_', $string));
-    }
+    // private ------------------------------
 
     private function parseUnknownDataElementToSql(mixed $element): string
     {
@@ -189,7 +176,7 @@ abstract class ModelCrud
             return (string)$element;
         }
         else if (is_string($element) && !empty($element)) {
-            return "'".$this->conn->realEscapeString($element)."'";
+            return "'".$this->conn->real_escape_string($element)."'";
         }
         else if (is_array($element)) {
             array_walk_recursive($element, function(&$value){
@@ -200,7 +187,7 @@ abstract class ModelCrud
                 }
             });
 
-            return "'".$this->conn->realEscapeString(json_encode($element, JSON_NUMERIC_CHECK))."'";
+            return "'".$this->conn->real_escape_string(json_encode($element, JSON_NUMERIC_CHECK))."'";
         }
         else return 'NULL';
     }
