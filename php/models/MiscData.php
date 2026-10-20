@@ -28,7 +28,7 @@ final class MiscDataException extends RuntimeException
  */
 final class MiscData
 {
-    private const string TABLE = 'misc_data';
+    private const string TABLE_NAME = 'misc_data';
 
     private const int KEY_MAX_LENGTH = 128;
     private const int ER_DUP_ENTRY = 1062;
@@ -58,7 +58,7 @@ final class MiscData
 
         try {
             $this->db->query(
-                'INSERT INTO `'.self::TABLE.'` (`key`, type, value) VALUES (?, ?, ?)',
+                'INSERT INTO `'.self::TABLE_NAME.'` (`key`, type, value) VALUES (?, ?, ?)',
                 [$key, $type->value, self::serialize($type, $value)]
             );
         }
@@ -80,7 +80,7 @@ final class MiscData
         self::validateKey($key);
 
         $row = $this->db->query(
-            'SELECT type, value FROM `'.self::TABLE.'` WHERE `key` = ?',
+            'SELECT type, value FROM `'.self::TABLE_NAME.'` WHERE `key` = ?',
             [$key]
         )->fetch_assoc() ?? throw new MiscDataException("MiscData key '$key' does not exist", MiscDataException::NOT_FOUND);
 
@@ -100,7 +100,7 @@ final class MiscData
      */
     public function all(): array
     {
-        $result = $this->db->query('SELECT `key`, type, value FROM `'.self::TABLE.'`');
+        $result = $this->db->query('SELECT `key`, type, value FROM `'.self::TABLE_NAME.'`');
 
         $data = [];
         while ($row = $result->fetch_assoc()) {
@@ -123,7 +123,7 @@ final class MiscData
         self::validateKey($key);
 
         return $this->db->query(
-            'SELECT 1 FROM `'.self::TABLE.'` WHERE `key` = ?',
+            'SELECT 1 FROM `'.self::TABLE_NAME.'` WHERE `key` = ?',
             [$key]
         )->num_rows > 0;
     }
@@ -139,14 +139,14 @@ final class MiscData
         self::validateKey($key);
 
         $row = $this->db->query(
-            'SELECT type FROM `'.self::TABLE.'` WHERE `key` = ?',
+            'SELECT type FROM `'.self::TABLE_NAME.'` WHERE `key` = ?',
             [$key]
         )->fetch_assoc() ?? throw new MiscDataException("MiscData key '$key' does not exist", MiscDataException::NOT_FOUND);
 
         $serializedValue = self::serialize(MiscDataType::from($row['type']), $value);
 
         $this->db->query(
-            'UPDATE `'.self::TABLE.'` SET value = ? WHERE `key` = ?',
+            'UPDATE `'.self::TABLE_NAME.'` SET value = ? WHERE `key` = ?',
             [$serializedValue, $key]
         );
     }
@@ -179,7 +179,7 @@ final class MiscData
             return false;
 
         $this->db->query(
-            'DELETE FROM `'.self::TABLE.'` WHERE `key` = ?',
+            'DELETE FROM `'.self::TABLE_NAME.'` WHERE `key` = ?',
             [$key]
         );
 
@@ -270,11 +270,11 @@ final class MiscData
     }
 }
 
-/**
- *  CREATE TABLE `misc_data` (
- *      `key`   VARCHAR(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
- *      `type`  ENUM('number', 'bool', 'string', 'date', 'dateTime', 'json') NOT NULL,
- *      `value` TEXT NULL,
- *      PRIMARY KEY (`key`)
- *  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
- */
+/*
+CREATE TABLE `misc_data` (
+    `key`   VARCHAR(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+    `type`  ENUM('number', 'bool', 'string', 'date', 'dateTime', 'json') NOT NULL,
+    `value` TEXT NULL,
+    PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+*/
