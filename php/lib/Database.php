@@ -2,6 +2,18 @@
 
 final class Database
 {
+
+    // const --------------------------------------------------------------------------------------
+
+    // Env vars ---
+    private const string ENV_DB_HOSTNAME = 'DB_HOSTNAME';
+    private const string ENV_DB_USERNAME = 'DB_USERNAME';
+    private const string ENV_DB_PASSWORD = 'DB_PASSWORD';
+    private const string ENV_DB_DATABASE = 'DB_DATABASE';
+    // ---
+
+    // Atributes ----------------------------------------------------------------------------------
+
     private static ?self $instance = null;
 
     private mysqli $conn;
@@ -13,19 +25,24 @@ final class Database
     /** @var array<string, DbTable> */
     private array $tables = [];
 
-    // Constructor and Instance -----------------
-
-    public static function instance(): self
-    {
-        return self::$instance ??= new self();
-    }
+    // Constructor and Instance -------------------------------------------------------------------
 
     private function __construct()
     {
         $this->conn = self::connect();
     }
 
-    // public -----------------------------------
+    public static function instance(): self
+    {
+        return self::$instance ??= new self();
+    }
+    
+    // public -------------------------------------------------------------------------------------
+
+    public function miscData(): MiscData
+    {
+        return $this->miscData ??= new MiscData($this);
+    }
 
     /**
      * @template T of DbTable
@@ -38,11 +55,6 @@ final class Database
             throw new InvalidArgumentException("$class is not a DbTable");
 
         return $this->tables[$class] ??= new $class($this);
-    }
-
-    public function miscData(): MiscData
-    {
-        return $this->miscData ??= new MiscData($this);
     }
 
     /**
@@ -91,13 +103,13 @@ final class Database
     {
         return $this->lastInsertId;
     }
-
     public function affectedRows(): int
     {
         return $this->affectedRows;
     }
 
-    // private ----------------------------------
+    // private ------------------------------------------------------------------------------------
+
     private static function connect(): mysqli
     {
         // Failures throw mysqli_sql_exception
@@ -106,10 +118,10 @@ final class Database
         $conn = mysqli_init();
         $conn->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true);
         $conn->real_connect(
-            Env::get('DB_HOSTNAME'),
-            Env::get('DB_USERNAME'),
-            Env::get('DB_PASSWORD'),
-            Env::get('DB_DATABASE')
+            Env::get(self::ENV_DB_HOSTNAME),
+            Env::get(self::ENV_DB_USERNAME),
+            Env::get(self::ENV_DB_PASSWORD),
+            Env::get(self::ENV_DB_DATABASE),
         );
         $conn->set_charset('utf8mb4');
 

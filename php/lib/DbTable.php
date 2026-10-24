@@ -4,10 +4,8 @@ abstract class DbTable
 {
     // Atributes -----------------------------------------------------------------------------------
 
-    // public ---
     public readonly string $tableName;
 
-    // protected ---
     protected readonly Database $db;
 
     protected array $readableColumns = [];

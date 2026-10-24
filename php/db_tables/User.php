@@ -19,7 +19,7 @@ final class User extends DbTable
         'email',
     ];
 
-    // public -----------------------------------
+    // public -------------------------------------------------------------------------------------
 
     /**
      * Creates a user. The client sends a plain 'password' and only its hash is stored;

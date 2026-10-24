@@ -76,12 +76,18 @@ final readonly class AuthOwner
 
 final class Auth
 {
+    // const --------------------------------------------------------------------------------------
+
+    // Env vars ---
     private const string ENV_PROJECT_SLUG = 'PROJECT_SLUG';
     private const string ENV_AUTH_SECRET = 'AUTH_SECRET';
     private const string ENV_ADMIN_HASHWORD = 'ADMIN_HASHWORD';
+    // ---
 
     private const string SESSION_KEY = 'auth';
     private const int PERSISTENT_LOGIN_DAYS = 100;
+
+    // Atributes ----------------------------------------------------------------------------------
 
     private static ?array $me = null;
     private static bool $isMeResolved = false;
