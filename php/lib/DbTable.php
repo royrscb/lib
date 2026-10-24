@@ -10,11 +10,9 @@ abstract class DbTable
     // protected ---
     protected readonly Database $db;
 
-    // Columns (snake_case) the generic CRUD may write. Anything not listed here can not be touched from outside.
+    protected array $readableColumns = [];
     protected array $creatableColumns = [];
     protected array $updatableColumns = [];
-
-    protected bool $preventForeachRow = false;
 
     // Constructor ---------------------------------------------------------------------------------
 
@@ -67,6 +65,7 @@ abstract class DbTable
 
     /**
      * Reads the rows that match $where (all of them if there is no $where).
+     * Only id and the columns listed in $readableColumns are read.
      *
      * To filter by a foreign key use $where: read(where: 'user_id = ?', params: [$userId]).
      *
@@ -75,11 +74,17 @@ abstract class DbTable
      * @param array       $params Values for the ? placeholders of $where.
      * @param string|null $order  'name', 'name DESC, id'... (validated).
      * @return array List of rows (empty array if there are none).
+     * @throws DbTableException 500 if $readableColumns is empty.
      * @throws InvalidArgumentException If $order is not valid.
      */
     public function read(?string $where = null, array $params = [], ?string $order = null): array
     {
-        $sql = "SELECT * FROM `$this->tableName`";
+        if (empty($this->readableColumns))
+            throw DbTableException::invalidColumnsConfig($this->tableName, 'readableColumns');
+
+        $columns = array_unique(['id', ...$this->readableColumns]);
+        $columnList = implode(', ', array_map(static fn(string $column) => "`$column`", $columns));
+        $sql = "SELECT $columnList FROM `$this->tableName`";
 
         if ($where !== null)
             $sql .= " WHERE $where";
@@ -95,10 +100,7 @@ abstract class DbTable
 
         $rows = [];
         while ($row = $result->fetch_assoc()) {
-            if (!$this->preventForeachRow) {
-                $this->onReadRow($row);
-            }
-
+            $this->onReadRow($row);
             $rows[] = $row;
         }
 
@@ -173,7 +175,7 @@ abstract class DbTable
 
     // protected -----------------------------------------------------------------------------------
 
-    // Virtual method to override in child classes. Runs for every row read: hide or transform columns here.
+    // Virtual method to override in child classes. Runs for every row read, to transform its values.
     protected function onReadRow(array &$row): void
     { }
 

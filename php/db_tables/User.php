@@ -2,13 +2,18 @@
 
 final class User extends DbTable
 {
-    protected array $creatableFields =
+    protected array $readableColumns =
+    [
+        'username',
+        'email',
+    ];
+    protected array $creatableColumns =
     [
         'username',
         'email',
         'hashword',
     ];
-    protected array $updatableFields =
+    protected array $updatableColumns =
     [
         'username',
         'email',
@@ -20,7 +25,7 @@ final class User extends DbTable
      * Creates a user. The client sends a plain 'password' and only its hash is stored;
      * a 'hashword' sent by the client is ignored.
      *
-     * @return array|null The created user (without hashword), as returned by ModelCrud::create().
+     * @return array|null The created user (without hashword), as returned by DbTable::create().
      */
     public function create(array $data): ?array
     {
@@ -98,11 +103,20 @@ final class User extends DbTable
         return true;
     }
 
-    // protected --------------------------------
-
-    // override. The password hash never leaves through the CRUD
-    protected function onReadRow(array &$user): void
+    /**
+     * Stored password hash of the user. Meant for Auth, which signs tokens with it: since it changes
+     * when the password changes, the tokens signed with it stop being valid.
+     *
+     * @return string|null The hash, or null if the id does not exist or the user has no password.
+     */
+    public function getHashword(int $id): ?string
     {
-        unset($user['hashword']);
+        $hashword = $this->query(
+            "SELECT hashword FROM `$this->tableName` WHERE id = ?",
+            [$id]
+        )->fetch_column();
+
+        // false = no such user, null = user created without a password
+        return is_string($hashword) && $hashword !== '' ? $hashword : null;
     }
 }
