@@ -76,7 +76,7 @@ final readonly class AuthOwner
 
 final class Auth
 {
-    // const --------------------------------------------------------------------------------------
+    // const ---------------------------------------------------------------------------------------
 
     // Env vars ---
     private const string ENV_PROJECT_SLUG = 'PROJECT_SLUG';
@@ -87,7 +87,7 @@ final class Auth
     private const string SESSION_KEY = 'auth';
     private const int PERSISTENT_LOGIN_DAYS = 100;
 
-    // Atributes ----------------------------------------------------------------------------------
+    // Attributes ----------------------------------------------------------------------------------
 
     private static ?array $me = null;
     private static bool $isMeResolved = false;
@@ -248,9 +248,8 @@ final class Auth
      */
     public static function requireToken(string $envName, string $header = 'X-Api-Token'): void
     {
-        $expected = Env::get($envName, '');
-        if ($expected === '')
-            throw new RuntimeException("Token '$envName' is not configured", 500);
+        $expected = Env::getOrNull($envName)
+            ?? throw new RuntimeException("Token '$envName' is not configured", 500);
 
         if (!hash_equals($expected, Request::header($header) ?? ''))
             throw new RuntimeException('Forbidden', 403);
@@ -276,9 +275,7 @@ final class Auth
     // Password hash of the admin from the .env, or null if the app has no admin
     private static function getAdminHashword(): ?string
     {
-        $hashword = Env::get(self::ENV_ADMIN_HASHWORD, '');
-
-        return $hashword !== '' ? $hashword : null;
+        return Env::getOrNull(self::ENV_ADMIN_HASHWORD);
     }
 
     // Opens the session for an owner and returns the identity
@@ -338,11 +335,7 @@ final class Auth
         if ($hashword === null)
             return null;
 
-        // An empty key would sign every token with nothing secret
         $secret = Env::get(self::ENV_AUTH_SECRET);
-        if ($secret === '')
-            throw new RuntimeException('Env var '.self::ENV_AUTH_SECRET.' is empty', 500);
-
         $who = $owner->toSlug();
 
         return "$who.".hash_hmac('sha256', "$who.$hashword", $secret);
@@ -370,7 +363,7 @@ final class Auth
         if (session_status() === PHP_SESSION_ACTIVE)
             return;
 
-        session_name('sess'.preg_replace('/\W/', '', Env::get(self::ENV_PROJECT_SLUG)));
+        session_name(self::getSessionName());
         session_set_cookie_params([
             'lifetime' => 0,
             'path'     => '/',
@@ -387,10 +380,15 @@ final class Auth
             || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
     }
     
+    private static function getSessionName(): string
+    {
+        return 'sess'.Env::get(self::ENV_PROJECT_SLUG);
+    }
     private static function getPersistentCookieName(): string
     {
         return 'persist_'.Env::get(self::ENV_PROJECT_SLUG);
     }
+    
     private static function setCookie(string $name, string $value, int $expiresUnixTime): void
     {
         setcookie($name, $value, [

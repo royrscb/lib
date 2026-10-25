@@ -3,7 +3,7 @@
 final class Database
 {
 
-    // const --------------------------------------------------------------------------------------
+    // const ---------------------------------------------------------------------------------------
 
     // Env vars ---
     private const string ENV_DB_HOSTNAME = 'DB_HOSTNAME';
@@ -12,7 +12,7 @@ final class Database
     private const string ENV_DB_DATABASE = 'DB_DATABASE';
     // ---
 
-    // Atributes ----------------------------------------------------------------------------------
+    // Attributes ----------------------------------------------------------------------------------
 
     private static ?self $instance = null;
 
@@ -25,7 +25,7 @@ final class Database
     /** @var array<string, DbTable> */
     private array $tables = [];
 
-    // Constructor and Instance -------------------------------------------------------------------
+    // Constructor and Instance --------------------------------------------------------------------
 
     private function __construct()
     {
@@ -37,7 +37,7 @@ final class Database
         return self::$instance ??= new self();
     }
     
-    // public -------------------------------------------------------------------------------------
+    // public --------------------------------------------------------------------------------------
 
     public function miscData(): MiscData
     {
@@ -80,21 +80,24 @@ final class Database
     {
         $stmt = $this->conn->prepare($sql);
 
-        if ($params) {
-            $types = '';
-            foreach ($params as $param)
-                $types .= match (true) { is_int($param) => 'i', is_float($param) => 'd', default => 's' };
+        try {
+            if ($params) {
+                $types = '';
+                foreach ($params as $param)
+                    $types .= match (true) { is_int($param) => 'i', is_float($param) => 'd', default => 's' };
 
-            $stmt->bind_param($types, ...$params);
+                $stmt->bind_param($types, ...$params);
+            }
+
+            $stmt->execute();
+
+            $this->lastInsertId = $stmt->insert_id;
+            $this->affectedRows = $stmt->affected_rows;
+
+            $result = $stmt->get_result();
+        } finally {
+            $stmt->close();
         }
-
-        $stmt->execute();
-
-        $this->lastInsertId = $stmt->insert_id;
-        $this->affectedRows = $stmt->affected_rows;
-
-        $result = $stmt->get_result();
-        $stmt->close();
 
         return $result === false ? true : $result;
     }
@@ -108,7 +111,7 @@ final class Database
         return $this->affectedRows;
     }
 
-    // private ------------------------------------------------------------------------------------
+    // private -------------------------------------------------------------------------------------
 
     private static function connect(): mysqli
     {
@@ -120,7 +123,7 @@ final class Database
         $conn->real_connect(
             Env::get(self::ENV_DB_HOSTNAME),
             Env::get(self::ENV_DB_USERNAME),
-            Env::get(self::ENV_DB_PASSWORD),
+            Env::get(self::ENV_DB_PASSWORD, allowEmpty: true),
             Env::get(self::ENV_DB_DATABASE),
         );
         $conn->set_charset('utf8mb4');

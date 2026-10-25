@@ -1,36 +1,25 @@
 <?php
 
-enum AppEnv: string
-{
-    case Local = 'LOCAL';
-    case Prod = 'PROD';
-}
-
 final class Env
 {
-    private const array REQUIRED_VARS = [
-        'APP_ENV',
-    ];
-
     private static bool $loaded = false;
     /** @var array<string, string> */
     private static array $vars = [];
 
     /**
-     * Loads the env file and checks that the required variables exist and APP_ENV is valid.
-     * Only the first call has effect.
+     * Loads the env file. Only the first successful call has effect.
      *
-     * Calling it is optional for get() / isLocal(), which also read the system environment
-     * (getenv), but without it the required variables and APP_ENV are not validated.
+     * Calling it is optional for get() / getOrNull(), which also read the system environment (getenv).
      *
      * A variable can have an empty value (`FOO=`), but its name can't be empty (`=value` is ignored).
-     * Required variables must also be non-empty.
+     *
+     * Quoted values are not supported (the quotes become part of the value), and comments must be
+     * on their own line (trailing comments after a value are not supported).
      *
      * @param bool $overrideSystem If false (default), a variable already defined in the system
      *                             environment keeps its system value and the file's one is ignored.
      *                             If true, the file wins.
-     * @throws RuntimeException If the file can't be read, a required variable is missing (or empty)
-     *                          or APP_ENV is not one of the AppEnv values.
+     * @throws RuntimeException If the file can't be read.
      */
     public static function load(string $path, bool $overrideSystem = false): void
     {
@@ -61,16 +50,6 @@ final class Env
             putenv("$name=$value"); // In case some library uses getenv()
         }
 
-        $missing = array_filter(self::REQUIRED_VARS, static fn(string $name) => self::get($name, '') === '');
-
-        if ($missing)
-            throw new RuntimeException('Missing required env vars: '.implode(', ', $missing), 500);
-
-        if (AppEnv::tryFrom(self::get('APP_ENV')) === null) {
-            $valid = implode(', ', array_column(AppEnv::cases(), 'value'));
-            throw new RuntimeException("APP_ENV must be one of: $valid", 500);
-        }
-
         self::$loaded = true;
     }
 
@@ -85,45 +64,44 @@ final class Env
     /**
      * Returns an env variable, from the loaded file or else from the system environment
      * (see load() for which one wins when both define it).
-     * Without $default, a missing variable throws instead of returning false like getenv().
      *
-     * @throws RuntimeException If the variable does not exist and there is no $default.
+     * @param bool $allowEmpty If false (default), an empty value is treated as an error.
+     * @throws RuntimeException If the variable is missing, or empty and $allowEmpty is false.
      */
-    public static function get(string $name, ?string $default = null): string
+    public static function get(string $name, bool $allowEmpty = false): string
     {
         $value = self::$vars[$name] ?? getenv($name);
 
         if ($value === false)
-            return $default ?? throw new RuntimeException("Missing env var: $name".(self::$loaded ? '' : ' (Env not loaded)'), 500);
+            throw new RuntimeException("Missing env var: $name".(self::$loaded ? '' : ' (Env not loaded)'), 500);
+
+        if ($value === '' && !$allowEmpty)
+            throw new RuntimeException("Empty env var: $name", 500);
+
+        return $value;
+    }
+
+    /**
+     * Returns an env variable, or null if it is missing or empty.
+     * Use exists() to tell a missing variable from an empty one.
+     */
+    public static function getOrNull(string $name): ?string
+    {
+        $value = self::$vars[$name] ?? getenv($name);
+
+        if ($value === false || $value === '')
+            return null;
 
         return $value;
     }
 
     /**
      * Names (not values) of the variables loaded from the file.
+     *
+     * @return list<string>
      */
     public static function names(): array
     {
         return array_keys(self::$vars);
-    }
-
-    /**
-     * Whether the app is running in the local environment (APP_ENV=LOCAL).
-     *
-     * @throws RuntimeException If APP_ENV is missing.
-     */
-    public static function isLocal(): bool
-    {
-        return self::get('APP_ENV') === AppEnv::Local->value;
-    }
-
-    /**
-     * Whether the app is running in the prod environment (APP_ENV=PROD).
-     *
-     * @throws RuntimeException If APP_ENV is missing.
-     */
-    public static function isProd(): bool
-    {
-        return self::get('APP_ENV') === AppEnv::Prod->value;
     }
 }
