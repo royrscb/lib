@@ -2,16 +2,16 @@
 
 final class User extends DbTable
 {
-    protected array $readableColumns =
-    [
-        'username',
-        'email',
-    ];
     protected array $creatableColumns =
     [
         'username',
         'email',
         'hashword',
+    ];
+    protected array $readableColumns =
+    [
+        'username',
+        'email',
     ];
     protected array $updatableColumns =
     [

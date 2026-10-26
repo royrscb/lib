@@ -1,5 +1,13 @@
 <?php
 
+enum HttpMethod: string
+{
+    case Post   = 'POST';
+    case Get    = 'GET';
+    case Put    = 'PUT';
+    case Delete = 'DELETE';
+}
+
 /**
  * Input of the current HTTP request: method, query string, body and headers.
  */
@@ -9,11 +17,14 @@ final class Request
     private static ?array $body = null;
 
     /**
-     * HTTP method in upper case ('GET' when there is none, e.g. on the command line).
+     * HTTP method of the request (GET when there is none, e.g. on the command line).
+     *
+     * @throws RuntimeException 405 if the method is not one of HttpMethod (PATCH, HEAD, OPTIONS...).
      */
-    public static function method(): string
+    public static function method(): HttpMethod
     {
-        return strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        return HttpMethod::tryFrom(strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET'))
+            ?? throw new RuntimeException('Method not allowed', 405);
     }
 
     /**

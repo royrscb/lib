@@ -203,40 +203,34 @@ final class Auth
     }
 
     /**
-     * Requires anybody logged in (user or admin).
-     *
-     * @return array The identity (see me()).
-     * @throws RuntimeException 401 if nobody is logged in.
-     */
-    public static function requireLogin(): array
-    {
-        return self::me() ?? throw new RuntimeException('Unauthorized', 401);
-    }
-    /**
      * Requires the admin.
      *
      * @throws RuntimeException 401 if nobody is logged in, 403 if it is a user.
      */
     public static function requireAdmin(): void
     {
-        if (self::requireLogin()['role'] !== AuthRole::Admin)
+        $me = self::me() ?? throw new RuntimeException('Unauthorized', 401);
+
+        if ($me['role'] !== AuthRole::Admin)
             throw new RuntimeException('Forbidden', 403);
     }
     /**
-     * Requires the user with that id (for "a user can only touch their own data").
+     * Requires a user: any user if $id is null, or only the user with that id
+     * (for "a user can only touch their own data").
+     * To know who is logged in afterwards, use me().
      *
-     * @param int  $id         Id of the user.
-     * @param bool $allowAdmin Whether the admin also passes, as if it were that user.
+     * @param int|null $id         Id of the user, or null for any user.
+     * @param bool     $allowAdmin Whether the admin also passes, as if it were that user (or any user).
      * @throws RuntimeException 401 if nobody is logged in, 403 if it is another user or the admin is not allowed.
      */
-    public static function requireUser(int $id, bool $allowAdmin = true): void
+    public static function requireUser(?int $id = null, bool $allowAdmin = true): void
     {
-        $me = self::requireLogin();
+        $me = self::me() ?? throw new RuntimeException('Unauthorized', 401);
 
         if ($allowAdmin && $me['role'] === AuthRole::Admin)
             return;
 
-        if ($me['role'] !== AuthRole::User || (int)$me['id'] !== $id)
+        if ($me['role'] !== AuthRole::User || ($id !== null && (int)$me['id'] !== $id))
             throw new RuntimeException('Forbidden', 403);
     }
     /**

@@ -8,8 +8,8 @@ abstract class DbTable
 
     protected readonly Database $db;
 
-    protected array $readableColumns = [];
     protected array $creatableColumns = [];
+    protected array $readableColumns = [];
     protected array $updatableColumns = [];
 
     // Constructor ---------------------------------------------------------------------------------
@@ -169,6 +169,22 @@ abstract class DbTable
     public function delete(int $id): void
     {
         $this->query("DELETE FROM `$this->tableName` WHERE id = ?", [$id]);
+    }
+
+    /**
+     * Whether read() returns that column (id is always read).
+     */
+    public function isReadable(string $column): bool
+    {
+        return $column === 'id' || in_array($column, $this->readableColumns, true);
+    }
+
+    /**
+     * Whether create() writes that column.
+     */
+    public function isCreatable(string $column): bool
+    {
+        return in_array($column, $this->creatableColumns, true);
     }
 
     // protected -----------------------------------------------------------------------------------
