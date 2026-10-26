@@ -122,10 +122,10 @@ final class Auth
      */
     public static function loginUser(string $emailOrUsername, string $password, bool $persistent = false): ?array
     {
-        $users = self::users();
-        $user = $users->readByEmail($emailOrUsername) ?? $users->readByUsername($emailOrUsername);
+        $userTable = self::getUserTable();
+        $user = $userTable->readByEmail($emailOrUsername) ?? $userTable->readByUsername($emailOrUsername);
 
-        if ($user === null || !$users->verifyPassword($user['id'], $password))
+        if ($user === null || !$userTable->verifyPassword($user['id'], $password))
             return null;
 
         return self::start(AuthOwner::user($user['id']), $persistent);
@@ -261,7 +261,7 @@ final class Auth
 
     // private -------------------------------------------------------------------------------------
 
-    private static function users(): User
+    private static function getUserTable(): User
     {
         return Database::instance()->table(User::class);
     }
@@ -301,7 +301,7 @@ final class Auth
             return null;
 
         // Read every time, so deleting the user takes effect at once
-        $user = self::users()->readById($owner->id);
+        $user = self::getUserTable()->readById($owner->id);
 
         if ($user === null)
             return null;
@@ -323,7 +323,7 @@ final class Auth
         $hashword = match ($owner->role) {
             AuthRole::Admin => self::getAdminHashword(),
             AuthRole::User  => $owner->id !== null && class_exists(User::class)
-                ? self::users()->getHashword($owner->id) : null,
+                ? self::getUserTable()->getHashword($owner->id) : null,
         };
 
         if ($hashword === null)

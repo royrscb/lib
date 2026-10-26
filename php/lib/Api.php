@@ -41,8 +41,8 @@ final class Api
      * Everything is declared the same way, 'METHOD' or 'METHOD action' => access, so it cannot be forgotten:
      * - 'GET' => ApiAccess::Public                              the CRUD of that method, with that access
      * - 'PUT' => ApiAccess::Owner                               the CRUD, only on the user's own rows
-     * - 'GET total' => [ApiAccess::Admin, fn($vars) => ...]     a custom action: access + handler
-     * - 'POST cancel' => [null, fn($vars) => ...]               null: the handler checks the access itself
+     * - 'GET total' => [ApiAccess::Admin, fn($vars, $dbTable) => ...] a custom action: access + handler
+     * - 'POST cancel' => [null, fn($vars, $dbTable) => ...]            null: the handler checks the access itself
      * METHOD must be the value of an HttpMethod case ('GET', 'POST', 'PUT', 'DELETE'), in upper case.
      * What is not declared does not exist: a request with no handler for its method (and action) answers 404.
      *
@@ -52,10 +52,10 @@ final class Api
      * Examples:
      *
      *   // Public read only. POST, PUT and DELETE are not declared, so they answer 404
-     *   Api::serve($products, ['GET' => ApiAccess::Public]);
+     *   Api::serve($productTable, ['GET' => ApiAccess::Public]);
      *
      *   // The whole CRUD, admin only: nothing is implicit, every method is written
-     *   Api::serve($products, [
+     *   Api::serve($productTable, [
      *       'GET'    => ApiAccess::Admin,
      *       'POST'   => ApiAccess::Admin,
      *       'PUT'    => ApiAccess::Admin,
@@ -63,7 +63,7 @@ final class Api
      *   ]);
      *
      *   // Each method with its own access: public read, admin writes
-     *   Api::serve($products, [
+     *   Api::serve($productTable, [
      *       'GET'    => ApiAccess::Public,
      *       'POST'   => ApiAccess::Admin,
      *       'PUT'    => ApiAccess::Admin,
@@ -73,62 +73,64 @@ final class Api
      *   // Rows with an owner (a 'user_id' column): a user only touches their own, the admin everything.
      *   // GET by id is checked against the row; the list of a user is an action, because an access
      *   // can only accept or reject, it cannot filter
-     *   Api::serve($photos, [
+     *   Api::serve($photoTable, [
      *       'GET'    => ApiAccess::Owner,      // ?id=5: only if it is theirs. Without id: 422
      *       'POST'   => ApiAccess::Owner,      // the body must carry their own user_id
      *       'PUT'    => ApiAccess::Owner,
      *       'DELETE' => ApiAccess::Owner,
      *
      *       // GET /photos?action=byUser&user_id=23: that user's photos (the user or the admin)
-     *       'GET byUser' => [null, function ($vars) use ($photos) {
+     *       'GET byUser' => [null, function ($vars, Photo $photoTable) {
      *           $userId = (int)($vars['user_id'] ?? 0);
      *           Auth::requireUser($userId);
-     *           return $photos->read('user_id = ?', [$userId]);
+     *           return $photoTable->read('user_id = ?', [$userId]);
      *       }],
      *   ]);
      *
-     *   // A handler instead of the CRUD of a method: here the list only has the active products
-     *   Api::serve($products, [
-     *       'GET' => [ApiAccess::Public, fn($vars) => $products->read('active = 1', order: 'name')],
+     *   // A handler instead of the CRUD of a method: here the list only has the active products.
+     *   // The handler gets the served table as its second argument, and it can declare its class (Product $productTable)
+     *   Api::serve($productTable, [
+     *       'GET' => [ApiAccess::Public, fn($vars, Product $productTable) => $productTable->read('active = 1', order: 'name')],
      *   ]);
      *
      *   // Actions, each with the access that fits
-     *   Api::serve($orders, [
-     *       'GET total' => [ApiAccess::Admin, fn() => $orders->total()],
+     *   Api::serve($orderTable, [
+     *       'GET total' => [ApiAccess::Admin, fn($vars, Order $orderTable) => $orderTable->total()],
      *
      *       // null: the handler decides, here from the row's owner (the admin passes too)
-     *       'POST cancel' => [null, function ($vars) use ($orders) {
-     *           $row = $orders->readById((int)($vars['id'] ?? 0)) ?? throw new RuntimeException('Not found', 404);
+     *       'POST cancel' => [null, function ($vars, Order $orderTable) {
+     *           $row = $orderTable->readById((int)($vars['id'] ?? 0)) ?? throw new RuntimeException('Not found', 404);
      *           Auth::requireUser((int)$row['user_id']);
-     *           return $orders->update($row['id'], ['status' => 'cancelled']);
+     *           return $orderTable->update($row['id'], ['status' => 'cancelled']);
      *       }],
      *
      *       // For machines: a webhook with a token in a header, a cron job from the command line or with a token
-     *       'POST payment' => [null, function ($vars) use ($orders) {
+     *       'POST payment' => [null, function ($vars, Order $orderTable) {
      *           Auth::requireToken('PAYMENT_WEBHOOK_SECRET', 'X-Webhook-Secret');
-     *           return $orders->update((int)$vars['id'], ['status' => 'paid']);
+     *           return $orderTable->update((int)$vars['id'], ['status' => 'paid']);
      *       }],
-     *       'POST cleanup' => [null, function () use ($orders) {
+     *       'POST cleanup' => [null, function ($vars, Order $orderTable) {
      *           Auth::requireCliOrToken('CRON_TOKEN');
-     *           return $orders->deleteOld();
+     *           return $orderTable->deleteOld();
      *       }],
      *   ]);
      *
      *   // The users table has no 'user_id' (its id is the user), so a user's own row is a handler
-     *   Api::serve($users, [
-     *       'GET' => [null, function ($vars) use ($users) {
+     *   Api::serve($userTable, [
+     *       'GET' => [null, function ($vars, User $userTable) {
      *           $id = (int)($vars['id'] ?? 0);
      *           Auth::requireUser($id);     // that user or the admin
-     *           return $users->readById($id) ?? throw new RuntimeException('Not found', 404);
+     *           return $userTable->readById($id) ?? throw new RuntimeException('Not found', 404);
      *       }],
      *   ]);
      *
-     * @param DbTable $dbTable Table served by the CRUD.
-     * @param array<string, ApiAccess|array{0: ApiAccess|null, 1: callable(array<string, mixed>): mixed}> $handlers
+     * @param DbTable|null $dbTable Table served by the CRUD and given to the handlers, or null if there is none
+     *        (the handlers then get null, and no rule can be the generic CRUD).
+     * @param array<string, ApiAccess|array{0: ApiAccess|null, 1: callable(array<string, mixed>, DbTable|null): mixed}> $handlers
      *        Key is "METHOD" (the CRUD) or "METHOD action". Value is:
      *        - $access alone: runs the generic CRUD after checking the access. Not valid for an action.
      *        - [$access, $handler]: runs $handler after checking the access. The handler receives the request
-     *          vars and returns what is sent as JSON. ApiAccess::Owner is not valid here.
+     *          vars and $dbTable, and returns what is sent as JSON. ApiAccess::Owner is not valid here.
      *        $access is an ApiAccess, or null when the handler checks the access itself (Auth::requireUser()...),
      *        for anything the enum does not cover. null checks nothing, so the handler must.
      * @throws RuntimeException 400 if the body is JSON and is not valid,
@@ -138,10 +140,11 @@ final class Api
      *                          422 if 'action' is not a string.
      *                          The generic CRUD and the handlers can throw more (see crud()).
      * @throws LogicException   If an action is declared with an access but no handler, a handler
-     *                          with ApiAccess::Owner, or the CRUD with ApiAccess::Owner on a table without
-     *                          the 'user_id' columns it needs (programming errors).
+     *                          with ApiAccess::Owner, the CRUD with no $dbTable, or the CRUD with
+     *                          ApiAccess::Owner on a table without the 'user_id' columns it needs
+     *                          (programming errors).
      */
-    public static function serve(DbTable $dbTable, array $handlers): void
+    public static function serve(?DbTable $dbTable, array $handlers): void
     {
         $method = Request::method();
         $vars = Request::vars();
@@ -159,6 +162,9 @@ final class Api
             if ($action !== null)
                 throw new LogicException("Action '$action' needs a handler: use [access, handler]");
 
+            if ($dbTable === null)
+                throw new LogicException("'$ruleKey' is the generic CRUD and needs a DbTable");
+
             self::sendJson(self::crud($dbTable, $method, $vars, $rule));
             return;
         }
@@ -166,7 +172,7 @@ final class Api
         [$access, $handler] = $rule;
 
         self::authorize($access);
-        self::sendJson($handler($vars));
+        self::sendJson($handler($vars, $dbTable));
     }
 
     // private -------------------------------------------------------------------------------------
