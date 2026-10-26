@@ -1,5 +1,7 @@
 <?php
 
+    // TODO: Tota aquesta classe necesita un refactor amb IA
+
     require_once __DIR__.'/../composer/vendor/autoload.php';
 
 
