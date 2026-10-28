@@ -361,19 +361,13 @@ final class Auth
         session_set_cookie_params([
             'lifetime' => 0,
             'path'     => '/',
-            'secure'   => self::isHttps(),
+            'secure'   => Request::isHttps(),
             'httponly' => true,
             'samesite' => 'Strict',
         ]);
         session_start();
     }
 
-    private static function isHttps(): bool
-    {
-        return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
-    }
-    
     private static function getSessionName(): string
     {
         return 'sess'.Env::get(self::ENV_PROJECT_SLUG);
@@ -388,7 +382,7 @@ final class Auth
         setcookie($name, $value, [
             'expires'  => $expiresUnixTime,
             'path'     => '/',
-            'secure'   => self::isHttps(),
+            'secure'   => Request::isHttps(),
             'httponly' => true,
             'samesite' => 'Strict',
         ]);

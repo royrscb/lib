@@ -234,10 +234,8 @@ final class MiscData
             case MiscDataType::Date:
             case MiscDataType::DateTime:
                 $format = $type === MiscDataType::Date ? self::DATE_FORMAT : self::DATETIME_FORMAT;
-                $date = is_string($value) ? DateTimeImmutable::createFromFormat('!'.$format, $value) : false;
 
-                // The format() comparison rejects dates that PHP would roll over (2024-02-31)
-                if ($date === false || $date->format($format) !== $value)
+                if (!is_valid_date($value, $format))
                     throw new MiscDataException("Value must be a valid date with format '$format'", MiscDataException::INVALID);
 
                 return $value;

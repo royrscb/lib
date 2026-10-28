@@ -287,13 +287,8 @@ final class Api
         if ($raw === null || $raw === '')
             return null;
 
-        $id = match (true) {
-            is_int($raw)    => $raw,
-            // filter_var() after the pattern, because it returns false when the number does not fit in an int
-            is_string($raw) => preg_match('/^(0|-?[1-9][0-9]*)$/D', $raw) ? filter_var($raw, FILTER_VALIDATE_INT) : false,
-            default         => false,
-        };
-        if ($id === false)
+        $id = parse_int($raw);
+        if ($id === null)
             throw new RuntimeException("'$key' must be an integer", 422);
 
         return $id;

@@ -28,6 +28,28 @@ final class Request
     }
 
     /**
+     * Scheme of the current request, including HTTPS behind a proxy that sets X-Forwarded-Proto.
+     * X-Forwarded-Proto can be forged if there is no proxy in front, so do not use this for security decisions.
+     */
+    public static function scheme(): string
+    {
+        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+
+        return $https ? 'https' : 'http';
+    }
+
+    public static function isHttps(): bool
+    {
+        return self::scheme() === 'https';
+    }
+
+    public static function isHttp(): bool
+    {
+        return self::scheme() === 'http';
+    }
+
+    /**
      * Query string and body together.
      *
      * @param bool $queryWins If false (default), a key that is in both takes the value from the body.

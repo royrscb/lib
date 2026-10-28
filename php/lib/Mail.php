@@ -55,8 +55,8 @@ final class Mail
 
     private static function deliver(string $contentType, string $from, string $to, string $subject, string $body, array $cc, array $bcc): void
     {
-        $from = self::validateAddress($from, 'sender');
-        $to   = self::validateAddress($to, 'recipient');
+        $from = self::getValidAddress($from, 'sender');
+        $to   = self::getValidAddress($to, 'recipient');
 
         $headers = [
             "From: $from",
@@ -65,9 +65,9 @@ final class Mail
             'Content-Transfer-Encoding: base64', // The body is UTF-8, which is not valid as the default 7bit
         ];
         if ($cc)
-            $headers[] = 'Cc: '.self::validateAddresses($cc, 'cc');
+            $headers[] = 'Cc: '.self::getValidAddresses($cc, 'cc');
         if ($bcc)
-            $headers[] = 'Bcc: '.self::validateAddresses($bcc, 'bcc');
+            $headers[] = 'Bcc: '.self::getValidAddresses($bcc, 'bcc');
 
         $encodedSubject = mb_encode_mimeheader(self::removeLineBreaks($subject), 'UTF-8', 'B');
         $encodedBody    = chunk_split(base64_encode($body));
@@ -77,7 +77,7 @@ final class Mail
     }
 
     // A valid email never has line breaks, so it can't inject headers (Bcc: ...)
-    private static function validateAddress(string $email, string $role): string
+    private static function getValidAddress(string $email, string $role): string
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL))
             throw new RuntimeException("Invalid $role email", 422);
@@ -86,9 +86,9 @@ final class Mail
     }
 
     // Valid emails joined for a header (Cc, Bcc)
-    private static function validateAddresses(array $emails, string $role): string
+    private static function getValidAddresses(array $emails, string $role): string
     {
-        return implode(', ', array_map(static fn(string $email) => self::validateAddress($email, $role), $emails));
+        return implode(', ', array_map(static fn(string $email) => self::getValidAddress($email, $role), $emails));
     }
 
     // For the subject, which is not an email: a line break could inject headers

@@ -21,7 +21,7 @@ abstract class DbTable
     public final function __construct(Database $db, ?string $tableName = null)
     {
         $this->db = $db;
-        $this->tableName = $tableName ?? self::toSnakeCase(static::class);
+        $this->tableName = $tableName ?? to_snake_case(static::class);
     }
 
     // public --------------------------------------------------------------------------------------
@@ -207,13 +207,6 @@ abstract class DbTable
 
     // private -------------------------------------------------------------------------------------
 
-    // Converts HolaQue_Tal into hola_que_tal
-    private static function toSnakeCase(string $string): string
-    {
-        $string = preg_replace('/(?<!^)[A-Z]/', '_$0', $string);
-        return strtolower(preg_replace('/_+/', '_', $string));
-    }
-
     // Prepares a client value to be stored in the database. Empty string => NULL
     private function toDbValue(mixed $value): int|float|string|null
     {
@@ -227,18 +220,35 @@ abstract class DbTable
             return $value === '' ? null : $value;
 
         if (is_array($value)) { // Stored as JSON
-            array_walk_recursive($value, function (&$v) {
-                if (is_string($v)) {
-                    if (strtolower($v) === 'null' || $v === '') $v = null;
-                    else if (strtolower($v) === 'true') $v = true;
-                    else if (strtolower($v) === 'false') $v = false;
-                }
-            });
+            $value = self::normalizeJsonStrings($value);
 
-            return json_encode($value, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+            return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
         }
 
         return null;
+    }
+
+    /**
+     * In the values of an array that is going to be stored as JSON, at any depth, '' and 'null' (in any case)
+     * become null and 'true' and 'false' (in any case) become booleans, because form values arrive as strings.
+     * Any other string is kept as it is, numeric ones included ("08001" stays a string).
+     *
+     * @param array<int|string, mixed> $data
+     * @return array<int|string, mixed>
+     */
+    private static function normalizeJsonStrings(array $data): array
+    {
+        array_walk_recursive($data, static function (&$value) {
+            if (is_string($value))
+                $value = match (strtolower($value)) {
+                    '', 'null' => null,
+                    'true'     => true,
+                    'false'    => false,
+                    default    => $value,
+                };
+        });
+
+        return $data;
     }
 }
 
