@@ -1,9 +1,6 @@
 <?php
 
-    require_once __DIR__.'/../lib/la.php';
-	require_once __DIR__.'/../lib/stripe_la.php';
-	require_once __DIR__.'/../lib/auth.php';
-    require_once __DIR__.'/../lib/database.php';
+    require_once __DIR__.'/../../bootstrap.php';
 
 	const LIVE = true;
 

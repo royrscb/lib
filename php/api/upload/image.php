@@ -35,12 +35,9 @@
  *   415      An image is not one of ALLOWED_IMAGE_EXTENSIONS.
  *   422      Missing or invalid input (see the checks below).
  *   500      An image can't be saved.
- * -------------------------------------------------------------------------------------------------
- *
- * Depends on (defined elsewhere): APP_ROOT.
  */
 
-require_once __DIR__.'/../../lib/bootstrap.php';
+require_once __DIR__.'/../../bootstrap.php';
 
 // Config ---
 const UPLOADS_DIR              = APP_ROOT.'/uploads'; // destination_folder goes inside it

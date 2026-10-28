@@ -1,7 +1,6 @@
 <?php
 
-// MISSING: bootstrap not provided (class loading, Env::load() and the handler that turns exceptions into an HTTP response)
-require __DIR__.'/bootstrap.php';
+require_once __DIR__.'/../../bootstrap.php';
 
 Api::serve(Database::instance()->table(User::class), [
     'GET' => [null, function ($vars, User $userTable) {

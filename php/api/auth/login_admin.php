@@ -10,7 +10,7 @@
  * Returns the identity (see Auth::me()). 401 if the password is wrong or the app has no admin.
  */
 
-require_once __DIR__.'/bootstrap.php';
+require_once __DIR__.'/../../bootstrap.php';
 
 if (Request::method() !== HttpMethod::Post)
     throw new RuntimeException('Method not allowed', 405);

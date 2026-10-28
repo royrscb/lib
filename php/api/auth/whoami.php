@@ -9,7 +9,7 @@
  *   - nobody: null (200, so the client can ask without an error)
  */
 
-require_once __DIR__.'/bootstrap.php';
+require_once __DIR__.'/../../bootstrap.php';
 
 if (Request::method() !== HttpMethod::Get)
     throw new RuntimeException('Method not allowed', 405);
