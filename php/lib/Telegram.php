@@ -1,13 +1,13 @@
 <?php
 
-// Names of the .env variables (not the values)
-enum TelegramBotToken: string
+enum TelegramBotTokenEnv: string
 {
     case Royrscb = 'TELEGRAM_BOT_TOKEN_ROYRSCB_BOT';
     case Bug = 'TELEGRAM_BOT_TOKEN_BUGBOT';
     case Volando = 'TELEGRAM_BOT_TOKEN_VOLANDOBOT';
 }
-enum TelegramChat: string
+
+enum TelegramChatIdEnv: string
 {
     case Royrscb = 'TELEGRAM_CHAT_ID_ROYRSCB';
 }
@@ -22,17 +22,22 @@ final class Telegram
 
     // Message with <b> <i> <u> <s> <a href=""> and <br> tags; any other < > & is escaped automatically.
     // Returns Telegram's result, or null when it could not be delivered for a "normal" reason (bot blocked, user deactivated).
-    public static function send(string $message, TelegramBotToken $bot, TelegramChat|int $chat, ?array $keyboard = null): ?array
+    public static function send(
+        string $message,
+        TelegramBotTokenEnv $bot,
+        TelegramChatIdEnv|int|string $chat,
+        ?array $keyboard = null
+    ): ?array
     {
         if (trim($message) === '')
             throw new RuntimeException('Can not send empty message', 422);
 
-        $chatId = $chat instanceof TelegramChat ? (int)Env::get($chat->value) : $chat;
         $token = Env::get($bot->value);
+        $chatId = $chat instanceof TelegramChatIdEnv ? (int)Env::get($chat->value) : $chat;
 
         // Messages to my chat get the project name in front (and "localhost|" in development)
-        if ($chatId === (int)Env::get(TelegramChat::Royrscb->value) && $bot !== TelegramBotToken::Volando)
-            $message = '<b>['.(Env::isLocal() ? 'localhost|' : '').Env::get('PROJECT_NAME', 'App').']</b><br>'.$message;
+        if ((int)$chatId === (int)Env::get(TelegramChatIdEnv::Royrscb->value))
+            $message = '<b>['.(Env::get('APP_ENV') === 'local' ? 'localhost|' : '').Env::get('PROJECT_NAME').']</b><br>'.$message;
 
         $pieces = self::split(self::toTelegramHtml($message));
         $last = null;
@@ -58,13 +63,22 @@ final class Telegram
 
     public static function sendToRoy(string $message, ?array $keyboard = null): ?array
     {
-        return self::send($message, TelegramBotToken::Royrscb, TelegramChat::Royrscb, $keyboard);
+        return self::send(
+            $message,
+            TelegramBotTokenEnv::Royrscb,
+            TelegramChatIdEnv::Royrscb,
+            $keyboard
+        );
     }
 
     // Error reports (used by Errors)
     public static function bug(string $message): ?array
     {
-        return self::send($message, TelegramBotToken::Bug, TelegramChat::Royrscb);
+        return self::send(
+            $message,
+            TelegramBotTokenEnv::Bug,
+            TelegramChatIdEnv::Royrscb
+        );
     }
 
     // Keyboard with a single button that opens a link
@@ -77,7 +91,7 @@ final class Telegram
 
     private static function post(string $token, array $data): ?array
     {
-        $response = http_post("https://api.telegram.org/bot$token/sendMessage", $data);
+        $response = http_request(HttpMethod::Post->value, "https://api.telegram.org/bot$token/sendMessage", $data);
 
         if (!is_array($response))
             throw new RuntimeException('Telegram: invalid response', 502);
@@ -157,15 +171,15 @@ final class TelegramMessage
     public ?array $chat = null;
     public ?array $from = null;
     public ?string $text = null;
-    public int|string|null $chat_id = null;
+    public int|string|null $chatId = null;
 
     // Depending on the type
     public mixed $id = null;                 // callback_query / my_chat_member
     public mixed $data = null;               // callback_query
-    public ?array $original_from = null;     // callback_query
-    public mixed $new_chat_member = null;    // new_chat_member / left_chat_member
+    public ?array $originalFrom = null;      // callback_query
+    public mixed $newChatMember = null;      // new_chat_member / left_chat_member
     public ?string $command = null;          // command
-    public ?string $message_replied = null;  // reply_to_message
+    public ?string $messageReplied = null;   // reply_to_message
 
     function __construct(array $update)
     {
@@ -179,7 +193,7 @@ final class TelegramMessage
             $this->id = $update['callback_query']['id'];
             $this->data = $update['callback_query']['data'] ?? null;
             $this->message = $update['callback_query']['message'] ?? null;
-            $this->original_from = $update['callback_query']['from'] ?? null;
+            $this->originalFrom = $update['callback_query']['from'] ?? null;
         }
         else if (isset($update['my_chat_member'])) {
             $this->type = 'my_chat_member';
@@ -192,7 +206,7 @@ final class TelegramMessage
         $this->from = $this->message['from'] ?? null;
         $this->text = $this->message['text'] ?? null;
 
-        $this->chat_id = $this->chat['id'] ?? null;
+        $this->chatId = $this->chat['id'] ?? null;
 
         // callback_query and my_chat_member keep the type set above (before, a callback_query ended up as 'message')
         if ($this->type !== null)
@@ -203,11 +217,11 @@ final class TelegramMessage
         }
         else if (isset($this->message['new_chat_member'])) {
             $this->type = 'new_chat_member';
-            $this->new_chat_member = $this->message['new_chat_member'];
+            $this->newChatMember = $this->message['new_chat_member'];
         }
         else if (isset($this->message['left_chat_member'])) {
             $this->type = 'left_chat_member';
-            $this->new_chat_member = $this->message['left_chat_member'];   // kept as it was (same property for both)
+            $this->newChatMember = $this->message['left_chat_member'];   // kept as it was (same property for both)
         }
         else if (($this->message['entities'][0]['type'] ?? null) === 'bot_command') {
             $this->type = 'command';
@@ -215,12 +229,12 @@ final class TelegramMessage
         }
         else if (isset($this->message['reply_to_message'])) {
             $this->type = 'reply_to_message';
-            $this->message_replied = $this->message['reply_to_message']['text'] ?? null;
+            $this->messageReplied = $this->message['reply_to_message']['text'] ?? null;
         }
         else $this->type = 'message';
     }
 
-    function from_group(): bool
+    function fromGroup(): bool
     {
         return in_array($this->chat['type'] ?? null, ['group', 'supergroup'], true);
     }
@@ -230,18 +244,15 @@ final class TelegramMessage
 // API failures are logged (and notified through Errors) and the method returns null.
 final class TelegramBot
 {
-    private string $id;
     private string $token;
     private string $username;
 
     public ?TelegramMessage $msg = null;
-    public int|string|null $default_chat_id = null;
+    public int|string|null $defaultChatId = null;
 
     function __construct(string $token, string $username, ?array $update = null)
     {
         $this->token = $token;
-        $this->id = explode(':', $token)[0];
-
         $this->username = $username;
 
         if ($update !== null)
@@ -250,14 +261,23 @@ final class TelegramBot
 
     private function fail(int|string $code, string $description): null
     {
-        Errors::report(new RuntimeException("Telegram bot $this->username error $code: $description", 502));
+        $error = new RuntimeException("Telegram bot $this->username error $code: $description", 502);
+        error_log($error->getMessage());
+
+        if (class_exists(Errors::class) && is_callable([Errors::class, 'report']))
+            Errors::report($error);
 
         return null;
     }
 
     private function postMethod(string $method, ?array $data = null): mixed
     {
-        $response = http_post('https://api.telegram.org/bot'.$this->token.'/'.$method, $data);
+        try {
+            $response = http_request(HttpMethod::Post->value, 'https://api.telegram.org/bot'.$this->token.'/'.$method, $data);
+        }
+        catch (RuntimeException $e) {
+            return $this->fail($e->getCode() ?: 502, $e->getMessage());
+        }
 
         if (!is_array($response))
             return $this->fail(502, 'Invalid response');
@@ -280,9 +300,9 @@ final class TelegramBot
     }
 
     // set ----------------------------------
-    public function setDefaultChatId(int|string $chat_id): void
+    public function setDefaultChatId(int|string $chatId): void
     {
-        $this->default_chat_id = $chat_id;
+        $this->defaultChatId = $chatId;
     }
 
     public function getWebhook(): mixed
@@ -293,9 +313,9 @@ final class TelegramBot
     {
         return $this->postMethod('setWebhook', ['url' => $url]);
     }
-    public function deleteWebhook(bool $drop_pending_updates = true): mixed
+    public function deleteWebhook(bool $dropPendingUpdates = true): mixed
     {
-        return $this->postMethod('deleteWebhook', ['drop_pending_updates' => $drop_pending_updates]);
+        return $this->postMethod('deleteWebhook', ['drop_pending_updates' => $dropPendingUpdates]);
     }
 
     // send --------------------
@@ -304,17 +324,20 @@ final class TelegramBot
         if ($this->msg === null)
             throw new RuntimeException('No incoming message was set in the constructor', 500);
 
-        return $this->sendMessage($text, $this->msg->chat_id);
+        return $this->sendMessage($text, $this->msg->chatId);
     }
-    public function sendMessage(string $message, int|string|null $chat_id = null, ?array $keyboard = null, bool $html = false): mixed
+    public function sendMessage(string $message, int|string|null $chatId = null, ?array $keyboard = null, bool $html = false): mixed
     {
         if ($message === '')
             return $this->fail(500, 'Can not send empty message');
 
-        $chat_id ??= $this->default_chat_id;
+        $chatId ??= $this->defaultChatId;
+
+        if ($chatId === null)
+            return $this->fail(422, 'Chat ID is required');
 
         $data = [
-            'chat_id' => $chat_id,
+            'chat_id' => $chatId,
             'text' => $message
         ];
         if ($html) $data['parse_mode'] = 'HTML';
@@ -323,23 +346,23 @@ final class TelegramBot
         return $this->postMethod('sendMessage', $data);
     }
 
-    public function sendButton(int|string $chat_id, string $message, string $button_text, string $callback_data, bool $html = false): mixed
+    public function sendButton(int|string $chatId, string $message, string $buttonText, string $callbackData, bool $html = false): mixed
     {
-        $button = ['text' => $button_text, 'callback_data' => $callback_data];
+        $button = ['text' => $buttonText, 'callback_data' => $callbackData];
         $keyboard = ['inline_keyboard' => [[$button]]];
 
-        return $this->sendMessage($message, $chat_id, $keyboard, $html);
+        return $this->sendMessage($message, $chatId, $keyboard, $html);
     }
 
     // edit ----------------------
-    public function editMessage(int|string $chat_id, int $message_id, string $message, ?array $keyboard = null, bool $html = false): mixed
+    public function editMessage(int|string $chatId, int $messageId, string $message, ?array $keyboard = null, bool $html = false): mixed
     {
         if ($message === '')
             return $this->fail(500, 'Can not send empty message');
 
         $data = [
-            'chat_id' => $chat_id,
-            'message_id' => $message_id,
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
             'text' => $message
         ];
         if ($html) $data['parse_mode'] = 'HTML';
@@ -348,20 +371,20 @@ final class TelegramBot
         return $this->postMethod('editMessageText', $data);
     }
 
-    public function editButton(int|string $chat_id, int $message_id, string $message, string $button_text, string $callback_data, bool $html = false): mixed
+    public function editButton(int|string $chatId, int $messageId, string $message, string $buttonText, string $callbackData, bool $html = false): mixed
     {
-        $button = ['text' => $button_text, 'callback_data' => $callback_data];
+        $button = ['text' => $buttonText, 'callback_data' => $callbackData];
         $keyboard = ['inline_keyboard' => [[$button]]];
 
-        return $this->editMessage($chat_id, $message_id, $message, $keyboard, $html);
+        return $this->editMessage($chatId, $messageId, $message, $keyboard, $html);
     }
 
-    public function answerCallbackQuery(string $callback_query_id, ?string $message = null, bool $show_alert = false): mixed
+    public function answerCallbackQuery(string $callbackQueryId, ?string $message = null, bool $showAlert = false): mixed
     {
-        $data = ['callback_query_id' => $callback_query_id];
+        $data = ['callback_query_id' => $callbackQueryId];
         if ($message !== null) {
             $data['text'] = $message;
-            $data['show_alert'] = $show_alert;
+            $data['show_alert'] = $showAlert;
         }
 
         return $this->postMethod('answerCallbackQuery', $data);
