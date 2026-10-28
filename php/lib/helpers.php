@@ -2,7 +2,7 @@
 
 // Plain stateless functions. Loaded from bootstrap.php.
 
-// HTTP ---------------------------------------------------------------------------------------
+// HTTP --------------------------------------------------------------------------------------------
 
 /**
  * Sends an HTTP request with cURL.
@@ -57,7 +57,7 @@ function http_request(string $method, string $url, mixed $data = null, array $he
     return is_array($decoded) ? $decoded : $result;
 }
 
-// Files --------------------------------------------------------------------------------------
+// Files -------------------------------------------------------------------------------------------
 
 /**
  * Reduces the width of an image by $widthToReduce pixels, keeping its proportions (rewrites the file).
@@ -87,7 +87,7 @@ function reduce_image_width(string $src, int $widthToReduce): bool
     finally { $img->clear(); }
 }
 
-// Dates --------------------------------------------------------------------------------------
+// Dates -------------------------------------------------------------------------------------------
 
 /**
  * Current date and time in UTC.
@@ -128,7 +128,7 @@ function is_valid_date(mixed $value, string $format = 'Y-m-d'): bool
     return $date !== false && $date->format($format) === $value;
 }
 
-// Conversion ---------------------------------------------------------------------------------
+// Conversion --------------------------------------------------------------------------------------
 
 /**
  * Boolean from a request value, strict: it only understands true/false and 0/1.
@@ -209,7 +209,7 @@ function parse_int(mixed $value): ?int
     return $int === false ? null : $int;
 }
 
-// Strings ----------------------------------------------------------------------------
+// Strings -----------------------------------------------------------------------------------------
 
 /**
  * Splits a name into its words, whatever case it is written in.

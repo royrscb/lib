@@ -7,7 +7,7 @@
 //- Output will go to "./tsconfig.json".compilerOptions.outDir                     *
 //-*********************************************************************************
 
-//#region Number ----------------------------------------------------------------------------------
+//#region Number -----------------------------------------------------------------------------------
 
 /**
  * Returns the largest integer less than or equal to the number.
@@ -109,7 +109,7 @@ Object.defineProperty(Number.prototype, 'prettyPrice', {
 
 //#endregion
 
-//#region String ----------------------------------------------------------------------------------
+//#region String -----------------------------------------------------------------------------------
 
 /**
  * Checks if the string is empty.
@@ -284,7 +284,7 @@ Object.defineProperty(String.prototype, 'toKebabCase', {
 
 //#endregion
 
-//#region Array -----------------------------------------------------------------------------------
+//#region Array ------------------------------------------------------------------------------------
 
 /**
  * Checks if the array is empty.
@@ -838,9 +838,9 @@ Object.defineProperty(Array.prototype, 'average', {
 
 //#endregion
 
-//#region Date ------------------------------------------------------------------------------------
+//#region Date -------------------------------------------------------------------------------------
 
-// Static ---------------------------------------
+// Static ----------------------------------------
 
 /**
  * Returns the Unix timestamp (in seconds).
@@ -1182,7 +1182,7 @@ Date['monthsBetweenSpain'] = function(a: Date | number, b: Date | number): numbe
     return years * 12 + months;
 }
 
-// Instance -------------------------------------
+// Instance --------------------------------------
 
 // Time change ---
 
@@ -2711,9 +2711,9 @@ function getPartsInTimeZone(date: Date, timeZone: string): {
 //#endregion
 //#endregion
 
-//#region Promise ---------------------------------------------------------------------------------
+//#region Promise ----------------------------------------------------------------------------------
 
-// Static ---------------------------------------
+// Static ----------------------------------------
 
 /**
  * Pauses execution for the specified number of milliseconds.

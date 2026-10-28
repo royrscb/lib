@@ -1,6 +1,6 @@
 "use strict";
 // Author: royrscb.com
-//#region Number ----------------------------------------------------------------------------------
+//#region Number -----------------------------------------------------------------------------------
 /**
  * Returns the largest integer less than or equal to the number.
  * @return {number} The value of Math.floor(this)
@@ -93,7 +93,7 @@ Object.defineProperty(Number.prototype, 'prettyPrice', {
     enumerable: false
 });
 //#endregion
-//#region String ----------------------------------------------------------------------------------
+//#region String -----------------------------------------------------------------------------------
 /**
  * Checks if the string is empty.
  * @return {boolean} true if string has no length, false otherwise
@@ -261,7 +261,7 @@ Object.defineProperty(String.prototype, 'toKebabCase', {
     enumerable: false
 });
 //#endregion
-//#region Array -----------------------------------------------------------------------------------
+//#region Array ------------------------------------------------------------------------------------
 /**
  * Checks if the array is empty.
  * @return {boolean} true if array has no elements, false otherwise
@@ -755,8 +755,8 @@ Object.defineProperty(Array.prototype, 'average', {
     enumerable: false
 });
 //#endregion
-//#region Date ------------------------------------------------------------------------------------
-// Static ---------------------------------------
+//#region Date -------------------------------------------------------------------------------------
+// Static ----------------------------------------
 /**
  * Returns the Unix timestamp (in seconds).
  * @return {number} Number of seconds since Unix epoch (January 1, 1970 UTC)
@@ -796,7 +796,7 @@ Date['monthsBetween'] = function (a, b) {
     const months = bDate.getMonth() - aDate.getMonth();
     return years * 12 + months;
 };
-// Instance -------------------------------------
+// Instance --------------------------------------
 // Time change ---
 /**
  * Adds the specified number of milliseconds to the date and returns a new Date instance.
@@ -1290,8 +1290,8 @@ Object.defineProperty(Date.prototype, 'daysInMonth', {
     enumerable: false
 });
 //#endregion
-//#region Promise ---------------------------------------------------------------------------------
-// Static ---------------------------------------
+//#region Promise ----------------------------------------------------------------------------------
+// Static ----------------------------------------
 /**
  * Pauses execution for the specified number of milliseconds.
  * @param {number} ms - Time to wait in milliseconds.

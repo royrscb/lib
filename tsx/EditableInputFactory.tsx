@@ -21,7 +21,7 @@ export interface EditableInputButtonProps {
     style?: React.CSSProperties;
     content: React.ReactNode;
 }
-// Inputs ---------------------------------------
+// Inputs ------------------------------------------------------------------------------------------
 
 export function TextInput(props: BaseEditableInputProps<string> & {
     placeHolder?: string;
@@ -85,7 +85,7 @@ export function DateInput(props: BaseEditableInputProps<Date> & {
     />;
 }
 
-// Private --------------------------------------
+// Private -----------------------------------------------------------------------------------------
 
 function PreviewButton(props: EditableInputButtonProps & {
     showInput: () => void;

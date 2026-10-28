@@ -37,14 +37,14 @@ final class MiscData
 
     private readonly Database $db;
 
-    // Constructor ------------------------------
+    // Constructor ---------------------------------------------------------------------------------
 
     public function __construct(Database $db)
     {
         $this->db = $db;
     }
 
-    // public -----------------------------------
+    // public --------------------------------------------------------------------------------------
 
     /**
      * Creates a new key.
@@ -186,7 +186,7 @@ final class MiscData
         return true;
     }
 
-    // private ----------------------------------
+    // private -------------------------------------------------------------------------------------
 
     private static function validateKey(string $key): void
     {

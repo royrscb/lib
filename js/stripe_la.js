@@ -81,7 +81,7 @@ class Stripe_la {
 
     onWalletPaymentCanceled = () => {}
 
-    // [PUBLIC] methods -----------------------------------------------------------------------------
+    // [PUBLIC] methods ----------------------------------------------------------------------------
     
     /* If provided it set custom payment buttons and container, otherwise return default container with both */
     makePaymentButtons(payWithCardButton = null, payWithWalletButtonsContainer = null){

@@ -11,7 +11,7 @@
  * use numbers and are not suitable for high-precision scientific timing.
  */
 export class TimeSpan {
-    // Constants --------------------------------
+    // Constants ---------------------------------
     /** Milliseconds per second. */
     public static readonly MS_PER_SECOND = 1000;
     /** Milliseconds per minute. */
@@ -31,11 +31,11 @@ export class TimeSpan {
     public static readonly DAYS_PER_WEEK = 7;
     public static readonly DAYS_PER_YEAR = 365.25;
 
-    // Attributes -------------------------------
+    // Attributes ----------------------------------------------------------------------------------
     /** Internal storage in milliseconds. Can be finite, Infinity or -Infinity. */
     private readonly ms: number;
 
-    // Constructor ------------------------------
+    // Constructor ---------------------------------------------------------------------------------
     /**
      * Create a TimeSpan.
      * @param milliseconds - Duration in milliseconds. Defaults to 0.
@@ -53,7 +53,7 @@ export class TimeSpan {
         this.ms = milliseconds;
     }
 
-    // Static methods ---------------------------
+    // Static methods ------------------------------------------------------------------------------
     // Factories ---
     /** Create a TimeSpan from milliseconds. */
     static fromMillis(ms: number): TimeSpan { return new TimeSpan(ms); }
@@ -107,7 +107,7 @@ export class TimeSpan {
         return a.equals(b) ? 0 : b.ms - a.ms;
     }
 
-    // Public methods ---------------------------
+    // Public methods ------------------------------------------------------------------------------
     // Totals ---
     /** Total milliseconds represented by this TimeSpan. */
     public totalMillis(): number { return this.ms; }

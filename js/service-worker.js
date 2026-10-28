@@ -45,7 +45,7 @@ let urlToNotInterceptFetch = [
 	'/version'
 ]
 
-// Listeners --------------------------------------------------------------------------------------
+// Listeners ---------------------------------------------------------------------------------------
 self.addEventListener('install', event => {
 
 	if(!VERSION) throw Error('Can not install Service Worker with invalid version ['+VERSION+']')
@@ -100,7 +100,7 @@ self.addEventListener('fetch', event => {
 	}
 })
 
-// Notifications ----------------------------------------------------------------------------------
+// Notifications -----------------------------------------------------------------------------------
 self.addEventListener('push', event =>  {
 
 	let data

@@ -244,7 +244,7 @@ const La = {
                 new_dragged_position
 
 
-            // drag -----------------------------------------------
+            // drag ------------------------------
             settings.drag.start = function(e, ui){
 
                 original_dragged_offset = $(this).offset()
@@ -277,7 +277,7 @@ const La = {
                 if(events && events.drag && events.drag.stop) events.drag.stop($(this))
             }
 
-            // drop ------------------------------------------
+            // drop ------------------------------
             settings.drop.over = function(e, ui){
 
                 if(!ui.draggable.get(0).isSameNode($(this).find(draggable).get(0))){
@@ -1004,7 +1004,7 @@ const La = {
             }).hide()
             let percentage_number = $('<span>').text(0).prependTo(loading_text)
 
-            // on files added --------------------------
+            // on files added --------------------
             function showProgress(e) {
 
                 let progress = La.is.integer(e) ? e : Math.round((e.loaded * 100) / e.total)
@@ -1058,7 +1058,7 @@ const La = {
                 }).fail(La.parse.fail)
             }
 
-            // set events ----------------------
+            // set events ------------------------
             if(phpSrc) button.click(() => input.click())
 			else button.click(() => {
 
@@ -2049,10 +2049,10 @@ const La = {
     }
 }
 
-// Alias ---------------------------------------
+// Alias -----------------------------------------
 const cl = console.log
 
-// JQuery Extend --------------------------------
+// JQuery Extend ---------------------------------
 $.prototype['enable'] = function(timeToDisableAgain = null){
 
     this.prop('disabled', false)
@@ -2077,7 +2077,7 @@ $.prototype['disable'] = function(timeToEnableAgain = null){
 }
 
 
-// Class bubbling functions ---------------------
+// Class bubbling functions ----------------------
 $(document).on('click', '.modal-img', function (e) {
 
 	const TARGET = e.target,
@@ -2111,7 +2111,7 @@ $(document).on('click', '.modal-img', function (e) {
 		div.fadeOut(100, () => div.remove())
 	})
 
-	// IMG ---------------------------------------------------------------
+	// IMG --------------------------------------------------------------------------------------------
 	var img_div = $('<div>').addClass('modal-img_div').appendTo(div)
 	img_div.css({
 
@@ -2136,7 +2136,7 @@ $(document).on('click', '.modal-img', function (e) {
 		img.height('100%')
 	}
 
-	// CROSS -----------------------------------------------------------------------
+	// CROSS ------------------------------------------------------------------------------------------
 	var cross = $('<p>&#10006;&#xFE0E;</p>').addClass('modal-cross').appendTo(div)
 	cross.css({
 
@@ -2149,7 +2149,7 @@ $(document).on('click', '.modal-img', function (e) {
 		zIndex: 9
 	})
 
-	// SUBTEXT ----------------------------------------------------------------------
+	// SUBTEXT ----------------------------------------------------------------------------------------
 	if (IMG_SUBTEXT) {
 
 		var subtext = $('<p>').addClass('modal-subtext').appendTo(img_div)
@@ -2195,7 +2195,7 @@ $(document).on('paste', '.uppercase-first', function(a, b, c){
     }, 1);
 })
 
-// Classes ----------------------------------------------------------------------------------------
+// Classes -----------------------------------------------------------------------------------------
 
 /**
  * TimeSpan
@@ -2212,7 +2212,7 @@ $(document).on('paste', '.uppercase-first', function(a, b, c){
  * use numbers and are not suitable for high-precision scientific timing.
  */
 class TimeSpan {
-    // Constants --------------------------------
+    // Constants ---------------------------------
     /** Milliseconds per second. */
     static MS_PER_SECOND = 1000;
     /** Milliseconds per minute. */
@@ -2232,14 +2232,14 @@ class TimeSpan {
     static DAYS_PER_WEEK = 7;
     static DAYS_PER_YEAR = 365.25;
 
-    // Attributes -------------------------------
+    // Attributes --------------------------------
     /**
      * Internal storage in milliseconds. Can be finite, Infinity or -Infinity.
      * @type {number}
      */
     #ms;
 
-    // Constructor ------------------------------
+    // Constructor -------------------------------
     /**
      * Create a TimeSpan.
      * @param {number} [milliseconds=0] - Duration in milliseconds. Defaults to 0.
@@ -2257,7 +2257,7 @@ class TimeSpan {
         this.#ms = milliseconds;
     }
 
-    // Static methods ---------------------------
+    // Static methods ----------------------------
     // Factories ---
     /**
      * Create a TimeSpan from milliseconds.
@@ -2349,7 +2349,7 @@ class TimeSpan {
         return a.equals(b) ? 0 : b.#ms - a.#ms;
     }
 
-    // Public methods ---------------------------
+    // Public methods ----------------------------
     // Totals ---
     /** Total milliseconds represented by this TimeSpan. @returns {number} */
     totalMillis() { return this.#ms; }

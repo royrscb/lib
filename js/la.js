@@ -243,7 +243,7 @@ const La = {
                 new_dragged_position
 
 
-            // drag -----------------------------------------------
+            // drag ------------------------------
             settings.drag.start = function(e, ui){
 
                 original_dragged_offset = $(this).offset()
@@ -276,7 +276,7 @@ const La = {
                 if(events && events.drag && events.drag.stop) events.drag.stop($(this))
             }
 
-            // drop ------------------------------------------
+            // drop ------------------------------
             settings.drop.over = function(e, ui){
 
                 if(!ui.draggable.get(0).isSameNode($(this).find(draggable).get(0))){
@@ -1008,7 +1008,7 @@ const La = {
             }).hide()
             let percentage_number = $('<span>').text(0).prependTo(loading_text)
 
-            // on files added --------------------------
+            // on files added --------------------
             function showProgress(e) {
 
                 let progress = La.is.integer(e) ? e : Math.round((e.loaded * 100) / e.total)
@@ -1062,7 +1062,7 @@ const La = {
                 }).fail(La.parse.fail)
             }
 
-            // set events ----------------------
+            // set events ------------------------
             if(phpSrc) button.click(() => input.click())
 			else button.click(() => {
 
@@ -2001,7 +2001,7 @@ const La = {
 }
 
 
-// CONSTS ---------------------------------------
+// CONSTS ----------------------------------------
 const cl = console.log,
     EURO_CHAR = '€',
 	TIMESTAMP = 'Y-m-d H:i:s',
@@ -2078,7 +2078,7 @@ const cl = console.log,
         511: 'Network Authentication Required'
 	}
 
-// ENUMS ----------------------------------------
+// ENUMS -----------------------------------------
 const TIMEFORMAT = {
 
     timestamp: 'Y-m-d H:i:s',
@@ -2109,7 +2109,7 @@ const TIMEFORMAT = {
     }
 
 
-// JavaScript prototype extend ------------------
+// JavaScript prototype extend -------------------
 // Number ---
 Object.defineProperty(Number.prototype, "round", {
     value: function(decimals = 0) {
@@ -2379,7 +2379,7 @@ Object.defineProperty(Array.prototype, "min", {
     enumerable: false
 })
 
-// Prototype override ---------------------------
+// Prototype override ----------------------------
 if (!String.prototype.replaceAll) {
     Object.defineProperty(String.prototype, "replaceAll", {
         value: function(search, replace) {
@@ -2392,7 +2392,7 @@ if (!String.prototype.replaceAll) {
 }
 
 
-// JQuery Extend --------------------------------
+// JQuery Extend ---------------------------------
 $.prototype['enable'] = function(timeToDisableAgain = null){
 
     this.prop('disabled', false)
@@ -2417,7 +2417,7 @@ $.prototype['disable'] = function(timeToEnableAgain = null){
 }
 
 
-// Class bubbling functions ---------------------
+// Class bubbling functions ----------------------
 $(document).on('click', '.modal-img', function (e) {
 
 	const TARGET = e.target,
@@ -2451,7 +2451,7 @@ $(document).on('click', '.modal-img', function (e) {
 		div.fadeOut(100, () => div.remove())
 	})
 
-	// IMG ---------------------------------------------------------------
+	// IMG --------------------------------------------------------------------------------------------
 	var img_div = $('<div>').addClass('modal-img_div').appendTo(div)
 	img_div.css({
 
@@ -2476,7 +2476,7 @@ $(document).on('click', '.modal-img', function (e) {
 		img.height('100%')
 	}
 
-	// CROSS -----------------------------------------------------------------------
+	// CROSS ------------------------------------------------------------------------------------------
 	var cross = $('<p>&#10006;&#xFE0E;</p>').addClass('modal-cross').appendTo(div)
 	cross.css({
 
@@ -2489,7 +2489,7 @@ $(document).on('click', '.modal-img', function (e) {
 		zIndex: 9
 	})
 
-	// SUBTEXT ----------------------------------------------------------------------
+	// SUBTEXT ----------------------------------------------------------------------------------------
 	if (IMG_SUBTEXT) {
 
 		var subtext = $('<p>').addClass('modal-subtext').appendTo(img_div)

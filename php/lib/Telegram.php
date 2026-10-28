@@ -126,7 +126,7 @@ final class Telegram
         return ['inline_keyboard' => [[['url' => $url, 'text' => $text]]]];
     }
 
-    // private ------------------------------
+    // private -------------------------------------------------------------------------------------
 
     private static function post(string $token, array $data): ?array
     {

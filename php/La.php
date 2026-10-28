@@ -16,7 +16,7 @@ enum TelegramChatId_EnvName: string {
     case royrscb = 'TELEGRAM_CHAT_ID_ROYRSCB';
 }
 
-// Execute ----------------------------------------------------------------------------------------
+// Execute -----------------------------------------------------------------------------------------
 
 // Env load
 Env::load(__DIR__ . '/.env');
@@ -49,7 +49,7 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
     else if ($_SERVER['REQUEST_METHOD'] == 'DELETE') $_DELETE = getInputVars();
 }
 
-// HTTP ---------------------------------------------------------------------------------------
+// HTTP --------------------------------------------------------------------------------------------
 function http_request(string $method, string $url, $data = null) {
 
     if ($method != 'GET' && $method != 'POST' && $method != 'PUT' && $method != 'DELETE')
@@ -102,7 +102,7 @@ function post(string $url, $data = null) {
     return http_request('POST', $url, $data);
 }
 
-// UTIL -------------------------------------------------------------------------------------------
+// UTIL --------------------------------------------------------------------------------------------
 function scandir_recursively(string $path): array {
     if (!is_dir($path))
         throw new Exception("TODO-AI type: '$path' must be a directory");
@@ -122,7 +122,7 @@ function scandir_recursively(string $path): array {
     return $arr;
 }
 
-// SEND ---------------------------------------------------------------------------------------
+// SEND --------------------------------------------------------------------------------------------
 function send_telegram(string $message, string $bot_token, int $chat_id, ?array $keyboard = null): array {
     if (empty($message))
         throwError('Can not send empty message');
@@ -281,7 +281,7 @@ function send_multiple_push_notifications($notification, $subscriptions, $onClic
 }
 
 
-// PARSE --------------------------------------------------------------------------------------
+// PARSE -------------------------------------------------------------------------------------------
 function date_spain($format = null) {
 
     $now_spain = new DateTime('now', new DateTimeZone('Europe/Madrid'));
@@ -373,7 +373,7 @@ function json_stringify($json) {
     return addSlashesToString(json_encode($json, JSON_NUMERIC_CHECK));
 }
 
-// Array extension ----------------------------------------------------------------------------
+// Array extension ---------------------------------------------------------------------------------
 // returns the index of the first element that returns true to the callback(current_element, index) or -1 if not founds
 function array_find_index(array $array, callable $callback) {
     $i = 0;
@@ -398,7 +398,7 @@ function array_remove(array $array, callable $callback) {
 }
 
 
-// UTIL ---------------------------------------------------------------------------------------
+// UTIL --------------------------------------------------------------------------------------------
 function je($value) { return json_encode($value); }
 function reduce_image_width($src, $width_to_reduce) {
 
@@ -457,7 +457,7 @@ function makeTelegramKeyboard($url, $text) {
     ];
 }
 
-# string --------------------------------------------------------------------------------------
+# string -------------------------------------------------------------------------------------------
 function namifyEmail($object_or_email) {
 
     $commonEmails = ['info'];
@@ -470,7 +470,7 @@ function namifyEmail($object_or_email) {
 }
 
 
-// DEBUG --------------------------------------------------------------------------------------
+// DEBUG -------------------------------------------------------------------------------------------
 function logAndTelegramProblem($code, $text, $type, $log = true, $telegram = true) {
 
     $me = (function_exists('whoami') && $me = whoami()) ? $me->type.' '.$me->id : "unown";

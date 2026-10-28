@@ -51,7 +51,7 @@ async function load_head(js_filename, css_filename){
         ? await fetch(rootPath+'version', {cache: 'no-store'}).then(res => res.text())
         : false
 
-	// load styles ----------------------------------------------------
+	// load styles ------------------------------------------------------------------------------------
 	let link_promises = [
         load_link('https://cdn.jsdelivr.net/gh/royrscb/lib@latest/css/la.css', VERSION),
 		load_link(rootPath+'css/all.css', VERSION)
@@ -63,7 +63,7 @@ async function load_head(js_filename, css_filename){
         document.documentElement.hidden = false
     })
 
-	// load scripts ----------------------------------------------------
+	// load scripts -----------------------------------------------------------------------------------
     await load_script('https://cdn.jsdelivr.net/gh/royrscb/lib@latest/js/extensions.js', VERSION)
     await load_script(rootPath+'js/lib/la.js', VERSION)
 

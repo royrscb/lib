@@ -20,7 +20,7 @@ public static class Api
         }
     }
 
-    // Public -----------------------------------
+    // Public --------------------------------------------------------------------------------------
     public static async Task<string> SendRequest(RequestMethod method, string url, string json = null)
     {
         Logger.Api.Debug($"🔺{method.ToString().ToUpper()} request to '{url}' with json: '{json}'");
@@ -99,7 +99,7 @@ public static class Api
         await Delete(GetApiUrl<T>(), json);
     }
 
-    // Private ----------------------------------
+    // Private -------------------------------------------------------------------------------------
     private static string GetApiUrl<T>()
     {
         var objectName = typeof(T).Name.ToLower();
@@ -181,7 +181,7 @@ public static class Api
         return res;
     }
 
-    // Enums and classes ------------------------
+    // Enums and classes ---------------------------------------------------------------------------
     public enum RequestMethod
     {
         Post,
