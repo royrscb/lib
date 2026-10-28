@@ -2,13 +2,17 @@
 
 enum TelegramBotTokenEnv: string
 {
+    /** Token for the Royrscb bot. */
     case Royrscb = 'TELEGRAM_BOT_TOKEN_ROYRSCB_BOT';
+    /** Token for the bot used to report errors. */
     case Bug = 'TELEGRAM_BOT_TOKEN_BUGBOT';
+    /** Token for the Volando bot. */
     case Volando = 'TELEGRAM_BOT_TOKEN_VOLANDOBOT';
 }
 
 enum TelegramChatIdEnv: string
 {
+    /** Chat ID for the Royrscb chat. */
     case Royrscb = 'TELEGRAM_CHAT_ID_ROYRSCB';
 }
 
@@ -20,8 +24,21 @@ final class Telegram
 
     private static int $sent = 0;
 
-    // Message with <b> <i> <u> <s> <a href=""> and <br> tags; any other < > & is escaped automatically.
-    // Returns Telegram's result, or null when it could not be delivered for a "normal" reason (bot blocked, user deactivated).
+    /**
+     * Sends a message using a configured bot and chat.
+     *
+     * The message supports <b>, <i>, <u>, <s>, <a href=""> and <br> tags; other HTML characters are escaped.
+     * Long messages are split into multiple Telegram messages. At most MAX_SENT_PER_REQUEST messages are
+     * sent during one PHP request.
+     *
+     * @param string                  $message Message text, optionally containing the supported HTML tags.
+     * @param TelegramBotTokenEnv     $bot     Bot whose token is loaded from the matching environment variable.
+     * @param TelegramChatIdEnv|int|string $chat Chat whose ID is loaded from the enum, or an explicit chat ID.
+     * @param array|null              $keyboard Telegram reply markup.
+     * @return array|null Telegram's result for the last sent piece, or null if delivery was prevented by the
+     *                     per-request limit or Telegram reports that the bot is blocked / the user deactivated.
+     * @throws RuntimeException If a required environment variable is missing or Telegram reports an error.
+     */
     public static function send(
         string $message,
         TelegramBotTokenEnv $bot,
@@ -61,6 +78,15 @@ final class Telegram
         return $last;
     }
 
+    /**
+     * Sends a message to the configured Royrscb chat using the Royrscb bot.
+     *
+     * @param string     $message Message text, optionally containing supported HTML tags.
+     * @param array|null $keyboard Telegram reply markup.
+     * @return array|null Telegram's result, or null if delivery was prevented by the per-request limit or
+     *                     Telegram reports that the bot is blocked / the user deactivated.
+     * @throws RuntimeException If a required environment variable is missing or Telegram reports an error.
+     */
     public static function sendToRoy(string $message, ?array $keyboard = null): ?array
     {
         return self::send(
@@ -71,7 +97,14 @@ final class Telegram
         );
     }
 
-    // Error reports (used by Errors)
+    /**
+     * Sends an error report to the configured Royrscb chat using the error-reporting bot.
+     *
+     * @param string $message Error report text.
+     * @return array|null Telegram's result, or null if delivery was prevented by the per-request limit or
+     *                     Telegram reports that the bot is blocked / the user deactivated.
+     * @throws RuntimeException If a required environment variable is missing or Telegram reports an error.
+     */
     public static function bug(string $message): ?array
     {
         return self::send(
@@ -81,7 +114,13 @@ final class Telegram
         );
     }
 
-    // Keyboard with a single button that opens a link
+    /**
+     * Creates inline keyboard markup with one URL button.
+     *
+     * @param string $url  URL opened when the button is pressed.
+     * @param string $text Button label.
+     * @return array Telegram inline keyboard markup.
+     */
     public static function linkKeyboard(string $url, string $text): array
     {
         return ['inline_keyboard' => [[['url' => $url, 'text' => $text]]]];
@@ -181,7 +220,15 @@ final class TelegramMessage
     public ?string $command = null;          // command
     public ?string $messageReplied = null;   // reply_to_message
 
-    function __construct(array $update)
+    /**
+     * Parses a Telegram webhook update into convenient message fields.
+     *
+     * Recognizes messages, callback queries, membership updates, commands and replies.
+     * Unrecognized or incomplete updates leave the corresponding public fields null.
+     *
+     * @param array<string, mixed> $update Decoded Telegram Bot API update.
+     */
+    public function __construct(array $update)
     {
         $this->update = $update;
 
@@ -234,14 +281,20 @@ final class TelegramMessage
         else $this->type = 'message';
     }
 
-    function fromGroup(): bool
+    /**
+     * Whether this update's chat is a group or supergroup.
+     */
+    public function fromGroup(): bool
     {
         return in_array($this->chat['type'] ?? null, ['group', 'supergroup'], true);
     }
 }
 
-// Thin wrapper of the Telegram Bot API for webhook bots. (Was Telegram_bot.)
-// API failures are logged (and notified through Errors) and the method returns null.
+/**
+ * Thin wrapper of the Telegram Bot API for webhook bots.
+ *
+ * Request and API failures throw RuntimeException; invalid local arguments throw InvalidArgumentException.
+ */
 final class TelegramBot
 {
     private string $token;
@@ -250,7 +303,14 @@ final class TelegramBot
     public ?TelegramMessage $msg = null;
     public int|string|null $defaultChatId = null;
 
-    function __construct(string $token, string $username, ?array $update = null)
+    /**
+     * Creates a bot client, optionally attaching the incoming webhook update.
+     *
+     * @param string $token    Telegram bot token.
+     * @param string $username Bot username, used to identify the bot in API error messages.
+     * @param array|null $update Decoded incoming Telegram update, if handling a webhook.
+     */
+    public function __construct(string $token, string $username, ?array $update = null)
     {
         $this->token = $token;
         $this->username = $username;
@@ -259,66 +319,95 @@ final class TelegramBot
             $this->msg = new TelegramMessage($update);
     }
 
-    private function fail(int|string $code, string $description): null
-    {
-        $error = new RuntimeException("Telegram bot $this->username error $code: $description", 502);
-        error_log($error->getMessage());
-
-        if (class_exists(Errors::class) && is_callable([Errors::class, 'report']))
-            Errors::report($error);
-
-        return null;
-    }
-
     private function postMethod(string $method, ?array $data = null): mixed
     {
-        try {
-            $response = http_request(HttpMethod::Post->value, 'https://api.telegram.org/bot'.$this->token.'/'.$method, $data);
-        }
-        catch (RuntimeException $e) {
-            return $this->fail($e->getCode() ?: 502, $e->getMessage());
-        }
+        $response = http_request(HttpMethod::Post->value, 'https://api.telegram.org/bot'.$this->token.'/'.$method, $data);
 
         if (!is_array($response))
-            return $this->fail(502, 'Invalid response');
+            throw new RuntimeException("Telegram bot $this->username: invalid response", 502);
 
         if ($response['ok'] ?? false)
             return $response['result'];
 
-        return $this->fail($response['error_code'] ?? 0, (string)($response['description'] ?? 'unknown error'));
+        $code = $response['error_code'] ?? 0;
+        $description = (string)($response['description'] ?? 'unknown error');
+
+        throw new RuntimeException("Telegram bot $this->username error $code: $description", 502);
     }
 
-    // get ---------------------------------
+    /**
+     * Gets this bot's Telegram account information.
+     *
+     * @return mixed The Telegram Bot API result.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
     public function getMe(): mixed
     {
         return $this->postMethod('getMe');
     }
 
-    function getUpdates(): mixed
+    /**
+     * Gets pending updates for this bot.
+     *
+     * @return mixed The Telegram Bot API result.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
+    public function getUpdates(): mixed
     {
         return $this->postMethod('getUpdates');
     }
 
-    // set ----------------------------------
+    /**
+     * Sets the default destination used by sendMessage() when no chat ID is provided.
+     *
+     * @param int|string $chatId Telegram chat ID.
+     */
     public function setDefaultChatId(int|string $chatId): void
     {
         $this->defaultChatId = $chatId;
     }
 
+    /**
+     * Gets this bot's webhook configuration.
+     *
+     * @return mixed The Telegram Bot API result.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
     public function getWebhook(): mixed
     {
         return $this->postMethod('getWebhookInfo');
     }
+    /**
+     * Sets the URL Telegram uses to deliver updates to this bot.
+     *
+     * @param string $url Public HTTPS webhook URL.
+     * @return mixed The Telegram Bot API result.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
     public function setWebhook(string $url): mixed
     {
         return $this->postMethod('setWebhook', ['url' => $url]);
     }
+    /**
+     * Deletes this bot's webhook.
+     *
+     * @param bool $dropPendingUpdates Whether Telegram should discard pending updates.
+     * @return mixed The Telegram Bot API result.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
     public function deleteWebhook(bool $dropPendingUpdates = true): mixed
     {
         return $this->postMethod('deleteWebhook', ['drop_pending_updates' => $dropPendingUpdates]);
     }
 
-    // send --------------------
+    /**
+     * Replies to the chat associated with the attached incoming update.
+     *
+     * @param string $text Reply text.
+     * @return mixed The Telegram Bot API result.
+     * @throws RuntimeException If there is no attached update, the request fails, or Telegram returns an error.
+     * @throws InvalidArgumentException If the text is empty or no chat ID is available.
+     */
     public function replyMessage(string $text): mixed
     {
         if ($this->msg === null)
@@ -326,15 +415,26 @@ final class TelegramBot
 
         return $this->sendMessage($text, $this->msg->chatId);
     }
+    /**
+     * Sends a message to the given chat or the configured default chat.
+     *
+     * @param string $message Message text.
+     * @param int|string|null $chatId Destination chat; defaults to defaultChatId.
+     * @param array|null $keyboard Telegram reply markup.
+     * @param bool $html Whether Telegram should parse the message as HTML.
+     * @return mixed The Telegram Bot API result.
+     * @throws InvalidArgumentException If the message is empty or no chat ID is available.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
     public function sendMessage(string $message, int|string|null $chatId = null, ?array $keyboard = null, bool $html = false): mixed
     {
         if ($message === '')
-            return $this->fail(500, 'Can not send empty message');
+            throw new InvalidArgumentException('Can not send empty message', 422);
 
         $chatId ??= $this->defaultChatId;
 
         if ($chatId === null)
-            return $this->fail(422, 'Chat ID is required');
+            throw new InvalidArgumentException('Chat ID is required', 422);
 
         $data = [
             'chat_id' => $chatId,
@@ -346,6 +446,18 @@ final class TelegramBot
         return $this->postMethod('sendMessage', $data);
     }
 
+    /**
+     * Sends a message with one inline callback button.
+     *
+     * @param int|string $chatId Destination chat.
+     * @param string $message Message text.
+     * @param string $buttonText Button label.
+     * @param string $callbackData Data returned when the button is pressed.
+     * @param bool $html Whether Telegram should parse the message as HTML.
+     * @return mixed The Telegram Bot API result.
+     * @throws InvalidArgumentException If the message is empty.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
     public function sendButton(int|string $chatId, string $message, string $buttonText, string $callbackData, bool $html = false): mixed
     {
         $button = ['text' => $buttonText, 'callback_data' => $callbackData];
@@ -354,11 +466,22 @@ final class TelegramBot
         return $this->sendMessage($message, $chatId, $keyboard, $html);
     }
 
-    // edit ----------------------
+    /**
+     * Edits an existing message.
+     *
+     * @param int|string $chatId Chat containing the message.
+     * @param int $messageId ID of the message to edit.
+     * @param string $message Replacement message text.
+     * @param array|null $keyboard Replacement inline keyboard, if any.
+     * @param bool $html Whether Telegram should parse the message as HTML.
+     * @return mixed The Telegram Bot API result.
+     * @throws InvalidArgumentException If the replacement message is empty.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
     public function editMessage(int|string $chatId, int $messageId, string $message, ?array $keyboard = null, bool $html = false): mixed
     {
         if ($message === '')
-            return $this->fail(500, 'Can not send empty message');
+            throw new InvalidArgumentException('Can not send empty message', 422);
 
         $data = [
             'chat_id' => $chatId,
@@ -371,6 +494,19 @@ final class TelegramBot
         return $this->postMethod('editMessageText', $data);
     }
 
+    /**
+     * Edits an existing message and sets a single inline callback button.
+     *
+     * @param int|string $chatId Chat containing the message.
+     * @param int $messageId ID of the message to edit.
+     * @param string $message Replacement message text.
+     * @param string $buttonText Button label.
+     * @param string $callbackData Data returned when the button is pressed.
+     * @param bool $html Whether Telegram should parse the message as HTML.
+     * @return mixed The Telegram Bot API result.
+     * @throws InvalidArgumentException If the replacement message is empty.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
     public function editButton(int|string $chatId, int $messageId, string $message, string $buttonText, string $callbackData, bool $html = false): mixed
     {
         $button = ['text' => $buttonText, 'callback_data' => $callbackData];
@@ -379,6 +515,15 @@ final class TelegramBot
         return $this->editMessage($chatId, $messageId, $message, $keyboard, $html);
     }
 
+    /**
+     * Answers a callback query, optionally displaying a message to the user.
+     *
+     * @param string $callbackQueryId ID of the callback query to answer.
+     * @param string|null $message Optional text to display.
+     * @param bool $showAlert Whether to display the text as an alert instead of a notification.
+     * @return mixed The Telegram Bot API result.
+     * @throws RuntimeException If the request fails or Telegram returns an error.
+     */
     public function answerCallbackQuery(string $callbackQueryId, ?string $message = null, bool $showAlert = false): mixed
     {
         $data = ['callback_query_id' => $callbackQueryId];
