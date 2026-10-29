@@ -101,7 +101,7 @@ final class Env
 
     /**
      * Returns an env variable, or null if it is missing or empty.
-     * Use exists() to tell a missing variable from an empty one.
+     * Note: Use exists() to tell a missing variable from an empty one.
      */
     public static function getOrNull(string $name): ?string
     {
@@ -111,6 +111,60 @@ final class Env
             return null;
 
         return $value;
+    }
+
+    /**
+     * Returns an env variable as a boolean: true/false, 1/0, or the text "true"/"false" in any case.
+     *
+     * @throws RuntimeException If the variable is missing, empty, or not a valid boolean.
+     */
+    public static function getBool(string $name): bool
+    {
+        $value = parse_bool(self::get($name));
+
+        return $value
+            ?? throw new RuntimeException("Invalid env var $name: expected true or false", 500);
+    }
+    /**
+     * Returns an env variable as a boolean, or null if it is missing or empty.
+     *
+     * @throws RuntimeException If the variable is present but is not a valid boolean.
+     */
+    public static function getBoolOrNull(string $name): ?bool
+    {
+        $raw = self::getOrNull($name);
+
+        if ($raw === null)
+            return null;
+
+        return parse_bool($raw)
+            ?? throw new RuntimeException("Invalid env var $name: expected true or false", 500);
+    }
+
+    /**
+     * Returns an env variable as an integer. Only whole numbers in decimal notation are accepted.
+     *
+     * @throws RuntimeException If the variable is missing, empty, or not a valid integer.
+     */
+    public static function getInt(string $name): int
+    {
+        return parse_int(self::get($name))
+            ?? throw new RuntimeException("Invalid env var $name: expected an integer", 500);
+    }
+    /**
+     * Returns an env variable as an integer, or null if it is missing or empty.
+     *
+     * @throws RuntimeException If the variable is present but is not a valid integer.
+     */
+    public static function getIntOrNull(string $name): ?int
+    {
+        $raw = self::getOrNull($name);
+
+        if ($raw === null)
+            return null;
+
+        return parse_int($raw)
+            ?? throw new RuntimeException("Invalid env var $name: expected an integer", 500);
     }
 
     /**

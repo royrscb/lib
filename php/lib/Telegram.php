@@ -48,10 +48,10 @@ final class Telegram
             throw new RuntimeException('Can not send empty message', 422);
 
         $token = Env::get($bot->value);
-        $chatId = $chat instanceof TelegramChatIdEnv ? (int)Env::get($chat->value) : $chat;
+        $chatId = $chat instanceof TelegramChatIdEnv ? Env::get($chat->value) : $chat;
 
         // Messages to my chat get the project name in front (and "localhost|" in development)
-        if ((int)$chatId === (int)Env::get(TelegramChatIdEnv::Royrscb->value))
+        if ($chatId == Env::get(TelegramChatIdEnv::Royrscb->value))
             $message = '<b>['.(Env::isDev() ? 'dev|' : '').Env::get('PROJECT_NAME').']</b><br>'.$message;
 
         $pieces = self::split(self::toTelegramHtml($message));

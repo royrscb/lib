@@ -232,7 +232,7 @@ function array_get_bool_or_null(array $values, string $key): ?bool
  * Returns true for:
  *  - the boolean true
  *  - the int 1 or the string '1'
- *  - the text 'true' in any case ('true', 'TRUE', 'True')
+ *  - the text 'true' in any case ('true', 'TRUE', 'TrUe')
  *
  * Returns false for:
  *  - the boolean false
