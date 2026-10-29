@@ -280,8 +280,8 @@ final class Api
 
     // $key ('id' by default) of the request vars as an integer, or null if it is missing or empty.
     // Throws a 422 RuntimeException if it is present but is not one.
-    // It must be an int, or a string of digits with an optional '-' and no '+', spaces or leading zeros
-    // ('0' is valid, '-0' is not). Anything else (booleans, floats, arrays...) is rejected.
+    // It must be an int or a signed decimal integer string. Leading zeros and '+' are accepted;
+    // booleans, floats, arrays, whitespace and values outside the int range are rejected.
     private static function getId(array $vars, string $key = 'id'): ?int
     {
         $raw = $vars[$key] ?? null;

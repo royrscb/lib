@@ -33,8 +33,12 @@ final class User extends DbTable
     {
         unset($data['hashword']);
 
-        if (isset($data['password']))
+        if (array_key_exists('password', $data)) {
+            if (!is_string($data['password']) || $data['password'] === '')
+                throw new RuntimeException("'password' must be a non-empty string", 422);
+
             $data['hashword'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        }
 
         unset($data['password']);
 

@@ -279,15 +279,16 @@ final class Auth
     {
         self::startSession();
         session_regenerate_id(true);
+
         $_SESSION[self::SESSION_KEY] = $owner->toArray();
         self::$isMeResolved = false;
 
-        if ($persistent) {
-            $token = self::createPersistentToken($owner);
-            if ($token !== null) {
-                self::setCookie(self::getPersistentCookieName(), $token, time() + 86400 * self::PERSISTENT_LOGIN_DAYS);
-            }
-        }
+        $token = $persistent ? self::createPersistentToken($owner) : null;
+
+        if ($token !== null)
+            self::setCookie(self::getPersistentCookieName(), $token, time() + 86400 * self::PERSISTENT_LOGIN_DAYS);
+        else
+            self::deleteCookie(self::getPersistentCookieName());
 
         return self::me();
     }

@@ -22,19 +22,9 @@ if (Request::method() !== HttpMethod::Post)
 
 Auth::requireAdmin();
 
-$vars = Request::vars();
-
-$getString = static function (array $vars, string $key): string {
-    $value = $vars[$key] ?? null;
-
-    if (!is_string($value) || $value === '')
-        throw new RuntimeException("'$key' must be a non-empty string", 422);
-
-    return $value;
-};
-
-$getAddresses = static function (array $vars, string $key): array {
-    $value = $vars[$key] ?? [];
+$body = Request::body();
+$getAddresses = static function (array $body, string $key): array {
+    $value = $body[$key] ?? [];
 
     if (!is_array($value) || !array_is_list($value))
         throw new RuntimeException("'$key' must be a list of email addresses", 422);
@@ -47,20 +37,19 @@ $getAddresses = static function (array $vars, string $key): array {
     return $value;
 };
 
-$html = parse_bool($vars['html'] ?? false)
-    ?? throw new RuntimeException("'html' must be true or false", 422);
+$html = Request::getBoolOrNull('html', bodyOnly: true) ?? false;
 
-$from = $getString($vars, 'from');
-$to = $getString($vars, 'to');
-$subject = $getString($vars, 'subject');
-$body = $getString($vars, 'body');
-$cc = $getAddresses($vars, 'cc');
-$bcc = $getAddresses($vars, 'bcc');
+$from = Request::getString('from', bodyOnly: true);
+$to = Request::getString('to', bodyOnly: true);
+$subject = Request::getString('subject', allowEmpty: true, bodyOnly: true);
+$message = Request::getString('body', allowEmpty: true, bodyOnly: true);
+$cc = $getAddresses($body, 'cc');
+$bcc = $getAddresses($body, 'bcc');
 
 if ($html)
-    Mail::sendHtml($from, $to, $subject, $body, $cc, $bcc);
+    Mail::sendHtml($from, $to, $subject, $message, $cc, $bcc);
 else
-    Mail::send($from, $to, $subject, $body, $cc, $bcc);
+    Mail::send($from, $to, $subject, $message, $cc, $bcc);
 
 http_response_code(204);
 header('Cache-Control: no-store');

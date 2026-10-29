@@ -17,6 +17,9 @@ declare(strict_types=1);
  */
 final class Errors
 {
+    private const string ENV_APP_DEBUG = 'APP_DEBUG';
+    private const string ENV_LOG_FILEPATH_FROM_ROOT = 'LOG_FILEPATH_FROM_ROOT';
+
     public static function register(): void
     {
         ini_set('display_errors', '0');
@@ -41,7 +44,7 @@ final class Errors
         if ($status >= 500)
             self::log($status, $e);
 
-        $debug = Env::getOrNull('APP_DEBUG') === '1';
+        $debug = parse_bool(Env::getOrNull(self::ENV_APP_DEBUG) ?? false);
         $message = $status < 500 || $debug ? $e->getMessage() : 'Internal server error';
 
         if (PHP_SAPI === 'cli') {
@@ -61,7 +64,7 @@ final class Errors
     // Appends the error to the log file. The query string is left out of the URI because it can carry secrets.
     private static function log(int $status, Throwable $e): void
     {
-        $file = Env::getOrNull('LOG_FILE') ?? APP_ROOT.'/logs/app.log';
+        $file = APP_ROOT.(Env::getOrNull(self::ENV_LOG_FILEPATH_FROM_ROOT) ?? '/logs/app.log');
 
         $line = sprintf(
             "[%s] [%d] %s %s %s\n%s\n",

@@ -17,6 +17,8 @@ if (Request::method() !== HttpMethod::Post)
 
 Auth::requireAdmin();
 
-$message = Request::vars()['message'] ?? null;
+$message = Request::getString('message', bodyOnly: true);
+if (trim($message) === '')
+    throw new RuntimeException("'message' must not be empty", 422);
 
 Api::sendJson(Telegram::sendToRoy($message));

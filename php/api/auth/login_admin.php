@@ -15,12 +15,8 @@ require_once __DIR__.'/../../bootstrap.php';
 if (Request::method() !== HttpMethod::Post)
     throw new RuntimeException('Method not allowed', 405);
 
-$vars = Request::vars();
-
-$password = $vars['password']
-    ?? throw new RuntimeException("'password' is required", 422);
-$persistent = parse_bool($vars['persistent'] ?? false)
-    ?? throw new RuntimeException("'persistent' must be true or false", 422);
+$password = Request::getString('password', bodyOnly: true);
+$persistent = Request::getBoolOrNull('persistent', bodyOnly: true) ?? false;
 
 $me = Auth::loginAdmin($password, $persistent)
     ?? throw new RuntimeException('Invalid credentials', 401);
