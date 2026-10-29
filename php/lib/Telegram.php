@@ -2,17 +2,13 @@
 
 enum TelegramBotTokenEnv: string
 {
-    /** Token for the Royrscb bot. */
     case Royrscb = 'TELEGRAM_BOT_TOKEN_ROYRSCB_BOT';
-    /** Token for the bot used to report errors. */
     case Bug = 'TELEGRAM_BOT_TOKEN_BUGBOT';
-    /** Token for the Volando bot. */
     case Volando = 'TELEGRAM_BOT_TOKEN_VOLANDOBOT';
 }
 
 enum TelegramChatIdEnv: string
 {
-    /** Chat ID for the Royrscb chat. */
     case Royrscb = 'TELEGRAM_CHAT_ID_ROYRSCB';
 }
 

@@ -42,11 +42,11 @@ spl_autoload_register(function (string $class): void {
     if (!preg_match('/^\w+$/', $class))
         return;
 
-    $file = $inFileOf[$class] ?? $class;
+    $classFile = $inFileOf[$class] ?? $class;
 
     foreach ($dirs as $dir) {
-        if (is_file(APP_ROOT."/$dir/$file.php")) {
-            require_once APP_ROOT."/$dir/$file.php";
+        if (is_file(APP_ROOT."/$dir/$classFile.php")) {
+            require_once APP_ROOT."/$dir/$classFile.php";
             return;
         }
     }
