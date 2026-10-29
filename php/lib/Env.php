@@ -168,6 +168,32 @@ final class Env
     }
 
     /**
+     * Returns an env variable as an int or finite float.
+     *
+     * @throws RuntimeException If the variable is missing, empty, or not a finite number.
+     */
+    public static function getNumber(string $name): int|float
+    {
+        return parse_number(self::get($name))
+            ?? throw new RuntimeException("Invalid env var $name: expected a finite number", 500);
+    }
+    /**
+     * Returns an env variable as an int or finite float, or null if it is missing or empty.
+     *
+     * @throws RuntimeException If the variable is present but is not a finite number.
+     */
+    public static function getNumberOrNull(string $name): int|float|null
+    {
+        $raw = self::getOrNull($name);
+
+        if ($raw === null)
+            return null;
+
+        return parse_number($raw)
+            ?? throw new RuntimeException("Invalid env var $name: expected a finite number", 500);
+    }
+
+    /**
      * Whether APP_ENV is set to "dev".
      */
     public static function isDev(): bool

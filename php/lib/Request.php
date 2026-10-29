@@ -133,7 +133,6 @@ final class Request
             throw new RuntimeException($e->getMessage(), 422, $e);
         }
     }
-
     /**
      * String from the request vars, or null if it is missing or an empty string ('').
      *
@@ -169,7 +168,6 @@ final class Request
             throw new RuntimeException($e->getMessage(), 422, $e);
         }
     }
-
     /**
      * Integer from the request vars, or null if it is missing or an empty string (what a blank form
      * field sends). Otherwise only whole numbers in decimal notation are accepted, as an int or as a
@@ -184,6 +182,37 @@ final class Request
     {
         try {
             return array_get_int_or_null(self::getInputVars($bodyOnly), $key);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
+    }
+
+    /**
+     * Number from the request vars as an int or finite float.
+     *
+     * @param bool $bodyOnly If true, read only from the body, not from the query string.
+     * @throws RuntimeException 422 if the key is missing or is not a finite number;
+     *                          400 if the body is JSON and is not valid.
+     */
+    public static function getNumber(string $key, bool $bodyOnly = false): int|float
+    {
+        try {
+            return array_get_number(self::getInputVars($bodyOnly), $key);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
+    }
+    /**
+     * Optional number from the request vars; missing or empty values return null.
+     *
+     * @param bool $bodyOnly If true, read only from the body, not from the query string.
+     * @throws RuntimeException 422 if the key is present but is not a finite number;
+     *                          400 if the body is JSON and is not valid.
+     */
+    public static function getNumberOrNull(string $key, bool $bodyOnly = false): int|float|null
+    {
+        try {
+            return array_get_number_or_null(self::getInputVars($bodyOnly), $key);
         } catch (InvalidArgumentException $e) {
             throw new RuntimeException($e->getMessage(), 422, $e);
         }

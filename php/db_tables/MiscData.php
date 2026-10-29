@@ -210,16 +210,11 @@ final class MiscData
                 return $value;
 
             case MiscDataType::Number:
-                if (!is_numeric($value))
-                    throw new MiscDataException('Value must be a number', MiscDataException::INVALID);
-
-                $number = $value + 0; // normalizes numeric strings ("5", " 1e3") to int|float
+                $number = parse_number(is_string($value) ? trim($value) : $value)
+                    ?? throw new MiscDataException('Value must be a number', MiscDataException::INVALID);
 
                 if (!is_float($number))
                     return (string)$number;
-
-                if (!is_finite($number))
-                    throw new MiscDataException('Value must be a finite number', MiscDataException::INVALID);
 
                 // json_encode uses serialize_precision (-1): shortest text that round-trips.
                 // (string) would use `precision` and lose digits (0.1 + 0.2 => "0.3").

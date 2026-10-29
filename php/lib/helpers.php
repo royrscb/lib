@@ -197,6 +197,36 @@ function array_get_int_or_null(array $values, string $key): ?int
 }
 
 /**
+ * Required number from an array. Accepts finite ints, floats, and decimal numeric strings.
+ *
+ * @throws InvalidArgumentException If the key is missing or is not a finite number.
+ */
+function array_get_number(array $values, string $key): int|float
+{
+    $value = $values[$key]
+        ?? throw new InvalidArgumentException("'$key' is required");
+
+    return parse_number($value)
+        ?? throw new InvalidArgumentException("'$key' must be a finite number");
+}
+
+/**
+ * Optional number from an array; missing, null, and an empty string return null.
+ *
+ * @throws InvalidArgumentException If the key is present and is not a finite number.
+ */
+function array_get_number_or_null(array $values, string $key): int|float|null
+{
+    $value = $values[$key] ?? null;
+
+    if ($value === null || $value === '')
+        return null;
+
+    return parse_number($value)
+        ?? throw new InvalidArgumentException("'$key' must be a finite number");
+}
+
+/**
  * Required boolean from an array: true or false, 1 or 0, or the text 'true' or 'false' in any case.
  *
  * @throws InvalidArgumentException If the key is missing or is not a boolean.
@@ -303,6 +333,37 @@ function parse_int(mixed $value): ?int
     // Validate the normalized value so leading zeros and a plus sign are accepted without overflow.
     $int = filter_var($normalized, FILTER_VALIDATE_INT);
     return $int === false ? null : $int;
+}
+
+/**
+ * Number from an arbitrary value. Accepts ints, finite floats, and strings in decimal notation
+ * with an optional sign, fraction, and exponent. Numeric strings that fit in an int are returned
+ * as ints; decimal/exponent strings and out-of-range integers are returned as finite floats.
+ *
+ * Whitespace, booleans, non-numeric strings, and non-finite numbers are rejected.
+ *
+ * @return int|float|null The number, or null if the value is not a finite number.
+ */
+function parse_number(mixed $value): int|float|null
+{
+    if (is_int($value))
+        return $value;
+
+    if (is_float($value))
+        return is_finite($value) ? $value : null;
+
+    if (!is_string($value) || !preg_match('/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/D', $value))
+        return null;
+
+    if (!str_contains($value, '.') && !str_contains(strtolower($value), 'e')) {
+        $int = parse_int($value);
+        if ($int !== null)
+            return $int;
+    }
+
+    $number = (float)$value;
+
+    return is_finite($number) ? $number : null;
 }
 
 // Strings -----------------------------------------------------------------------------------------
