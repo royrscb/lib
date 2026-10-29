@@ -133,6 +133,118 @@ function is_valid_date(mixed $value, string $format = 'Y-m-d'): bool
 // Conversion --------------------------------------------------------------------------------------
 
 /**
+ * Boolean from an arbitrary value, strict: it only understands true/false and 0/1.
+ *
+ * Returns true for:
+ *  - the boolean true
+ *  - the int 1 or the string '1'
+ *  - the text 'true' in any case ('true', 'TRUE', 'TrUe')
+ *
+ * Returns false for:
+ *  - the boolean false
+ *  - the int 0 or the string '0'
+ *  - the text 'false' in any case ('false', 'FALSE', 'FaLse')
+ *
+ * Returns null (not a boolean) for:
+ *  - the text 'yes', 'no', 'on', 'off', 'y', 'n', 't', 'f'
+ *  - an empty string '', text with spaces around it, or numeric variants ('01', '1.0', '+1', '0.0', '-0')
+ *  - any other number: 2, -1, '2', '0.5'
+ *  - any other text ('abc')
+ *
+ * Returns null as well for any other type (null, float, array, object).
+ *
+ * To also accept 'yes', 'on'... use filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE).
+ *
+ * @return bool|null The boolean, or null if the value is not one of the cases above.
+ */
+function parse_bool(mixed $value): ?bool
+{
+    if (is_bool($value))
+        return $value;
+
+    return match ($value) {
+        0, '0' => false,
+        1, '1' => true,
+        default => !is_string($value) ? null
+            : match (strtolower($value)) {
+                'true' => true,
+                'false' => false,
+                default => null
+            }
+    };
+}
+
+/**
+ * Integer from an arbitrary value, strict: only whole numbers written in decimal notation.
+ *
+ * Returns the int for:
+ *  - any int (positive, negative or 0)
+ *  - a string of digits with an optional sign: '0', '007', '+5', '-05', '123456'
+ *
+ * Returns null (not an int) for:
+ *  - '' and null
+ *  - spaces or line breaks (' 5', '5 ', "5\n")
+ *  - decimals or exponents ('5.0', '5.5', '1e3'), hexadecimal ('0x1A'), thousands separators ('1,000')
+ *  - digits that are not 0-9 (Arabic or full-width digits)
+ *  - a number too big for an int ('9223372036854775808' on 64 bits)
+ *  - booleans (true is NOT 1), floats (even 5.0), arrays and objects
+ *
+ * Leading zeros and explicit plus signs are accepted; non-integers are never rounded or truncated.
+ *
+ * @return int|null The int, or null if the value is not one of the cases above.
+ */
+function parse_int(mixed $value): ?int
+{
+    if (is_int($value))
+        return $value;
+
+    if (!is_string($value) || !preg_match('/^[+-]?[0-9]+$/D', $value))
+        return null;
+
+    $negative = str_starts_with($value, '-');
+    $digits = ltrim($value, '+-');
+    $digits = ltrim($digits, '0') ?: '0';
+    $normalized = $negative && $digits !== '0' ? '-'.$digits : $digits;
+
+    // Validate the normalized value so leading zeros and a plus sign are accepted without overflow.
+    $int = filter_var($normalized, FILTER_VALIDATE_INT);
+    return $int === false ? null : $int;
+}
+
+/**
+ * Number from an arbitrary value. Accepts ints, finite floats, and strings in decimal notation
+ * with an optional sign, fraction, and exponent. Numeric strings that fit in an int are returned
+ * as ints; decimal/exponent strings and out-of-range integers are returned as finite floats.
+ *
+ * Whitespace, booleans, non-numeric strings, and non-finite numbers are rejected.
+ *
+ * @return int|float|null The number, or null if the value is not a finite number.
+ */
+function parse_number(mixed $value): int|float|null
+{
+    if (is_int($value))
+        return $value;
+
+    if (is_float($value))
+        return is_finite($value) ? $value : null;
+
+    if (!is_string($value) || !preg_match('/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/D', $value))
+        return null;
+
+    if (!str_contains($value, '.') && !str_contains(strtolower($value), 'e')) {
+        $int = parse_int($value);
+        if ($int !== null)
+            return $int;
+    }
+
+    $number = (float)$value;
+
+    return is_finite($number) ? $number : null;
+}
+
+// Arrays ------------------------------------------------------------------------------------------
+
+/**
  * Required string from an array.
  *
  * @throws InvalidArgumentException If the key is missing, is not a string, or is empty and $allowEmpty is false.
@@ -254,116 +366,6 @@ function array_get_bool_or_null(array $values, string $key): ?bool
 
     return parse_bool($value)
         ?? throw new InvalidArgumentException("'$key' must be true or false");
-}
-
-/**
- * Boolean from an arbitrary value, strict: it only understands true/false and 0/1.
- *
- * Returns true for:
- *  - the boolean true
- *  - the int 1 or the string '1'
- *  - the text 'true' in any case ('true', 'TRUE', 'TrUe')
- *
- * Returns false for:
- *  - the boolean false
- *  - the int 0 or the string '0'
- *  - the text 'false' in any case ('false', 'FALSE', 'FaLse')
- *
- * Returns null (not a boolean) for:
- *  - the text 'yes', 'no', 'on', 'off', 'y', 'n', 't', 'f'
- *  - an empty string '', text with spaces around it, or numeric variants ('01', '1.0', '+1', '0.0', '-0')
- *  - any other number: 2, -1, '2', '0.5'
- *  - any other text ('abc')
- *
- * Returns null as well for any other type (null, float, array, object).
- *
- * To also accept 'yes', 'on'... use filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE).
- *
- * @return bool|null The boolean, or null if the value is not one of the cases above.
- */
-function parse_bool(mixed $value): ?bool
-{
-    if (is_bool($value))
-        return $value;
-
-    return match ($value) {
-        0, '0' => false,
-        1, '1' => true,
-        default => !is_string($value) ? null
-            : match (strtolower($value)) {
-                'true' => true,
-                'false' => false,
-                default => null
-            }
-    };
-}
-
-/**
- * Integer from an arbitrary value, strict: only whole numbers written in decimal notation.
- *
- * Returns the int for:
- *  - any int (positive, negative or 0)
- *  - a string of digits with an optional sign: '0', '007', '+5', '-05', '123456'
- *
- * Returns null (not an int) for:
- *  - '' and null
- *  - spaces or line breaks (' 5', '5 ', "5\n")
- *  - decimals or exponents ('5.0', '5.5', '1e3'), hexadecimal ('0x1A'), thousands separators ('1,000')
- *  - digits that are not 0-9 (Arabic or full-width digits)
- *  - a number too big for an int ('9223372036854775808' on 64 bits)
- *  - booleans (true is NOT 1), floats (even 5.0), arrays and objects
- *
- * Leading zeros and explicit plus signs are accepted; non-integers are never rounded or truncated.
- *
- * @return int|null The int, or null if the value is not one of the cases above.
- */
-function parse_int(mixed $value): ?int
-{
-    if (is_int($value))
-        return $value;
-
-    if (!is_string($value) || !preg_match('/^[+-]?[0-9]+$/D', $value))
-        return null;
-
-    $negative = str_starts_with($value, '-');
-    $digits = ltrim($value, '+-');
-    $digits = ltrim($digits, '0') ?: '0';
-    $normalized = $negative && $digits !== '0' ? '-'.$digits : $digits;
-
-    // Validate the normalized value so leading zeros and a plus sign are accepted without overflow.
-    $int = filter_var($normalized, FILTER_VALIDATE_INT);
-    return $int === false ? null : $int;
-}
-
-/**
- * Number from an arbitrary value. Accepts ints, finite floats, and strings in decimal notation
- * with an optional sign, fraction, and exponent. Numeric strings that fit in an int are returned
- * as ints; decimal/exponent strings and out-of-range integers are returned as finite floats.
- *
- * Whitespace, booleans, non-numeric strings, and non-finite numbers are rejected.
- *
- * @return int|float|null The number, or null if the value is not a finite number.
- */
-function parse_number(mixed $value): int|float|null
-{
-    if (is_int($value))
-        return $value;
-
-    if (is_float($value))
-        return is_finite($value) ? $value : null;
-
-    if (!is_string($value) || !preg_match('/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/D', $value))
-        return null;
-
-    if (!str_contains($value, '.') && !str_contains(strtolower($value), 'e')) {
-        $int = parse_int($value);
-        if ($int !== null)
-            return $int;
-    }
-
-    $number = (float)$value;
-
-    return is_finite($number) ? $number : null;
 }
 
 // Strings -----------------------------------------------------------------------------------------
