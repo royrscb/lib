@@ -151,26 +151,26 @@ function is_valid_date(mixed $value, string $format = 'Y-m-d'): bool
  *  - any other number: 2, -1, '2', '0.5'
  *  - any other text ('abc')
  *
- * Any other type (null, float, array, object) is not accepted by the signature: check it before
- * calling (see is_scalar()).
+ * Returns null as well for any other type (null, float, array, object).
  *
  * To also accept 'yes', 'on'... use filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE).
  *
  * @return bool|null The boolean, or null if the value is not one of the cases above.
  */
-function parse_bool(bool|int|string $bool): ?bool
+function parse_bool(mixed $value): ?bool
 {
-    if (is_bool($bool))
-        return $bool;
+    if (is_bool($value))
+        return $value;
 
-    return match ($bool) {
+    return match ($value) {
         0, '0' => false,
         1, '1' => true,
-        default => is_string($bool) ? match (strtolower($bool)) {
-            'true' => true,
-            'false' => false,
-            default => null,
-        } : null,
+        default => !is_string($value) ? null
+            : match (strtolower($value)) {
+                'true' => true,
+                'false' => false,
+                default => null
+            }
     };
 }
 

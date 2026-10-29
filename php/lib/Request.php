@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 enum HttpMethod: string
 {
     case Post   = 'POST';
@@ -16,6 +18,8 @@ final class Request
     /** @var array<string, mixed>|null */
     private static ?array $body = null;
 
+    // public --------------------------------------------------------------------------------------
+
     /**
      * HTTP method of the request (GET when there is none, e.g. on the command line).
      *
@@ -28,41 +32,13 @@ final class Request
     }
 
     /**
-     * Scheme of the current request, including HTTPS behind a proxy that sets X-Forwarded-Proto.
-     * X-Forwarded-Proto can be forged if there is no proxy in front, so do not use this for security decisions.
+     * Value of a request header, or null if it was not sent. The name is not case-sensitive ('X-Api-Token').
+     * It does not work for Content-Type and Content-Length, which PHP does not expose as HTTP_ variables.
      */
-    public static function scheme(): string
+    public static function header(string $name): ?string
     {
-        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
-
-        return $https ? 'https' : 'http';
-    }
-
-    public static function isHttps(): bool
-    {
-        return self::scheme() === 'https';
-    }
-
-    public static function isHttp(): bool
-    {
-        return self::scheme() === 'http';
-    }
-
-    /**
-     * Query string and body together.
-     *
-     * @param bool $queryWins If false (default), a key that is in both takes the value from the body.
-     *                        If true, it takes the value from the query string.
-     * @return array<string, mixed>
-     * @throws RuntimeException 400 if the body is JSON and is not valid.
-     */
-    public static function vars(bool $queryWins = false): array
-    {
-        // array_replace() instead of array_merge(), which would renumber integer-like keys
-        return $queryWins
-            ? array_replace(self::body(), $_GET)
-            : array_replace($_GET, self::body());
+        return $_SERVER['HTTP_'.strtoupper(str_replace('-', '_', $name))]
+            ?? null;
     }
 
     /**
@@ -101,11 +77,51 @@ final class Request
     }
 
     /**
+     * Query string and body together.
+     *
+     * @param bool $queryWins If false (default), a key that is in both takes the value from the body.
+     *                        If true, it takes the value from the query string.
+     * @return array<string, mixed>
+     * @throws RuntimeException 400 if the body is JSON and is not valid.
+     */
+    public static function vars(bool $queryWins = false): array
+    {
+        // array_replace() instead of array_merge(), which would renumber integer-like keys
+        return $queryWins
+            ? array_replace(self::body(), $_GET)
+            : array_replace($_GET, self::body());
+    }
+
+    /**
+     * Scheme of the current request, including HTTPS behind a proxy that sets X-Forwarded-Proto.
+     * X-Forwarded-Proto can be forged if there is no proxy in front, so do not use this for security decisions.
+     */
+    public static function getScheme(): string
+    {
+        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+
+        return $https ? 'https' : 'http';
+    }
+
+    public static function isHttps(): bool
+    {
+        return self::getScheme() === 'https';
+    }
+
+    public static function isHttp(): bool
+    {
+        return self::getScheme() === 'http';
+    }
+
+    // Get typed vars ----------------------------
+
+    /**
      * String from the request vars.
      *
-     * @param bool $allowEmpty If false (default), an empty string is treated as an error.
-     * @param bool $bodyOnly   If true, read it only from the body, not from the query string. Use it for
-     *                         secrets (passwords, tokens), so they can never travel in the URL.
+     * @param bool $allowEmpty If false (default), an empty string ('') is treated as an error.
+     * @param bool $bodyOnly   If true, the value is read only from the body, not from the query string.
+     *                         Use it for secrets (passwords, tokens), so they can never travel in the URL.
      * @throws RuntimeException 422 if the key is missing, is not a string, or is empty and $allowEmpty is false;
      *                          400 if the body is JSON and is not valid.
      */
@@ -124,9 +140,10 @@ final class Request
     }
 
     /**
-     * String from the request vars, or null if it is missing or empty.
+     * String from the request vars, or null if it is missing or an empty string ('').
      *
-     * @param bool $bodyOnly Read it only from the body (see getString()).
+     * @param bool $bodyOnly If true, the value is read only from the body, not from the query string.
+     *                       Use it for secrets (passwords, tokens), so they can never travel in the URL.
      * @throws RuntimeException 422 if the key is present but is not a string;
      *                          400 if the body is JSON and is not valid.
      */
@@ -141,9 +158,12 @@ final class Request
     }
 
     /**
-     * Integer from the request vars (see parse_int() for what counts as an integer).
+     * Integer from the request vars. Only whole numbers in decimal notation are accepted, as an int or
+     * as a string of digits with an optional sign ('7', '-3', '+5', '007'). Decimals, exponents, spaces,
+     * thousands separators and booleans are rejected, and nothing is ever rounded.
      *
-     * @param bool $bodyOnly Read it only from the body (see getString()).
+     * @param bool $bodyOnly If true, the value is read only from the body, not from the query string.
+     *                       Use it for secrets (passwords, tokens), so they can never travel in the URL.
      * @throws RuntimeException 422 if the key is missing or is not an integer;
      *                          400 if the body is JSON and is not valid.
      */
@@ -157,9 +177,12 @@ final class Request
     }
 
     /**
-     * Integer from the request vars, or null if it is missing or empty.
+     * Integer from the request vars, or null if it is missing or an empty string (what a blank form
+     * field sends). Otherwise only whole numbers in decimal notation are accepted, as an int or as a
+     * string of digits with an optional sign ('7', '-3', '+5', '007'); anything else is rejected.
      *
-     * @param bool $bodyOnly Read it only from the body (see getString()).
+     * @param bool $bodyOnly If true, the value is read only from the body, not from the query string.
+     *                       Use it for secrets (passwords, tokens), so they can never travel in the URL.
      * @throws RuntimeException 422 if the key is present but is not an integer;
      *                          400 if the body is JSON and is not valid.
      */
@@ -175,16 +198,50 @@ final class Request
     }
 
     /**
-     * Value of a request header, or null if it was not sent. The name is not case-sensitive ('X-Api-Token').
-     * It does not work for Content-Type and Content-Length, which PHP does not expose as HTTP_ variables.
+     * Boolean from the request vars: true or false, 1 or 0, or the text 'true' or 'false' in any case.
+     * Anything else ('yes', 'on', 2, '') is rejected.
+     *
+     * @param bool $bodyOnly If true, the value is read only from the body, not from the query string.
+     *                       Use it for secrets (passwords, tokens), so they can never travel in the URL.
+     * @throws RuntimeException 422 if the key is missing or is not a boolean;
+     *                          400 if the body is JSON and is not valid.
      */
-    public static function header(string $name): ?string
+    public static function getBool(string $key, bool $bodyOnly = false): bool
     {
-        return $_SERVER['HTTP_'.strtoupper(str_replace('-', '_', $name))]
-            ?? null;
+        $value = self::getInputVars($bodyOnly)[$key]
+            ?? throw new RuntimeException("'$key' is required", 422);
+
+        return parse_bool($value)
+            ?? throw new RuntimeException("'$key' must be true or false", 422);
     }
 
     /**
+     * Boolean from the request vars, or null if it is missing or an empty string (what a blank form
+     * field sends). Otherwise only true or false, 1 or 0, or the text 'true' or 'false' in any case
+     * are accepted; anything else ('yes', 'on', 2) is rejected.
+     *
+     * @param bool $bodyOnly If true, the value is read only from the body, not from the query string.
+     *                       Use it for secrets (passwords, tokens), so they can never travel in the URL.
+     * @throws RuntimeException 422 if the key is present but is not a boolean;
+     *                          400 if the body is JSON and is not valid.
+     */
+    public static function getBoolOrNull(string $key, bool $bodyOnly = false): ?bool
+    {
+        $value = self::getInputVars($bodyOnly)[$key] ?? null;
+
+        if ($value === null || $value === '')
+            return null;
+
+        return parse_bool($value)
+            ?? throw new RuntimeException("'$key' must be true or false", 422);
+    }
+
+    // private -------------------------------------------------------------------------------------
+
+    /**
+     * Vars that the getters read from: only the body, or the query string and the body together
+     * (the body wins if a key is in both).
+     *
      * @return array<string, mixed>
      */
     private static function getInputVars(bool $bodyOnly): array
