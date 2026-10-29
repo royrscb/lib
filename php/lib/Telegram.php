@@ -52,7 +52,7 @@ final class Telegram
 
         // Messages to my chat get the project name in front (and "localhost|" in development)
         if ((int)$chatId === (int)Env::get(TelegramChatIdEnv::Royrscb->value))
-            $message = '<b>['.(Env::get('APP_ENV') === 'local' ? 'localhost|' : '').Env::get('PROJECT_NAME').']</b><br>'.$message;
+            $message = '<b>['.(Env::isDev() ? 'dev|' : '').Env::get('PROJECT_NAME').']</b><br>'.$message;
 
         $pieces = self::split(self::toTelegramHtml($message));
         $last = null;

@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+enum AppEnv: string
+{
+    case Dev = 'dev';
+    case Prod = 'prod';
+}
+
 final class Env
 {
     private static bool $loaded = false;
@@ -56,6 +62,16 @@ final class Env
     }
 
     /**
+     * Names (not values) of the variables loaded from the file.
+     *
+     * @return list<string>
+     */
+    public static function names(): array
+    {
+        return array_keys(self::$vars);
+    }
+
+    /**
      * Whether the variable is defined (in the loaded file or the system environment), even if its value is empty.
      */
     public static function exists(string $name): bool
@@ -98,12 +114,29 @@ final class Env
     }
 
     /**
-     * Names (not values) of the variables loaded from the file.
-     *
-     * @return list<string>
+     * Whether APP_ENV is set to "dev".
      */
-    public static function names(): array
+    public static function isDev(): bool
     {
-        return array_keys(self::$vars);
+        return self::appEnv() === AppEnv::Dev;
+    }
+
+    /**
+     * Whether APP_ENV is set to "prod".
+     */
+    public static function isProd(): bool
+    {
+        return self::appEnv() === AppEnv::Prod;
+    }
+
+    /**
+     * Returns the configured application environment.
+     *
+     * @throws RuntimeException If APP_ENV is missing, empty, or not a supported environment.
+     */
+    public static function appEnv(): AppEnv
+    {
+        return AppEnv::tryFrom(self::get('APP_ENV'))
+            ?? throw new RuntimeException("Invalid env var APP_ENV: expected 'dev' or 'prod'", 500);
     }
 }
