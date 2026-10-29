@@ -59,6 +59,54 @@ function http_request(string $method, string $url, mixed $data = null, array $he
     return is_array($decoded) ? $decoded : $result;
 }
 
+/**
+ * Sends a GET request. $data is added to the query string.
+ *
+ * @param array<int, string> $headers Extra headers ('Authorization: ******').
+ * @return array|string The decoded JSON (array) or, if the response is not JSON, the raw text.
+ * @throws RuntimeException 502 if the request fails. The status code of the response is not checked.
+ */
+function http_get(string $url, mixed $data = null, array $headers = []): array|string
+{
+    return http_request('GET', $url, $data, $headers);
+}
+
+/**
+ * Sends a POST request. $data is sent as a JSON body.
+ *
+ * @param array<int, string> $headers Extra headers ('Authorization: ******').
+ * @return array|string The decoded JSON (array) or, if the response is not JSON, the raw text.
+ * @throws RuntimeException 502 if the request fails. The status code of the response is not checked.
+ */
+function http_post(string $url, mixed $data = null, array $headers = []): array|string
+{
+    return http_request('POST', $url, $data, $headers);
+}
+
+/**
+ * Sends a PUT request. $data is sent as a JSON body.
+ *
+ * @param array<int, string> $headers Extra headers ('Authorization: ******').
+ * @return array|string The decoded JSON (array) or, if the response is not JSON, the raw text.
+ * @throws RuntimeException 502 if the request fails. The status code of the response is not checked.
+ */
+function http_put(string $url, mixed $data = null, array $headers = []): array|string
+{
+    return http_request('PUT', $url, $data, $headers);
+}
+
+/**
+ * Sends a DELETE request. $data is sent as a JSON body.
+ *
+ * @param array<int, string> $headers Extra headers ('Authorization: ******').
+ * @return array|string The decoded JSON (array) or, if the response is not JSON, the raw text.
+ * @throws RuntimeException 502 if the request fails. The status code of the response is not checked.
+ */
+function http_delete(string $url, mixed $data = null, array $headers = []): array|string
+{
+    return http_request('DELETE', $url, $data, $headers);
+}
+
 // Files -------------------------------------------------------------------------------------------
 
 /**

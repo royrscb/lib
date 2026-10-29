@@ -128,7 +128,7 @@ final class Telegram
 
     private static function post(string $token, array $data): ?array
     {
-        $response = http_request(HttpMethod::Post->value, "https://api.telegram.org/bot$token/sendMessage", $data);
+        $response = http_post("https://api.telegram.org/bot$token/sendMessage", $data);
 
         if (!is_array($response))
             throw new RuntimeException('Telegram: invalid response', 502);
@@ -319,7 +319,7 @@ final class TelegramBot
 
     private function postMethod(string $method, ?array $data = null): mixed
     {
-        $response = http_request(HttpMethod::Post->value, 'https://api.telegram.org/bot'.$this->token.'/'.$method, $data);
+        $response = http_post('https://api.telegram.org/bot'.$this->token.'/'.$method, $data);
 
         if (!is_array($response))
             throw new RuntimeException("Telegram bot $this->username: invalid response", 502);

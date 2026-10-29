@@ -28,7 +28,6 @@ spl_autoload_register(function (string $class): void {
         // lib ---
         'AuthRole'             => 'Auth',
         'AppEnv'               => 'Env',
-        'HttpMethod'           => 'Request',
         'ApiAccess'            => 'Api',
         'DbTableException'     => 'DbTable',
         'TelegramBotTokenEnv'  => 'Telegram',
