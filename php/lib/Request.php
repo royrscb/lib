@@ -127,16 +127,11 @@ final class Request
      */
     public static function getString(string $key, bool $allowEmpty = false, bool $bodyOnly = false): string
     {
-        $value = self::getInputVars($bodyOnly)[$key]
-            ?? throw new RuntimeException("'$key' is required", 422);
-
-        if (!is_string($value))
-            throw new RuntimeException("'$key' must be a string", 422);
-
-        if ($value === '' && !$allowEmpty)
-            throw new RuntimeException("'$key' must not be empty", 422);
-
-        return $value;
+        try {
+            return array_get_string(self::getInputVars($bodyOnly), $key, $allowEmpty);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
     }
 
     /**
@@ -149,12 +144,11 @@ final class Request
      */
     public static function getStringOrNull(string $key, bool $bodyOnly = false): ?string
     {
-        $value = self::getInputVars($bodyOnly)[$key] ?? null;
-
-        if ($value !== null && !is_string($value))
-            throw new RuntimeException("'$key' must be a string", 422);
-
-        return is_null_or_empty($value) ? null : $value;
+        try {
+            return array_get_string_or_null(self::getInputVars($bodyOnly), $key);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
     }
 
     /**
@@ -169,11 +163,11 @@ final class Request
      */
     public static function getInt(string $key, bool $bodyOnly = false): int
     {
-        $value = self::getInputVars($bodyOnly)[$key]
-            ?? throw new RuntimeException("'$key' is required", 422);
-
-        return parse_int($value)
-            ?? throw new RuntimeException("'$key' must be an integer", 422);
+        try {
+            return array_get_int(self::getInputVars($bodyOnly), $key);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
     }
 
     /**
@@ -188,13 +182,11 @@ final class Request
      */
     public static function getIntOrNull(string $key, bool $bodyOnly = false): ?int
     {
-        $value = self::getInputVars($bodyOnly)[$key] ?? null;
-
-        if ($value === null || $value === '')
-            return null;
-
-        return parse_int($value)
-            ?? throw new RuntimeException("'$key' must be an integer", 422);
+        try {
+            return array_get_int_or_null(self::getInputVars($bodyOnly), $key);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
     }
 
     /**
@@ -208,11 +200,11 @@ final class Request
      */
     public static function getBool(string $key, bool $bodyOnly = false): bool
     {
-        $value = self::getInputVars($bodyOnly)[$key]
-            ?? throw new RuntimeException("'$key' is required", 422);
-
-        return parse_bool($value)
-            ?? throw new RuntimeException("'$key' must be true or false", 422);
+        try {
+            return array_get_bool(self::getInputVars($bodyOnly), $key);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
     }
 
     /**
@@ -227,13 +219,11 @@ final class Request
      */
     public static function getBoolOrNull(string $key, bool $bodyOnly = false): ?bool
     {
-        $value = self::getInputVars($bodyOnly)[$key] ?? null;
-
-        if ($value === null || $value === '')
-            return null;
-
-        return parse_bool($value)
-            ?? throw new RuntimeException("'$key' must be true or false", 422);
+        try {
+            return array_get_bool_or_null(self::getInputVars($bodyOnly), $key);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
     }
 
     // private -------------------------------------------------------------------------------------

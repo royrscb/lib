@@ -133,7 +133,101 @@ function is_valid_date(mixed $value, string $format = 'Y-m-d'): bool
 // Conversion --------------------------------------------------------------------------------------
 
 /**
- * Boolean from a request value, strict: it only understands true/false and 0/1.
+ * Required string from an array.
+ *
+ * @throws InvalidArgumentException If the key is missing, is not a string, or is empty and $allowEmpty is false.
+ */
+function array_get_string(array $values, string $key, bool $allowEmpty = false): string
+{
+    $value = $values[$key]
+        ?? throw new InvalidArgumentException("'$key' is required");
+
+    if (!is_string($value))
+        throw new InvalidArgumentException("'$key' must be a string");
+
+    if ($value === '' && !$allowEmpty)
+        throw new InvalidArgumentException("'$key' must not be empty");
+
+    return $value;
+}
+
+/**
+ * Optional string from an array; missing, null, and an empty string return null.
+ *
+ * @throws InvalidArgumentException If the key is present and is not a string.
+ */
+function array_get_string_or_null(array $values, string $key): ?string
+{
+    $value = $values[$key] ?? null;
+
+    if ($value !== null && !is_string($value))
+        throw new InvalidArgumentException("'$key' must be a string");
+
+    return is_null_or_empty($value) ? null : $value;
+}
+
+/**
+ * Required integer from an array. Only whole numbers in decimal notation are accepted.
+ *
+ * @throws InvalidArgumentException If the key is missing or is not an integer.
+ */
+function array_get_int(array $values, string $key): int
+{
+    $value = $values[$key]
+        ?? throw new InvalidArgumentException("'$key' is required");
+
+    return parse_int($value)
+        ?? throw new InvalidArgumentException("'$key' must be an integer");
+}
+
+/**
+ * Optional integer from an array; missing, null, and an empty string return null.
+ *
+ * @throws InvalidArgumentException If the key is present and is not an integer.
+ */
+function array_get_int_or_null(array $values, string $key): ?int
+{
+    $value = $values[$key] ?? null;
+
+    if ($value === null || $value === '')
+        return null;
+
+    return parse_int($value)
+        ?? throw new InvalidArgumentException("'$key' must be an integer");
+}
+
+/**
+ * Required boolean from an array: true or false, 1 or 0, or the text 'true' or 'false' in any case.
+ *
+ * @throws InvalidArgumentException If the key is missing or is not a boolean.
+ */
+function array_get_bool(array $values, string $key): bool
+{
+    $value = $values[$key]
+        ?? throw new InvalidArgumentException("'$key' is required");
+
+    return parse_bool($value)
+        ?? throw new InvalidArgumentException("'$key' must be true or false");
+}
+
+/**
+ * Optional boolean from an array; missing, null, and an empty string return null.
+ *
+ * @throws InvalidArgumentException If the key is present and is not a boolean.
+ */
+function array_get_bool_or_null(array $values, string $key): ?bool
+{
+    $value = $values[$key] ?? null;
+
+    if ($value === null || $value === '')
+        return null;
+
+    return parse_bool($value)
+        ?? throw new InvalidArgumentException("'$key' must be true or false");
+}
+
+/**
+ * Boolean from an arbitrary value, strict: it only understands true/false and 0/1.
  *
  * Returns true for:
  *  - the boolean true
@@ -175,7 +269,7 @@ function parse_bool(mixed $value): ?bool
 }
 
 /**
- * Integer from a request value, strict: only whole numbers written in decimal notation.
+ * Integer from an arbitrary value, strict: only whole numbers written in decimal notation.
  *
  * Returns the int for:
  *  - any int (positive, negative or 0)
