@@ -214,6 +214,15 @@ function parse_int(mixed $value): ?int
 // Strings -----------------------------------------------------------------------------------------
 
 /**
+ * Whether $value is null or an empty string. Strict: '0' and strings with only spaces are NOT empty
+ * (unlike empty(), which treats '0' as empty).
+ */
+function is_null_or_empty(?string $value): bool
+{
+    return $value === null || $value === '';
+}
+
+/**
  * Splits a name into its words, whatever case it is written in.
  * It cuts at every character that is not a letter or a digit ('_', '-', spaces, '.', '/'...) and
  * between a lower case letter or digit and an upper case letter.

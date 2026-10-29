@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 enum HttpMethod: string
 {
     case Post   = 'POST';
@@ -103,6 +101,80 @@ final class Request
     }
 
     /**
+     * String from the request vars.
+     *
+     * @param bool $allowEmpty If false (default), an empty string is treated as an error.
+     * @param bool $bodyOnly   If true, read it only from the body, not from the query string. Use it for
+     *                         secrets (passwords, tokens), so they can never travel in the URL.
+     * @throws RuntimeException 422 if the key is missing, is not a string, or is empty and $allowEmpty is false;
+     *                          400 if the body is JSON and is not valid.
+     */
+    public static function getString(string $key, bool $allowEmpty = false, bool $bodyOnly = false): string
+    {
+        $value = self::getInputVars($bodyOnly)[$key]
+            ?? throw new RuntimeException("'$key' is required", 422);
+
+        if (!is_string($value))
+            throw new RuntimeException("'$key' must be a string", 422);
+
+        if ($value === '' && !$allowEmpty)
+            throw new RuntimeException("'$key' must not be empty", 422);
+
+        return $value;
+    }
+
+    /**
+     * String from the request vars, or null if it is missing or empty.
+     *
+     * @param bool $bodyOnly Read it only from the body (see getString()).
+     * @throws RuntimeException 422 if the key is present but is not a string;
+     *                          400 if the body is JSON and is not valid.
+     */
+    public static function getStringOrNull(string $key, bool $bodyOnly = false): ?string
+    {
+        $value = self::getInputVars($bodyOnly)[$key] ?? null;
+
+        if ($value !== null && !is_string($value))
+            throw new RuntimeException("'$key' must be a string", 422);
+
+        return is_null_or_empty($value) ? null : $value;
+    }
+
+    /**
+     * Integer from the request vars (see parse_int() for what counts as an integer).
+     *
+     * @param bool $bodyOnly Read it only from the body (see getString()).
+     * @throws RuntimeException 422 if the key is missing or is not an integer;
+     *                          400 if the body is JSON and is not valid.
+     */
+    public static function getInt(string $key, bool $bodyOnly = false): int
+    {
+        $value = self::getInputVars($bodyOnly)[$key]
+            ?? throw new RuntimeException("'$key' is required", 422);
+
+        return parse_int($value)
+            ?? throw new RuntimeException("'$key' must be an integer", 422);
+    }
+
+    /**
+     * Integer from the request vars, or null if it is missing or empty.
+     *
+     * @param bool $bodyOnly Read it only from the body (see getString()).
+     * @throws RuntimeException 422 if the key is present but is not an integer;
+     *                          400 if the body is JSON and is not valid.
+     */
+    public static function getIntOrNull(string $key, bool $bodyOnly = false): ?int
+    {
+        $value = self::getInputVars($bodyOnly)[$key] ?? null;
+
+        if ($value === null || $value === '')
+            return null;
+
+        return parse_int($value)
+            ?? throw new RuntimeException("'$key' must be an integer", 422);
+    }
+
+    /**
      * Value of a request header, or null if it was not sent. The name is not case-sensitive ('X-Api-Token').
      * It does not work for Content-Type and Content-Length, which PHP does not expose as HTTP_ variables.
      */
@@ -110,5 +182,13 @@ final class Request
     {
         return $_SERVER['HTTP_'.strtoupper(str_replace('-', '_', $name))]
             ?? null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function getInputVars(bool $bodyOnly): array
+    {
+        return $bodyOnly ? self::body() : self::vars();
     }
 }
