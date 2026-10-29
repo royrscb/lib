@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+/**
+ * Environment variables containing Telegram bot tokens.
+ */
 enum TelegramBotTokenEnv: string
 {
     case Royrscb = 'TELEGRAM_BOT_TOKEN_ROYRSCB_BOT';
@@ -9,12 +12,17 @@ enum TelegramBotTokenEnv: string
     case Volando = 'TELEGRAM_BOT_TOKEN_VOLANDOBOT';
 }
 
+/**
+ * Environment variables containing configured Telegram chat IDs.
+ */
 enum TelegramChatIdEnv: string
 {
     case Royrscb = 'TELEGRAM_CHAT_ID_ROYRSCB';
 }
 
-// Static helper to send messages (notifications, error reports).
+/**
+ * Sends Telegram notifications and error reports using configured bots.
+ */
 final class Telegram
 {
     private const MAX_SENT_PER_REQUEST = 10;   // loop guard: nothing is sent beyond this
@@ -189,15 +197,17 @@ final class Telegram
     }
 }
 
-// Incoming update of a bot webhook, parsed. (Was Telegram_message.)
-//
-// Example of an update (private chat, /start command):
-//   ['update_id' => 724578981, 'message' => [
-//       'message_id' => 105735,
-//       'from' => ['id' => 3410, 'is_bot' => false, 'first_name' => 'x', 'username' => 'xxx', 'language_code' => 'es'],
-//       'chat' => ['id' => 3410, 'first_name' => 'x', 'username' => 'xxx', 'type' => 'private'],
-//       'date' => 1748854016, 'text' => '/start',
-//       'entities' => [['offset' => 0, 'length' => 6, 'type' => 'bot_command']]]]
+/**
+ * Parsed incoming update of a bot webhook.
+ *
+ * Example of an update (private chat, /start command):
+ *   ['update_id' => 724578981, 'message' => [
+ *       'message_id' => 105735,
+ *       'from' => ['id' => 3410, 'is_bot' => false, 'first_name' => 'x', 'username' => 'xxx', 'language_code' => 'es'],
+ *       'chat' => ['id' => 3410, 'first_name' => 'x', 'username' => 'xxx', 'type' => 'private'],
+ *       'date' => 1748854016, 'text' => '/start',
+ *       'entities' => [['offset' => 0, 'length' => 6, 'type' => 'bot_command']]]]
+ */
 final class TelegramMessage
 {
     private array $update;

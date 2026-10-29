@@ -21,6 +21,9 @@ enum ApiAccess
     case Admin;
 }
 
+/**
+ * Dispatches HTTP requests to CRUD operations or declared custom handlers.
+ */
 final class Api
 {
     /**

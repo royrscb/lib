@@ -2,12 +2,18 @@
 
 declare(strict_types=1);
 
+/**
+ * Supported application environments.
+ */
 enum AppEnv: string
 {
     case Dev = 'dev';
     case Prod = 'prod';
 }
 
+/**
+ * Loads and reads application configuration from environment variables and an env file.
+ */
 final class Env
 {
     private static bool $loaded = false;

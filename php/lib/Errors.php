@@ -20,6 +20,9 @@ final class Errors
     private const string ENV_APP_DEBUG = 'APP_DEBUG';
     private const string ENV_LOG_FILEPATH_FROM_ROOT = 'LOG_FILEPATH_FROM_ROOT';
 
+    /**
+     * Registers the application error and exception handlers.
+     */
     public static function register(): void
     {
         ini_set('display_errors', '0');
@@ -36,6 +39,11 @@ final class Errors
         set_exception_handler(self::handle(...));
     }
 
+    /**
+     * Logs an uncaught error and sends the corresponding response or CLI message.
+     *
+     * @param Throwable $e Uncaught error or exception.
+     */
     public static function handle(Throwable $e): void
     {
         $code = $e->getCode();

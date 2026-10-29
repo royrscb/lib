@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+/**
+ * Value types supported by the MiscData key/value store.
+ */
 enum MiscDataType: string
 {
     case Number = 'number';
@@ -16,6 +19,9 @@ enum MiscDataType: string
  * Error raised by MiscData for anything the caller can cause. The reason is in getCode().
  * The caller decides how to react (e.g. map the reason to an HTTP status in an API).
  */
+/**
+ * Caller-caused error raised by the MiscData key/value store.
+ */
 final class MiscDataException extends RuntimeException
 {
     public const int INVALID = 1;        // Bad key, type or value
@@ -27,6 +33,9 @@ final class MiscDataException extends RuntimeException
  * Typed key/value store backed by the `misc_data` table.
  *
  * Caller errors throw MiscDataException (see its constants). Anything else (database failure, corrupt data...) is an unexpected error and is thrown as is.
+ */
+/**
+ * Typed key/value store backed by the misc_data database table.
  */
 final class MiscData
 {
@@ -41,6 +50,11 @@ final class MiscData
 
     // Constructor ---------------------------------------------------------------------------------
 
+    /**
+     * Initializes the store with a database connection.
+     *
+     * @param Database $db Database connection used for queries.
+     */
     public function __construct(Database $db)
     {
         $this->db = $db;

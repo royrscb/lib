@@ -96,11 +96,17 @@ final class Request
         return $https ? 'https' : 'http';
     }
 
+    /**
+     * Whether the current request uses HTTPS.
+     */
     public static function isHttps(): bool
     {
         return self::getScheme() === 'https';
     }
 
+    /**
+     * Whether the current request uses HTTP.
+     */
     public static function isHttp(): bool
     {
         return self::getScheme() === 'http';

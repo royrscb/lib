@@ -2,12 +2,18 @@
 
 declare(strict_types=1);
 
+/**
+ * Supported authentication roles.
+ */
 enum AuthRole: string
 {
     case Admin = 'admin';
     case User = 'user';
 }
 
+/**
+ * Serializable identity of an authenticated admin or user.
+ */
 final readonly class AuthOwner
 {
     public AuthRole $role;
@@ -19,11 +25,19 @@ final readonly class AuthOwner
         $this->id = $id;
     }
 
+    /**
+     * Creates the admin identity.
+     */
     public static function admin(): self
     {
         return new self(AuthRole::Admin, null);
     }
 
+    /**
+     * Creates a user identity.
+     *
+     * @param int $id User ID.
+     */
     public static function user(int $id): self
     {
         return new self(AuthRole::User, $id);
@@ -76,6 +90,9 @@ final readonly class AuthOwner
     }
 }
 
+/**
+ * Manages login sessions, persistent login cookies, and authorization checks.
+ */
 final class Auth
 {
     // const ---------------------------------------------------------------------------------------

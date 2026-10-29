@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+/**
+ * Base class for database tables with configured readable, creatable, and updatable columns.
+ */
 abstract class DbTable
 {
     // Attributes ----------------------------------------------------------------------------------
@@ -254,6 +257,9 @@ abstract class DbTable
     }
 }
 
+/**
+ * Database table error with an HTTP status code and optional failed SQL.
+ */
 class DbTableException extends RuntimeException
 {
     // ⚠️❗
