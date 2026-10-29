@@ -206,16 +206,19 @@ final class MiscData
 
     private static function validateKey(string $key): void
     {
-        if ($key === '')
+        if (is_null_or_empty($key))
             throw new MiscDataException("'key' is required", MiscDataException::INVALID);
 
         if (mb_strlen($key) > self::KEY_MAX_LENGTH)
             throw new MiscDataException("'key' must be at most ".self::KEY_MAX_LENGTH." characters", MiscDataException::INVALID);
     }
 
-    // Client value => text stored in the value column. Validates the value against the type.
-    private static function serialize(MiscDataType $type, mixed $value): string
+    // Client value => text stored in the value column. Null is valid for every type.
+    private static function serialize(MiscDataType $type, mixed $value): ?string
     {
+        if ($value === null)
+            return null;
+
         switch ($type) {
             case MiscDataType::String:
                 if (!is_string($value))

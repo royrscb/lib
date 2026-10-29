@@ -19,8 +19,7 @@ if (Request::method() !== HttpMethod::Post)
 $identifier = Request::getStringOrNull('email', bodyOnly: true)
     ?? Request::getStringOrNull('username', bodyOnly: true)
     ?? throw new RuntimeException("'email' or 'username' is required", 422);
-$identifier = trim($identifier);
-if ($identifier === '')
+if (is_null_or_empty($identifier))
     throw new RuntimeException("'email' or 'username' must not be empty", 422);
 
 $password = Request::getString('password', bodyOnly: true);

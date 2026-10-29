@@ -419,12 +419,12 @@ function array_get_bool_or_null(array $values, string $key): ?bool
 // Strings -----------------------------------------------------------------------------------------
 
 /**
- * Whether $value is null or an empty string. Strict: '0' and strings with only spaces are NOT empty
+ * Whether $value is null, empty, or contains only whitespace. Strict: '0' is NOT empty
  * (unlike empty(), which treats '0' as empty).
  */
 function is_null_or_empty(?string $value): bool
 {
-    return $value === null || $value === '';
+    return $value === null || trim($value) === '';
 }
 
 /**

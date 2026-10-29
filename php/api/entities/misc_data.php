@@ -5,16 +5,6 @@ require_once __DIR__.'/../../bootstrap.php';
 
 $misc = Database::instance()->miscData();
 
-// String var of the request: '' if it is missing, 422 if it is present but not a string (?key[]=x).
-// The real validation (empty key, bad value...) stays in MiscData.
-$str = static function (array $vars, string $name): string {
-    $value = $vars[$name] ?? '';
-
-    return is_string($value)
-        ? $value
-        : throw new RuntimeException("'$name' must be a string", 422);
-};
-
 // Wraps a handler so MiscDataException becomes a RuntimeException with an HTTP status.
 // It is done per handler (not around Api::serve) so the conversion can never run after a response was sent.
 $guard = static fn(callable $handler): callable => function (array $vars) use ($handler) {
@@ -34,33 +24,38 @@ $guard = static fn(callable $handler): callable => function (array $vars) use ($
 // MiscData is not a DbTable, so every rule is a handler
 Api::serve(null, [
     // GET ?key=x: that value. GET: every key
-    'GET' => [ApiAccess::Public, $guard(function (array $vars) use ($misc, $str) {
-        $key = $str($vars, 'key');
+    'GET' => [ApiAccess::Public, $guard(function (array $vars) use ($misc) {
+        $key = Request::getStringOrNull('key');
 
-        return $key === '' ? $misc->all() : $misc->get($key);
+        return $key === null ? $misc->all() : $misc->get($key);
     })],
 
-    'POST' => [ApiAccess::Admin, $guard(function (array $vars) use ($misc, $str) {
-        $key = $str($vars, 'key');
-        $type = MiscDataType::tryFrom($str($vars, 'type'))
+    'POST' => [ApiAccess::Admin, $guard(function (array $vars) use ($misc) {
+        if (!array_key_exists('value', $vars))
+            throw new RuntimeException("'value' is required", 422);
+
+        $key = Request::getString('key');
+        $type = MiscDataType::tryFrom(Request::getString('type'))
             ?? throw new RuntimeException("'type' is not valid", 422);
 
-        // A missing 'value' becomes null: serialize() rejects it with a 422 for every type but json
-        $misc->create($key, $type, $vars['value'] ?? null);
+        $misc->create($key, $type, $vars['value']);
 
         return $misc->get($key);
     })],
 
-    'PUT' => [ApiAccess::Admin, $guard(function (array $vars) use ($misc, $str) {
-        $key = $str($vars, 'key');
+    'PUT' => [ApiAccess::Admin, $guard(function (array $vars) use ($misc) {
+        if (!array_key_exists('value', $vars))
+            throw new RuntimeException("'value' is required", 422);
 
-        $misc->update($key, $vars['value'] ?? null);
+        $key = Request::getString('key');
+
+        $misc->update($key, $vars['value']);
 
         return $misc->get($key);
     })],
 
-    'DELETE' => [ApiAccess::Admin, $guard(function (array $vars) use ($misc, $str) {
-        if (!$misc->delete($str($vars, 'key')))
+    'DELETE' => [ApiAccess::Admin, $guard(function (array $vars) use ($misc) {
+        if (!$misc->delete(Request::getString('key')))
             throw new RuntimeException('Not found', 404);
 
         return null;
