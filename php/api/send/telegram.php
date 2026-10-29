@@ -1,5 +1,4 @@
 <?php
-
 /**
  * POST /send/telegram.php
  *
@@ -10,6 +9,7 @@
  * Returns Telegram's result as JSON.
  */
 
+declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
 if (Request::method() !== HttpMethod::Post)

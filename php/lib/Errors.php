@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Turns every uncaught error into a JSON response (or a message on stderr in the command line)
  * and logs the serious ones.

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 enum AuthRole: string
 {
     case Admin = 'admin';
@@ -379,6 +381,9 @@ final class Auth
     
     private static function setCookie(string $name, string $value, int $expiresUnixTime): void
     {
+        if ($name === null)
+            return;
+
         setcookie($name, $value, [
             'expires'  => $expiresUnixTime,
             'path'     => '/',

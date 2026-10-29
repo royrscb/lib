@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // Plain stateless functions. Loaded from bootstrap.php.
 
 // HTTP --------------------------------------------------------------------------------------------

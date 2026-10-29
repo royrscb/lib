@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Who can use the CRUD or a handler of Api.
  */

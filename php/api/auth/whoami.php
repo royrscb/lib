@@ -1,5 +1,4 @@
 <?php
-
 /**
  * GET /whoami.php
  *
@@ -9,6 +8,7 @@
  *   - nobody: null (200, so the client can ask without an error)
  */
 
+declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
 if (Request::method() !== HttpMethod::Get)

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Image upload endpoint.
  *
@@ -37,6 +36,7 @@
  *   500      An image can't be saved.
  */
 
+declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
 // Config ---

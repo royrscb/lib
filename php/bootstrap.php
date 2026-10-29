@@ -1,7 +1,8 @@
 <?php
-
 // The only file that scripts in api/ and gateway/ include.
 // Code is executed on load only here; every other file just defines classes and functions.
+
+declare(strict_types=1);
 
 define('APP_ROOT', __DIR__);
 

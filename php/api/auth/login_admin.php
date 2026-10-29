@@ -1,5 +1,4 @@
 <?php
-
 /**
  * POST /login_admin.php
  *
@@ -10,6 +9,7 @@
  * Returns the identity (see Auth::me()). 401 if the password is wrong or the app has no admin.
  */
 
+declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
 if (Request::method() !== HttpMethod::Post)

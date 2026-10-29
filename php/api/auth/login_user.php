@@ -1,5 +1,4 @@
 <?php
-
 /**
  * POST /login_user.php
  *
@@ -11,6 +10,7 @@
  * Returns the identity (see Auth::me()). 401 if the credentials are wrong.
  */
 
+declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
 if (Request::method() !== HttpMethod::Post)

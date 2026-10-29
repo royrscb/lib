@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 enum HttpMethod: string
 {
     case Post   = 'POST';

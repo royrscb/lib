@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 enum TelegramBotTokenEnv: string
 {
     case Royrscb = 'TELEGRAM_BOT_TOKEN_ROYRSCB_BOT';

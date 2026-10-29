@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Sends emails with PHP's mail(). Text and HTML have their own method.
  * The order of the arguments is the one of an email: from, to, subject, body.

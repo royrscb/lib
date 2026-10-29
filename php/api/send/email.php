@@ -1,5 +1,4 @@
 <?php
-
 /**
  * POST /send/email.php
  *
@@ -15,6 +14,7 @@
  * Admin only. Returns 204 when the email is sent.
  */
 
+declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
 if (Request::method() !== HttpMethod::Post)
