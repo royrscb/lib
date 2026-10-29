@@ -284,15 +284,10 @@ final class Api
     // booleans, floats, arrays, whitespace and values outside the int range are rejected.
     private static function getId(array $vars, string $key = 'id'): ?int
     {
-        $raw = $vars[$key] ?? null;
-
-        if ($raw === null || $raw === '')
-            return null;
-
-        $id = parse_int($raw);
-        if ($id === null)
-            throw new RuntimeException("'$key' must be an integer", 422);
-
-        return $id;
+        try {
+            return array_get_int_or_null($vars, $key);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
     }
 }
