@@ -1,11 +1,17 @@
 <?php
 
 /**
- * Turns every uncaught error into a JSON response (or a message on stderr in the command line).
+ * Turns every uncaught error into a JSON response (or a message on stderr in the command line)
+ * and logs the serious ones.
  *
  * - A Throwable whose code is 400-599 uses it as the HTTP status; anything else is a 500.
- * - Below 500 the message is sent as it is (it is for the client). From 500 up it is hidden
- *   and logged instead, unless APP_DEBUG=1 in the .env.
+ * - Below 500 the message is sent as it is (it is for the client) and nothing is logged.
+ * - From 500 up the message is hidden and the error is logged, unless APP_DEBUG=1 in the .env
+ *   (then the message is also sent).
+ * - Log file: LOG_FILE in the .env, or logs/app.log in APP_ROOT.
+ *
+ * register() reads nothing from the .env, so it can run before Env::load(). The .env is read
+ * when an error happens, and if it is not loaded yet the defaults are used.
  */
 final class Errors
 {
@@ -14,7 +20,7 @@ final class Errors
         ini_set('display_errors', '0');
         error_reporting(E_ALL);
 
-        // Warnings and notices become exceptions, so nothing fails silently (deprecations are only logged)
+        // Warnings and notices become exceptions, so nothing fails silently (deprecations are not converted)
         set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
             if (!(error_reporting() & $severity) || $severity & (E_DEPRECATED | E_USER_DEPRECATED))
                 return false;
@@ -29,14 +35,12 @@ final class Errors
     {
         $code = $e->getCode();
         $status = is_int($code) && $code >= 400 && $code <= 599 ? $code : 500;
-        $debug = Env::getOrNull('APP_DEBUG') === '1';
 
         if ($status >= 500)
-            error_log((string)$e);
+            self::log($status, $e);
 
-        $message = $status < 500 || $debug
-            ? $e->getMessage()
-            : 'Internal server error';
+        $debug = Env::getOrNull('APP_DEBUG') === '1';
+        $message = $status < 500 || $debug ? $e->getMessage() : 'Internal server error';
 
         if (PHP_SAPI === 'cli') {
             fwrite(STDERR, "[$status] $message\n");
@@ -50,5 +54,28 @@ final class Errors
         }
 
         echo json_encode(['error' => $message], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    // Appends the error to the log file. The query string is left out of the URI because it can carry secrets.
+    private static function log(int $status, Throwable $e): void
+    {
+        $file = Env::getOrNull('LOG_FILE') ?? APP_ROOT.'/logs/app.log';
+
+        $line = sprintf(
+            "[%s] [%d] %s %s %s\n%s\n",
+            date('c'),
+            $status,
+            $_SERVER['REQUEST_METHOD'] ?? 'CLI',
+            strtok($_SERVER['REQUEST_URI'] ?? 'cli', '?'),
+            $_SERVER['REMOTE_ADDR'] ?? '-',
+            $e
+        );
+
+        // @ because a warning here would become an exception inside the handler itself
+        @mkdir(dirname($file), 0775, true);
+
+        // If the file can not be written, fall back to PHP's default log so the error is not lost
+        if (!@error_log($line, 3, $file))
+            error_log($line);
     }
 }
