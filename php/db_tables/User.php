@@ -33,17 +33,16 @@ final class User extends DbTable
     {
         unset($data['hashword']);
 
-        if (array_key_exists('password', $data)) {
-            if (!is_string($data['password']) || $data['password'] === '')
-                throw new RuntimeException("'password' must be a non-empty string", 422);
+        $this->validateIdentity($data);
 
-            $data['hashword'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        try {
+            $password = array_get_string($data, 'password');
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
         }
+        $data['hashword'] = password_hash(self::validatePassword($password), PASSWORD_DEFAULT);
 
         unset($data['password']);
-
-        $this->assertUnique('username', $data);
-        $this->assertUnique('email', $data);
 
         return parent::create($data);
     }
@@ -53,10 +52,7 @@ final class User extends DbTable
      */
     public function update(int $id, array $data): ?array
     {
-        foreach (['username', 'email'] as $column) {
-            if (array_key_exists($column, $data))
-                $this->assertUnique($column, $data, $id);
-        }
+        $this->validateIdentity($data, $id);
 
         return parent::update($id, $data);
     }
@@ -86,6 +82,7 @@ final class User extends DbTable
      */
     public function setPassword(int $id, string $password): void
     {
+        $password = self::validatePassword($password);
         $hashword = password_hash($password, PASSWORD_DEFAULT);
 
         $this->query(
@@ -142,18 +139,41 @@ final class User extends DbTable
         return is_string($hashword) && $hashword !== '' ? $hashword : null;
     }
 
-    private function assertUnique(string $column, array $data, ?int $exceptId = null): void
+    private function validateIdentity(array &$data, ?int $exceptId = null): void
     {
-        try {
-            $value = array_get_string($data, $column);
-        } catch (InvalidArgumentException $e) {
-            throw new RuntimeException($e->getMessage(), 422, $e);
-        }
+        foreach (['username', 'email'] as $column) {
+            if ($exceptId !== null && !array_key_exists($column, $data))
+                continue;
 
+            try {
+                $value = trim(array_get_string($data, $column));
+            } catch (InvalidArgumentException $e) {
+                throw new RuntimeException($e->getMessage(), 422, $e);
+            }
+
+            if ($column === 'email' ? !is_valid_email($value) :
+                (is_valid_email($value) || !preg_match('/^[\p{L}\p{N}_.-]+$/u', $value)))
+                throw new RuntimeException("'$column' is invalid", 422);
+
+            $data[$column] = $value;
+            $this->assertUnique($column, $value, $exceptId);
+        }
+    }
+
+    private function assertUnique(string $column, string $value, ?int $exceptId): void
+    {
         if ($this->readOne(
             "`$column` = ?".($exceptId === null ? '' : ' AND id <> ?'),
             $exceptId === null ? [$value] : [$value, $exceptId]
         ) !== null)
             throw new RuntimeException("'$column' already exists", 409);
+    }
+
+    private static function validatePassword(mixed $password): string
+    {
+        if (!is_string($password) || strlen($password) < 8 || strlen($password) > 64)
+            throw new RuntimeException("'password' must be between 8 and 64 chars", 422);
+
+        return $password;
     }
 }

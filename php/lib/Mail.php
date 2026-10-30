@@ -81,7 +81,7 @@ final class Mail
     // A valid email never has line breaks, so it can't inject headers (Bcc: ...)
     private static function getValidAddress(string $email, string $role): string
     {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+        if (!is_valid_email($email))
             throw new RuntimeException("Invalid $role email", 422);
 
         return $email;

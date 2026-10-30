@@ -490,3 +490,11 @@ function to_camel_case(string $string): string
 
     return mb_strtolower(mb_substr($pascal, 0, 1)).mb_substr($pascal, 1);
 }
+
+/**
+ * Whether the value has a valid email address format.
+ */
+function is_valid_email(string $email): bool
+{
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
