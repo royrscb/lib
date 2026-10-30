@@ -42,7 +42,23 @@ final class User extends DbTable
 
         unset($data['password']);
 
+        $this->assertUnique('username', $data);
+        $this->assertUnique('email', $data);
+
         return parent::create($data);
+    }
+
+    /**
+     * Updates a user, rejecting a username or email already used by another user.
+     */
+    public function update(int $id, array $data): ?array
+    {
+        foreach (['username', 'email'] as $column) {
+            if (array_key_exists($column, $data))
+                $this->assertUnique($column, $data, $id);
+        }
+
+        return parent::update($id, $data);
     }
 
     /**
@@ -124,5 +140,20 @@ final class User extends DbTable
 
         // false = no such user, null = user created without a password
         return is_string($hashword) && $hashword !== '' ? $hashword : null;
+    }
+
+    private function assertUnique(string $column, array $data, ?int $exceptId = null): void
+    {
+        try {
+            $value = array_get_string($data, $column);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage(), 422, $e);
+        }
+
+        if ($this->readOne(
+            "`$column` = ?".($exceptId === null ? '' : ' AND id <> ?'),
+            $exceptId === null ? [$value] : [$value, $exceptId]
+        ) !== null)
+            throw new RuntimeException("'$column' already exists", 409);
     }
 }

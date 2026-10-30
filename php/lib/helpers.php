@@ -295,7 +295,7 @@ function parse_number(mixed $value): int|float|null
 /**
  * Required string from an array.
  *
- * @throws InvalidArgumentException If the key is missing, is not a string, or is empty and $allowEmpty is false.
+ * @throws InvalidArgumentException If the key is missing, is not a string, or is empty/whitespace and $allowEmpty is false.
  */
 function array_get_string(array $values, string $key, bool $allowEmpty = false): string
 {
@@ -305,7 +305,7 @@ function array_get_string(array $values, string $key, bool $allowEmpty = false):
     if (!is_string($value))
         throw new InvalidArgumentException("'$key' must be a string");
 
-    if ($value === '' && !$allowEmpty)
+    if (!$allowEmpty && is_null_or_empty($value))
         throw new InvalidArgumentException("'$key' must not be empty");
 
     return $value;

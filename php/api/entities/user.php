@@ -12,7 +12,11 @@ Api::serve(Database::instance()->table(User::class), [
             ?? throw new RuntimeException('Not found', 404);
     }],
 
-    'POST' => ApiAccess::Public,
+    'POST' => [null, function ($vars, User $userTable) {
+        $vars['password'] = Request::getString('password', bodyOnly: true);
+
+        return $userTable->create($vars);
+    }],
 
     'PUT' => [null, function ($vars, User $userTable) {
         $id = Request::getInt('id');

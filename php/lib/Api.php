@@ -27,6 +27,20 @@ enum ApiAccess
 final class Api
 {
     /**
+     * Sends $text as plain text with the given HTTP status.
+     */
+    public static function sendText(string $text, int $status = 200): void
+    {
+        if (!headers_sent()) {
+            http_response_code($status);
+            header('Content-Type: text/plain; charset=utf-8');
+            header('Cache-Control: no-store');
+        }
+
+        echo $text;
+    }
+
+    /**
      * Sends $data as JSON with the given HTTP status.
      */
     public static function sendJson(mixed $data, int $status = 200): void

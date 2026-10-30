@@ -3,6 +3,8 @@
 declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
+throw new Exception('Require permissions here', 500);
+
 $misc = Database::instance()->miscData();
 
 // Wraps a handler so MiscDataException becomes a RuntimeException with an HTTP status.
