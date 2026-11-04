@@ -19,7 +19,7 @@ final readonly class AuthOwner
     public AuthRole $role;
     public ?int $id;
 
-    private function __construct(AuthRole $role, ?int $id)
+    private function __construct(AuthRole $role, ?int $id = null)
     {
         $this->role = $role;
         $this->id = $id;
@@ -30,7 +30,7 @@ final readonly class AuthOwner
      */
     public static function admin(): self
     {
-        return new self(AuthRole::Admin, null);
+        return new self(AuthRole::Admin);
     }
 
     /**
@@ -166,6 +166,33 @@ final class Auth
 
         self::$me = null;
         self::$isMeResolved = true;
+    }
+
+    /**
+     * Regenerates the current user's session after a password change.
+     */
+    public static function passwordChanged(int $id): void
+    {
+        self::startSession();
+
+        $owner = AuthOwner::fromArray($_SESSION[self::SESSION_KEY] ?? null);
+        if ($owner?->role !== AuthRole::User || $owner->id !== $id)
+            throw new LogicException('The current session does not belong to this user');
+
+        if (!session_regenerate_id(true))
+            throw new RuntimeException('Could not regenerate session after password change', 500);
+
+        $_SESSION[self::SESSION_KEY] = $owner->toArray();
+
+        $cookieName = self::getPersistentCookieName();
+        if (isset($_COOKIE[$cookieName])) {
+            $token = self::createPersistentToken($owner);
+            if ($token !== null)
+                self::setCookie($cookieName, $token, time() + 86400 * self::PERSISTENT_LOGIN_DAYS);
+        }
+
+        self::$me = null;
+        self::$isMeResolved = false;
     }
 
     /**

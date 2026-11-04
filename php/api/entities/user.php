@@ -35,10 +35,12 @@ Api::serve(Database::instance()->table(User::class), [
 
     'PUT password' => [null, function ($vars, User $userTable) {
         $id = Request::getInt('id');
-        Auth::requireUser($id);
+        Auth::requireUser($id, allowAdmin: false);
 
-        $password = Request::getString('password', bodyOnly: true);
+        $currentPassword = Request::getString('current_password', bodyOnly: true);
+        $newPassword = Request::getString('password', bodyOnly: true);
 
-        $userTable->setPassword($id, $password);
+        $userTable->changePassword($id, $currentPassword, $newPassword);
+        Auth::passwordChanged($id);
     }],
 ]);

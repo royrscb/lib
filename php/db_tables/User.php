@@ -40,7 +40,8 @@ final class User extends DbTable
         } catch (InvalidArgumentException $e) {
             throw new RuntimeException($e->getMessage(), 422, $e);
         }
-        $data['hashword'] = password_hash(self::validatePassword($password), PASSWORD_DEFAULT);
+        self::validatePassword($password);
+        $data['hashword'] = password_hash($password, PASSWORD_DEFAULT);
 
         unset($data['password']);
 
@@ -64,7 +65,7 @@ final class User extends DbTable
      */
     public function readByEmail(string $email): ?array
     {
-        return $this->readOne('email = ?', [$email]);
+        return $this->readOne('LOWER(email) = ?', [self::normalizeIdentity($email)]);
     }
 
     /**
@@ -74,21 +75,32 @@ final class User extends DbTable
      */
     public function readByUsername(string $username): ?array
     {
-        return $this->readOne('username = ?', [$username]);
+        return $this->readOne('LOWER(username) = ?', [self::normalizeIdentity($username)]);
     }
 
     /**
-     * Stores a plain password hash. Does nothing if the id does not exist.
+     * Changes the password after verifying the current one.
      */
-    public function setPassword(int $id, string $password): void
+    public function changePassword(int $id, string $currentPassword, string $newPassword): void
     {
-        $password = self::validatePassword($password);
-        $hashword = password_hash($password, PASSWORD_DEFAULT);
+        self::validatePassword($newPassword);
+        $row = $this->query(
+            "SELECT hashword FROM $this->tableName WHERE id = ?",
+            [$id]
+        )->fetch_assoc();
+
+        if ($row === null)
+            throw new RuntimeException('Not found', 404);
+        if (!is_string($row['hashword']) || !password_verify($currentPassword, $row['hashword']))
+            throw new RuntimeException('Current password is incorrect', 403);
 
         $this->query(
-            "UPDATE `$this->tableName` SET hashword = ? WHERE id = ?",
-            [$hashword, $id]
+            "UPDATE $this->tableName SET hashword = ? WHERE id = ? AND hashword = ?",
+            [password_hash($newPassword, PASSWORD_DEFAULT), $id, $row['hashword']]
         );
+
+        if ($this->db->affectedRows() === 0)
+            throw new RuntimeException('Current password is incorrect', 403);
     }
 
     /**
@@ -102,7 +114,7 @@ final class User extends DbTable
     public function verifyPassword(int $id, string $password): bool
     {
         $hashword = $this->query(
-            "SELECT hashword FROM `$this->tableName` WHERE id = ?",
+            "SELECT hashword FROM $this->tableName WHERE id = ?",
             [$id]
         )->fetch_column();
 
@@ -110,11 +122,10 @@ final class User extends DbTable
         if (!is_string($hashword) || !password_verify($password, $hashword))
             return false;
 
-        // Direct update instead of setPassword(): the password was already accepted, so a
-        // stricter length policy must not make existing users fail to log in
+        // The password was already accepted, so a stricter length policy must not make existing users fail to log in during rehash.
         if (password_needs_rehash($hashword, PASSWORD_DEFAULT)) {
             $this->query(
-                "UPDATE `$this->tableName` SET hashword = ? WHERE id = ?",
+                "UPDATE $this->tableName SET hashword = ? WHERE id = ?",
                 [password_hash($password, PASSWORD_DEFAULT), $id]
             );
         }
@@ -131,7 +142,7 @@ final class User extends DbTable
     public function getHashword(int $id): ?string
     {
         $hashword = $this->query(
-            "SELECT hashword FROM `$this->tableName` WHERE id = ?",
+            "SELECT hashword FROM $this->tableName WHERE id = ?",
             [$id]
         )->fetch_column();
 
@@ -151,29 +162,46 @@ final class User extends DbTable
                 throw new RuntimeException($e->getMessage(), 422, $e);
             }
 
-            if ($column === 'email' ? !is_valid_email($value) :
-                (is_valid_email($value) || !preg_match('/^[\p{L}\p{N}_.-]+$/u', $value)))
-                throw new RuntimeException("'$column' is invalid", 422);
+            if ($column === 'email') {
+                if (!is_valid_email($value))
+                    throw new RuntimeException("'email' is invalid", 422);
+            } else if ($column === 'username') {
+                self::validateUsername($value);
+            }
 
             $data[$column] = $value;
-            $this->assertUnique($column, $value, $exceptId);
+            $this->assertUnique($column, self::normalizeIdentity($value), $exceptId);
         }
+    }
+
+    private static function normalizeIdentity(string $value): string
+    {
+        return mb_strtolower($value, 'UTF-8');
     }
 
     private function assertUnique(string $column, string $value, ?int $exceptId): void
     {
         if ($this->readOne(
-            "`$column` = ?".($exceptId === null ? '' : ' AND id <> ?'),
+            "LOWER(`$column`) = ?".($exceptId === null ? '' : ' AND id <> ?'),
             $exceptId === null ? [$value] : [$value, $exceptId]
         ) !== null)
             throw new RuntimeException("'$column' already exists", 409);
     }
 
-    private static function validatePassword(mixed $password): string
+    private static function validateUsername(string $username): void
+    {
+        $allowedChars = ['_', '.'];
+
+        if (!preg_match('/^[A-Za-z'.implode('', $allowedChars).']+$/', $username))
+            throw new RuntimeException(
+                "'username' may only contain ASCII letters and these characters: ".implode(', ', $allowedChars),
+                422
+            );
+    }
+
+    private static function validatePassword(mixed $password): void
     {
         if (!is_string($password) || strlen($password) < 8 || strlen($password) > 64)
             throw new RuntimeException("'password' must be between 8 and 64 chars", 422);
-
-        return $password;
     }
 }
