@@ -155,14 +155,17 @@ final class Auth
      */
     public static function logout(): void
     {
-        self::startSession();
+        $sessionCookie = self::getSessionName();
+        if (session_status() === PHP_SESSION_ACTIVE || is_string($_COOKIE[$sessionCookie] ?? null)) {
+            self::startSession();
+
+            $_SESSION = [];
+            session_destroy();
+        }
 
         // Tokens are signed, not stored: forgetting this device is just deleting its cookie
         self::deleteCookie(self::getPersistentCookieName());
-        self::deleteCookie(session_name());
-
-        $_SESSION = [];
-        session_destroy();
+        self::deleteCookie($sessionCookie);
 
         self::$me = null;
         self::$isMeResolved = true;
@@ -211,15 +214,30 @@ final class Auth
         if (self::$isMeResolved)
             return self::$me;
 
-        self::startSession();
-
-        $owner = AuthOwner::fromArray($_SESSION[self::SESSION_KEY] ?? null);
-
-        if ($owner === null) {
+        $sessionCookie = $_COOKIE[self::getSessionName()] ?? null;
+        if (session_status() !== PHP_SESSION_ACTIVE && !is_string($sessionCookie)) {
             $owner = self::readPersistentToken();
 
-            if ($owner !== null)
-                session_regenerate_id(true);
+            if ($owner === null) {
+                self::$me = null;
+                self::$isMeResolved = true;
+                return null;
+            }
+
+            self::startSession();
+            if (!session_regenerate_id(true))
+                throw new RuntimeException('Could not regenerate session after restoring login', 500);
+        } else {
+            self::startSession();
+
+            $owner = AuthOwner::fromArray($_SESSION[self::SESSION_KEY] ?? null);
+
+            if ($owner === null) {
+                $owner = self::readPersistentToken();
+
+                if ($owner !== null && !session_regenerate_id(true))
+                    throw new RuntimeException('Could not regenerate session after restoring login', 500);
+            }
         }
 
         self::$me = $owner !== null ? self::identify($owner) : null;
@@ -405,6 +423,7 @@ final class Auth
             return;
 
         session_name(self::getSessionName());
+        ini_set('session.use_strict_mode', '1');
         session_set_cookie_params([
             'lifetime' => 0,
             'path'     => '/',

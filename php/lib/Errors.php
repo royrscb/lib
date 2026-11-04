@@ -26,6 +26,7 @@ final class Errors
     public static function register(): void
     {
         ini_set('display_errors', '0');
+        ini_set('zend.exception_ignore_args', '1');
         error_reporting(E_ALL);
 
         // Warnings and notices become exceptions, so nothing fails silently (deprecations are not converted)
