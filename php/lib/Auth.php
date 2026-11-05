@@ -103,10 +103,10 @@ final class Auth
     private const string ENV_PROJECT_SLUG = 'PROJECT_SLUG';
     private const string ENV_AUTH_SECRET = 'AUTH_SECRET';
     private const string ENV_ADMIN_HASHWORD = 'ADMIN_HASHWORD';
+    private const string ENV_PERSISTENT_LOGIN_DAYS = 'AUTH_PERSISTENT_LOGIN_DAYS';
     // ---
 
     private const string SESSION_KEY = 'auth';
-    private const int PERSISTENT_LOGIN_DAYS = 100;
 
     // Attributes ----------------------------------------------------------------------------------
 
@@ -119,7 +119,7 @@ final class Auth
      * Logs in the admin, whose hashword is in the .env (ADMIN_HASHWORD).
      *
      * @param string $password   Plain password.
-     * @param bool   $persistent Keep the login for PERSISTENT_LOGIN_DAYS days with a cookie.
+     * @param bool   $persistent Keep the login with a cookie for the configured number of days.
      * @return array|null The authenticated identity with role 'admin' and a null id, or null if the
      *                    password is wrong or the .env has no admin.
      */
@@ -139,7 +139,7 @@ final class Auth
      *
      * @param string $emailOrUsername Email or username.
      * @param string $password        Plain password.
-     * @param bool   $persistent      Keep the login for PERSISTENT_LOGIN_DAYS days with a cookie.
+     * @param bool   $persistent      Keep the login with a cookie for the configured number of days.
      * @return array|null The authenticated user identity with role 'user' and its user id, or null
      *                    if the credentials are wrong.
      */
@@ -195,7 +195,11 @@ final class Auth
         if (isset($_COOKIE[$cookieName])) {
             $token = self::createPersistentToken($owner);
             if ($token !== null)
-                self::setCookie($cookieName, $token, time() + 86400 * self::PERSISTENT_LOGIN_DAYS);
+                self::setCookie(
+                    $cookieName,
+                    $token,
+                    time() + 86400 * Env::getInt(self::ENV_PERSISTENT_LOGIN_DAYS)
+                );
         }
 
         self::$me = null;
@@ -352,7 +356,11 @@ final class Auth
         $token = $persistent ? self::createPersistentToken($owner) : null;
 
         if ($token !== null)
-            self::setCookie(self::getPersistentCookieName(), $token, time() + 86400 * self::PERSISTENT_LOGIN_DAYS);
+            self::setCookie(
+                self::getPersistentCookieName(),
+                $token,
+                time() + 86400 * Env::getInt(self::ENV_PERSISTENT_LOGIN_DAYS)
+            );
         else
             self::deleteCookie(self::getPersistentCookieName());
 
@@ -382,7 +390,7 @@ final class Auth
     // Persistent login with no extra table: the cookie is a signed token (HMAC) and nothing is stored.
     // Format: "<who>.<mac>", where <who> is "admin" or "user-<id>".
     // The mac covers who + the hashword of the owner and is keyed with AUTH_SECRET. So:
-    // - Logging in again renews the cookie for PERSISTENT_LOGIN_DAYS days (the token itself does not expire).
+    // - Logging in again renews the cookie for the configured number of days (the token itself does not expire).
     // - Changing the password of the owner invalidates their cookies.
     // - Leaking the database alone is not enough to forge cookies: AUTH_SECRET is not in it.
     // A token cannot be revoked per device: logout only deletes the cookie of this device.

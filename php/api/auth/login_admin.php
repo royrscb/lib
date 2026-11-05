@@ -4,7 +4,7 @@
  *
  * Body (JSON, form or x-www-form-urlencoded):
  *   password    Plain password of the admin (ADMIN_HASHWORD in the .env).
- *   persistent  Optional, true/false/1/0. Keeps the login with a cookie for up to 100 days.
+ *   persistent  Optional, true/false/1/0. Keeps the login with a cookie for AUTH_PERSISTENT_LOGIN_DAYS.
  *
  * Returns JSON with role 'admin' and id null. 401 if the password is wrong or the app has no admin.
  */
