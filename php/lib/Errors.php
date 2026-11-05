@@ -10,10 +10,12 @@ declare(strict_types=1);
  * - Below 500 the message is sent as it is (it is for the client) and nothing is logged.
  * - From 500 up the message is hidden and the error is logged, unless APP_DEBUG=1 in the .env
  *   (then the message is also sent).
- * - Log file: LOG_FILE in the .env, or logs/app.log in APP_ROOT.
+ * - Log file: LOG_FILEPATH_FROM_ROOT in the .env (relative to APP_ROOT, with an optional leading slash),
+ *   or logs/error.log.
  *
- * register() reads nothing from the .env, so it can run before Env::load(). The .env is read
- * when an error happens, and if it is not loaded yet the defaults are used.
+ * Registering the handlers does not read the .env file, so it can happen before application
+ * configuration is loaded. Configuration is read when an error occurs; process environment
+ * variables are still available even if the file has not been loaded.
  */
 final class Errors
 {
@@ -73,7 +75,8 @@ final class Errors
     // Appends the error to the log file. The query string is left out of the URI because it can carry secrets.
     private static function log(int $status, Throwable $e): void
     {
-        $file = APP_ROOT.(Env::getOrNull(self::ENV_LOG_FILEPATH_FROM_ROOT) ?? '/logs/app.log');
+        $path = Env::getOrNull(self::ENV_LOG_FILEPATH_FROM_ROOT) ?? '/logs/error.log';
+        $file = APP_ROOT.'/'.ltrim($path, '/');
 
         $line = sprintf(
             "[%s] [%d] %s %s %s\n%s\n",

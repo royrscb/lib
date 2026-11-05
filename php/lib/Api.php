@@ -77,14 +77,15 @@ final class Api
      * Handler POST returns 201, handler PUT returning null and every handler DELETE return 204.
      * Other successful responses return 200 with JSON.
      * METHOD must be the value of an HttpMethod case ('GET', 'POST', 'PUT', 'DELETE'), in upper case.
-     * What is not declared does not exist: a request with no handler for its method (and action) answers 404.
+     * A method with no declared handlers answers 405 and advertises the supported methods; an
+     * undeclared action for a supported method answers 404.
      *
      * The request picks the key: GET /orders?id=5 is 'GET', GET /orders?action=total is 'GET total'.
      * Only the method and ?action= count, a key can never be reached with another method.
      *
      * Examples:
      *
-     *   // Public read only. POST, PUT and DELETE are not declared, so they answer 404
+     *   // Public read only. POST, PUT and DELETE are not declared, so they answer 405 with Allow: GET.
      *   Api::serve($productTable, ['GET' => ApiAccess::Public]);
      *
      *   // The whole CRUD, admin only: nothing is implicit, every method is written
@@ -164,14 +165,15 @@ final class Api
      *        - $access alone: runs the generic CRUD after checking the access. Not valid for an action.
      *        - [$access, $handler]: runs $handler after checking the access. The handler receives the request
      *          vars and $dbTable, and returns what is sent as JSON. ApiAccess::Owner is not valid here.
-     *        $access is an ApiAccess, or null when the handler checks the access itself (Auth::requireUser()...),
-     *        for anything the enum does not cover. null checks nothing, so the handler must.
+     *        $access is an ApiAccess, or null when the handler performs its own authorization checks.
+     *        null checks nothing, so the handler must enforce any required access.
      * @throws RuntimeException 400 if the body is JSON and is not valid,
      *                          401 or 403 if the access is denied,
-     *                          404 if there is no handler for the method (and action) of the request,
-     *                          405 if the HTTP method is not one of HttpMethod,
+     *                          404 if the method is supported but the requested action has no handler,
+     *                          405 if the method is unknown or not declared for this endpoint,
      *                          422 if 'action' is not a string.
-     *                          The generic CRUD and the handlers can throw more (see crud()).
+     *                          Generic CRUD operations and custom handlers may also throw their own
+     *                          validation, authorization, conflict, or database exceptions.
      * @throws LogicException   If an action is declared with an access but no handler, a handler
      *                          with ApiAccess::Owner, the CRUD with no $dbTable, or the CRUD with
      *                          ApiAccess::Owner on a table without the 'user_id' columns it needs
@@ -242,15 +244,15 @@ final class Api
      * GET reads one row (with id) or all of them, POST creates, PUT updates and DELETE deletes (returns null).
      * Returns what has to be sent as JSON; it does not send anything.
      *
-     * It checks $access first. Only serve() uses it.
+     * Authorization is checked before any row is read or changed.
      *
      * With ApiAccess::Owner, a user only gets to their own rows (those whose 'user_id' is theirs).
      * It only accepts or rejects the request, it does not filter or rewrite anything:
      * - GET, PUT and DELETE with id: 403 if the row belongs to somebody else.
      * - POST: 'user_id' is required and has to be theirs (403 if not).
      * - PUT: if 'user_id' is sent, it has to be theirs, so a row cannot be handed over to another user.
-     * - GET without id: 422, because it would list everybody's rows. For "my rows" use a handler that
-     *   filters by Auth::me()['id'].
+     * - GET without id: 422, because it would list everybody's rows. To list only the logged-in user's
+     *   rows, use a handler that filters by that user's authenticated id.
      * The table needs 'user_id' in $readableColumns (to check the rows) and, for POST, in $creatableColumns
      * (otherwise it would create rows without owner). If not, it is a LogicException. The admin is not limited.
      *
@@ -287,7 +289,7 @@ final class Api
         };
     }
 
-    // ApiAccess::Owner: the rows of the request must be the user's own (see crud()).
+    // ApiAccess::Owner: the user may only access rows whose user_id matches their authenticated id.
     // It only accepts or throws, without changing anything.
     private static function authorizeOwner(DbTable $dbTable, HttpMethod $method, array $vars): void
     {

@@ -23,7 +23,7 @@ final class Env
     /**
      * Loads the env file. Only the first successful call has effect.
      *
-     * Calling it is optional for get() / getOrNull(), which also read the system environment (getenv).
+     * Loading a file is optional: variables already defined in the process environment remain available.
      *
      * A variable can have an empty value (`FOO=`), but its name can't be empty (`=value` is ignored).
      *
@@ -86,8 +86,8 @@ final class Env
     }
 
     /**
-     * Returns an env variable, from the loaded file or else from the system environment
-     * (see load() for which one wins when both define it).
+     * Returns an env variable. A system environment value takes precedence over the loaded file
+     * unless the file was loaded with overrideSystem enabled.
      *
      * @param bool $allowEmpty If false (default), an empty value is treated as an error.
      * @throws RuntimeException If the variable is missing, or empty and $allowEmpty is false.
@@ -106,8 +106,8 @@ final class Env
     }
 
     /**
-     * Returns an env variable, or null if it is missing or empty.
-     * Note: Use exists() to tell a missing variable from an empty one.
+     * Returns an env variable, or null if it is missing or empty. The return value does not
+     * distinguish an unset variable from one defined with an empty value.
      */
     public static function getOrNull(string $name): ?string
     {

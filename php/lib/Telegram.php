@@ -366,7 +366,7 @@ final class TelegramBot
     }
 
     /**
-     * Sets the default destination used by sendMessage() when no chat ID is provided.
+     * Sets the destination used for messages when an individual request omits a chat ID.
      *
      * @param int|string $chatId Telegram chat ID.
      */

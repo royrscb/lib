@@ -2,7 +2,7 @@
 /**
  * GET /whoami.php
  *
- * Who is logged in (see Auth::me()):
+ * Returns the currently authenticated identity:
  *   - the admin: ['id' => null, 'role' => 'admin']
  *   - a user: the user row plus 'role' => 'user'
  *   - nobody: null (200, so the client can ask without an error)

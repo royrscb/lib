@@ -32,7 +32,7 @@
  *   409      A file with that name already exists.
  *   413      An image is too large.
  *   415      An image is not one of ALLOWED_IMAGE_EXTENSIONS.
- *   422      Missing or invalid input (see the checks below).
+ *   422      A required input is missing or an input value is invalid.
  *   500      An image can't be saved.
  */
 

@@ -44,7 +44,8 @@ final readonly class AuthOwner
     }
 
     /**
-     * Owner described by the data of toArray(), or null if there is none or it is not valid.
+     * Builds an owner from an array with role 'admin' or role 'user' and an integer user id.
+     * Returns null if the role is missing or unsupported, or a user id is missing.
      */
     public static function fromArray(?array $data): ?self
     {
@@ -56,7 +57,7 @@ final readonly class AuthOwner
     }
 
     /**
-     * Plain data that fromArray() reads back.
+     * Returns the role and id as plain data; admin identities have a null id.
      */
     public function toArray(): array
     {
@@ -64,7 +65,8 @@ final readonly class AuthOwner
     }
 
     /**
-     * Owner named by toSlug(), or null if the slug is not valid.
+     * Builds an owner from the slug 'admin' or 'user-<id>', where <id> is a decimal user id.
+     * Returns null if the slug does not identify a supported owner.
      */
     public static function fromSlug(string $slug): ?self
     {
@@ -78,7 +80,7 @@ final readonly class AuthOwner
     }
 
     /**
-     * Short text that names the owner: 'admin' or 'user-<id>'.
+     * Short text that names the owner: 'admin' or 'user-<id>', where <id> is the user id.
      */
     public function toSlug(): string
     {
@@ -118,7 +120,8 @@ final class Auth
      *
      * @param string $password   Plain password.
      * @param bool   $persistent Keep the login for PERSISTENT_LOGIN_DAYS days with a cookie.
-     * @return array|null The identity (see me()), or null if the password is wrong or the .env has no admin.
+     * @return array|null The authenticated identity with role 'admin' and a null id, or null if the
+     *                    password is wrong or the .env has no admin.
      */
     public static function loginAdmin(string $password, bool $persistent = false): ?array
     {
@@ -137,7 +140,8 @@ final class Auth
      * @param string $emailOrUsername Email or username.
      * @param string $password        Plain password.
      * @param bool   $persistent      Keep the login for PERSISTENT_LOGIN_DAYS days with a cookie.
-     * @return array|null The identity (see me()), or null if the credentials are wrong.
+     * @return array|null The authenticated user identity with role 'user' and its user id, or null
+     *                    if the credentials are wrong.
      */
     public static function loginUser(string $emailOrUsername, string $password, bool $persistent = false): ?array
     {
@@ -281,7 +285,7 @@ final class Auth
     /**
      * Requires a user: any user if $id is null, or only the user with that id
      * (for "a user can only touch their own data").
-     * To know who is logged in afterwards, use me().
+     * The check is against the identity authenticated for the current request.
      *
      * @param int|null $id         Id of the user, or null for any user.
      * @param bool     $allowAdmin Whether the admin also passes, as if it were that user (or any user).
@@ -299,8 +303,7 @@ final class Auth
     }
     /**
      * Checks a token sent in a header against a .env variable (for machines: webhooks, gateways).
-     * Example for the Telegram webhook:
-     * requireToken('TELEGRAM_WEBHOOK_SECRET', 'X-Telegram-Bot-Api-Secret-Token').
+     * For example, a Telegram webhook can be checked against its configured secret header.
      *
      * @throws RuntimeException 500 if the variable is not configured, 403 if the token is wrong.
      */
@@ -315,7 +318,8 @@ final class Auth
     /**
      * For cron jobs: allowed from the command line, or over the web with a token.
      *
-     * @throws RuntimeException See requireToken().
+     * @throws RuntimeException 500 if the token environment variable is missing on web requests,
+     *                           403 if the request header does not match it.
      */
     public static function requireCliOrToken(string $envName, string $header = 'X-Api-Token'): void
     {
@@ -376,7 +380,7 @@ final class Auth
 
     // Token of an owner, or null if it cannot be made.
     // Persistent login with no extra table: the cookie is a signed token (HMAC) and nothing is stored.
-    // Format: "<who>.<mac>", where <who> is the slug of the owner (see AuthOwner::toSlug()).
+    // Format: "<who>.<mac>", where <who> is "admin" or "user-<id>".
     // The mac covers who + the hashword of the owner and is keyed with AUTH_SECRET. So:
     // - Logging in again renews the cookie for PERSISTENT_LOGIN_DAYS days (the token itself does not expire).
     // - Changing the password of the owner invalidates their cookies.

@@ -5,7 +5,7 @@
  * Body (JSON, form or x-www-form-urlencoded):
  *   message  Message to send to the configured Royrscb Telegram chat.
  *
- * Admin only. Message text supports the HTML tags documented by Telegram::send().
+ * Admin only. Message text supports <b>, <i>, <u>, <s>, <a href=""> and <br>; other HTML characters are escaped.
  * Returns Telegram's result as JSON.
  */
 

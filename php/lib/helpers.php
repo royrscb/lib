@@ -13,7 +13,7 @@ declare(strict_types=1);
  * @param string             $method  GET, POST, PUT or DELETE.
  * @param string             $url
  * @param mixed              $data    Query string (GET) or JSON body (the others). Null: nothing is sent.
- * @param array<int, string> $headers Extra headers ('Authorization: Bearer ...').
+ * @param array<int, string> $headers Extra headers ('Authorization: Bearer <token>').
  * @return array|string The decoded JSON (array) or, if the response is not JSON, the raw text.
  * @throws InvalidArgumentException If $method is not one of the four.
  * @throws RuntimeException 502 if the request fails. The status code of the response is not checked.
@@ -62,7 +62,7 @@ function http_request(string $method, string $url, mixed $data = null, array $he
 /**
  * Sends a GET request. $data is added to the query string.
  *
- * @param array<int, string> $headers Extra headers ('Authorization: ******').
+ * @param array<int, string> $headers Extra headers, e.g. 'Authorization: Bearer <token>'.
  * @return array|string The decoded JSON (array) or, if the response is not JSON, the raw text.
  * @throws RuntimeException 502 if the request fails. The status code of the response is not checked.
  */
@@ -74,7 +74,7 @@ function http_get(string $url, mixed $data = null, array $headers = []): array|s
 /**
  * Sends a POST request. $data is sent as a JSON body.
  *
- * @param array<int, string> $headers Extra headers ('Authorization: ******').
+ * @param array<int, string> $headers Extra headers, e.g. 'Authorization: Bearer <token>'.
  * @return array|string The decoded JSON (array) or, if the response is not JSON, the raw text.
  * @throws RuntimeException 502 if the request fails. The status code of the response is not checked.
  */
@@ -86,7 +86,7 @@ function http_post(string $url, mixed $data = null, array $headers = []): array|
 /**
  * Sends a PUT request. $data is sent as a JSON body.
  *
- * @param array<int, string> $headers Extra headers ('Authorization: ******').
+ * @param array<int, string> $headers Extra headers, e.g. 'Authorization: Bearer <token>'.
  * @return array|string The decoded JSON (array) or, if the response is not JSON, the raw text.
  * @throws RuntimeException 502 if the request fails. The status code of the response is not checked.
  */
@@ -98,7 +98,7 @@ function http_put(string $url, mixed $data = null, array $headers = []): array|s
 /**
  * Sends a DELETE request. $data is sent as a JSON body.
  *
- * @param array<int, string> $headers Extra headers ('Authorization: ******').
+ * @param array<int, string> $headers Extra headers, e.g. 'Authorization: Bearer <token>'.
  * @return array|string The decoded JSON (array) or, if the response is not JSON, the raw text.
  * @throws RuntimeException 502 if the request fails. The status code of the response is not checked.
  */
@@ -142,7 +142,7 @@ function reduce_image_width(string $src, int $widthToReduce): bool
 /**
  * Current date and time in UTC.
  *
- * @param string|null $format Format of DateTime::format() ('Y-m-d H:i:s'...). Null: the DateTime object.
+ * @param string|null $format Optional output format, e.g. 'Y-m-d H:i:s'. Null returns the DateTime object.
  */
 function date_utc(?string $format = null): DateTime|string
 {
@@ -154,7 +154,7 @@ function date_utc(?string $format = null): DateTime|string
 /**
  * Current date and time in Spain (Europe/Madrid).
  *
- * @param string|null $format Format of DateTime::format() ('Y-m-d H:i:s'...). Null: the DateTime object.
+ * @param string|null $format Optional output format, e.g. 'Y-m-d H:i:s'. Null returns the DateTime object.
  */
 function date_spain(?string $format = null): DateTime|string
 {
@@ -449,8 +449,9 @@ function split_words(string $string): array
 }
 
 /**
- * Converts a name to snake_case: HolaQue_Tal => hola_que_tal, HTTPServer => http_server.
- * See split_words() for how the words are found.
+ * Converts a name to snake_case by splitting at punctuation and lower-to-upper or acronym-to-word
+ * boundaries, lowercasing each word, and joining them with underscores:
+ * HolaQue_Tal => hola_que_tal, HTTPServer => http_server.
  */
 function to_snake_case(string $string): string
 {
@@ -458,8 +459,9 @@ function to_snake_case(string $string): string
 }
 
 /**
- * Converts a name to kebab-case: HolaQue_Tal => hola-que-tal, HTTPServer => http-server.
- * See split_words() for how the words are found.
+ * Converts a name to kebab-case by splitting at punctuation and lower-to-upper or acronym-to-word
+ * boundaries, lowercasing each word, and joining them with hyphens:
+ * HolaQue_Tal => hola-que-tal, HTTPServer => http-server.
  */
 function to_kebab_case(string $string): string
 {
@@ -467,8 +469,8 @@ function to_kebab_case(string $string): string
 }
 
 /**
- * Converts a name to PascalCase: hola_que_tal => HolaQueTal, HTTPServer => HttpServer.
- * Each word keeps only its first letter in upper case. See split_words() for how the words are found.
+ * Converts a name to PascalCase by splitting at punctuation and lower-to-upper or acronym-to-word
+ * boundaries, then capitalizing each word: hola_que_tal => HolaQueTal, HTTPServer => HttpServer.
  */
 function to_pascal_case(string $string): string
 {
@@ -481,8 +483,9 @@ function to_pascal_case(string $string): string
 }
 
 /**
- * Converts a name to camelCase: hola_que_tal => holaQueTal, HTTPServer => httpServer.
- * See split_words() for how the words are found.
+ * Converts a name to camelCase by splitting at punctuation and lower-to-upper or acronym-to-word
+ * boundaries, capitalizing each word, then lowercasing the first character:
+ * hola_que_tal => holaQueTal, HTTPServer => httpServer.
  */
 function to_camel_case(string $string): string
 {

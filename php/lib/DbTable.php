@@ -187,7 +187,7 @@ abstract class DbTable
     }
 
     /**
-     * Whether read() returns that column (id is always read).
+     * Whether this column is included when rows are read (id is always included).
      */
     public function isReadable(string $column): bool
     {
@@ -195,7 +195,7 @@ abstract class DbTable
     }
 
     /**
-     * Whether create() writes that column.
+     * Whether this column can be included when a row is created.
      */
     public function isCreatable(string $column): bool
     {

@@ -27,7 +27,7 @@ final class User extends DbTable
      * Creates a user. The client sends a plain 'password' and only its hash is stored;
      * a 'hashword' sent by the client is ignored.
      *
-     * @return array The created user (without hashword), as returned by DbTable::create().
+     * @return array The created user row without its password hash.
      */
     public function create(array $data): array
     {
@@ -107,7 +107,7 @@ final class User extends DbTable
      * Checks a plain password against the user's stored hash (for login).
      * If the hashing algorithm has changed since the hash was created, the hash is upgraded.
      *
-     * To log in by email or username, find the user first with readByEmail() / readByUsername() and pass its id here.
+     * The caller resolves the user from an email address or username and passes that user's id here.
      *
      * @return bool false if the password is wrong, the user has no password, or the id does not exist.
      */

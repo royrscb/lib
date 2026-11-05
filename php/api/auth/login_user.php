@@ -5,9 +5,9 @@
  * Body (JSON, form or x-www-form-urlencoded):
  *   email | username  One of them is required (if both are sent, email is used).
  *   password          Plain password.
- *   persistent        Optional, true/false/1/0. Keeps the login with a cookie (see Auth::PERSISTENT_LOGIN_DAYS).
+ *   persistent        Optional, true/false/1/0. Keeps the login with a cookie for up to 100 days.
  *
- * Returns the identity (see Auth::me()). 401 if the credentials are wrong.
+ * Returns the user identity as JSON, including role 'user' and the user id. 401 if credentials are wrong.
  */
 
 declare(strict_types=1);

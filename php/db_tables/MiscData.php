@@ -16,11 +16,9 @@ enum MiscDataType: string
 }
 
 /**
- * Error raised by MiscData for anything the caller can cause. The reason is in getCode().
- * The caller decides how to react (e.g. map the reason to an HTTP status in an API).
- */
-/**
  * Caller-caused error raised by the MiscData key/value store.
+ * Codes identify invalid input (1), a missing key (2), or an existing key during creation (3).
+ * The caller chooses how to handle these conditions, such as mapping them to HTTP status codes.
  */
 final class MiscDataException extends RuntimeException
 {
@@ -30,12 +28,11 @@ final class MiscDataException extends RuntimeException
 }
 
 /**
- * Typed key/value store backed by the `misc_data` table.
- *
- * Caller errors throw MiscDataException (see its constants). Anything else (database failure, corrupt data...) is an unexpected error and is thrown as is.
- */
-/**
  * Typed key/value store backed by the misc_data database table.
+ *
+ * Invalid keys, types, and values; missing keys; and duplicate keys during creation raise
+ * MiscDataException with distinct integer codes. Database failures and corrupt stored data
+ * propagate as unexpected errors.
  */
 final class MiscData
 {

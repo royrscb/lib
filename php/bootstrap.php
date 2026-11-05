@@ -1,5 +1,6 @@
 <?php
-// The only file that scripts in api/ and gateway/ include.
+// Shared bootstrap for API endpoints and gateway scripts that use application services.
+// Standalone gateway scripts that need no application services can run without it.
 // Code is executed on load only here; every other file just defines classes and functions.
 
 declare(strict_types=1);
