@@ -57,9 +57,6 @@ Api::serve(null, [
     })],
 
     'DELETE' => [ApiAccess::Admin, $guard(function (array $vars) use ($misc) {
-        if (!$misc->delete(Request::getString('key')))
-            throw new RuntimeException('Not found', 404);
-
-        return null;
+        $misc->delete(Request::getString('key'));
     })],
 ]);

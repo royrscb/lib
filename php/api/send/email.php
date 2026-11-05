@@ -17,8 +17,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
-if (Request::method() !== HttpMethod::Post)
-    throw new RuntimeException('Method not allowed', 405);
+Request::requireMethod(HttpMethod::Post);
 
 Auth::requireAdmin();
 
@@ -51,5 +50,4 @@ if ($html)
 else
     Mail::send($from, $to, $subject, $message, $cc, $bcc);
 
-http_response_code(204);
-header('Cache-Control: no-store');
+Api::sendNoContent();

@@ -191,8 +191,7 @@ final class MiscData
      */
     public function delete(string $key): bool
     {
-        if (!$this->exists($key))
-            return false;
+        self::validateKey($key);
 
         $this->db->query(
             'DELETE FROM `'.self::TABLE_NAME.'` WHERE `key` = ?',

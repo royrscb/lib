@@ -27,6 +27,17 @@ enum ApiAccess
 final class Api
 {
     /**
+     * Sends a successful response with no body.
+     */
+    public static function sendNoContent(): void
+    {
+        if (!headers_sent()) {
+            http_response_code(204);
+            header('Cache-Control: no-store');
+        }
+    }
+    
+    /**
      * Sends $text as plain text with the given HTTP status.
      */
     public static function sendText(string $text, int $status = 200): void
@@ -62,6 +73,9 @@ final class Api
      * - 'PUT' => ApiAccess::Owner                               the CRUD, only on the user's own rows
      * - 'GET total' => [ApiAccess::Admin, fn($vars, $dbTable) => ...] a custom action: access + handler
      * - 'POST cancel' => [null, fn($vars, $dbTable) => ...]            null: the handler checks the access itself
+     * Successful generic POST returns 201 with the created row; generic DELETE returns 204 with no body.
+     * Handler POST returns 201, handler PUT returning null and every handler DELETE return 204.
+     * Other successful responses return 200 with JSON.
      * METHOD must be the value of an HttpMethod case ('GET', 'POST', 'PUT', 'DELETE'), in upper case.
      * What is not declared does not exist: a request with no handler for its method (and action) answers 404.
      *
@@ -167,31 +181,37 @@ final class Api
     {
         $method = Request::method();
         $vars = Request::vars();
-        $action = ($vars['action'] ?? null) ?: null;
-
-        if ($action !== null && !is_string($action))
-            throw new RuntimeException("'action' must be a string", 422);
-
+        $action = Request::getStringOrNull('action');
         $ruleKey = $action === null ? $method->value : "$method->value $action";
         $rule = $handlers[$ruleKey]
             ?? throw new RuntimeException("Cannot serve '$ruleKey': no handler declared for it", 404);
 
-        // return; Access alone: the CRUD with that access
-        if (!is_array($rule)) {
+        if (!is_array($rule)) { // Serve CRUD
             if ($action !== null)
                 throw new LogicException("Action '$action' needs a handler: use [access, handler]");
-
             if ($dbTable === null)
                 throw new LogicException("'$ruleKey' is the generic CRUD and needs a DbTable");
 
-            self::sendJson(self::crud($dbTable, $method, $vars, $rule));
-            return;
+            if ($method === HttpMethod::Delete) {
+                self::crud($dbTable, $method, $vars, $rule);
+                self::sendNoContent();
+            } else {
+                self::sendJson(
+                    self::crud($dbTable, $method, $vars, $rule),
+                    $method === HttpMethod::Post ? 201 : 200
+                );
+            }
         }
-
-        [$access, $handler] = $rule;
-
-        self::authorize($access);
-        self::sendJson($handler($vars, $dbTable));
+        else { // Serve action with custom handler
+            [$access, $handler] = $rule;
+    
+            self::authorize($access);
+            $result = $handler($vars, $dbTable);
+            if ($method === HttpMethod::Delete || ($method === HttpMethod::Put && $result === null))
+                self::sendNoContent();
+            else
+                self::sendJson($result, $method === HttpMethod::Post ? 201 : 200);
+        }
     }
 
     // private -------------------------------------------------------------------------------------

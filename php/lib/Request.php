@@ -24,6 +24,17 @@ final class Request
     }
 
     /**
+     * Requires a specific request method and includes it in the Allow header on failure.
+     */
+    public static function requireMethod(HttpMethod $allowedMethod): void
+    {
+        if (self::method() !== $allowedMethod) {
+            header('Allow: '.$allowedMethod->value);
+            throw new RuntimeException('Method not allowed', 405);
+        }
+    }
+
+    /**
      * Value of a request header, or null if it was not sent. The name is not case-sensitive ('X-Api-Token').
      * It does not work for Content-Type and Content-Length, which PHP does not expose as HTTP_ variables.
      */

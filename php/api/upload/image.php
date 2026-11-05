@@ -52,8 +52,7 @@ const HEIC_MIME_TYPES          = ['image/heic', 'image/heif']; // iPhone photos.
 
 // 1. Access ---------------------------------------------------------------------------------------
 
-if (Request::method() !== HttpMethod::Post)
-    throw new RuntimeException('Method not allowed', 405);
+Request::requireMethod(HttpMethod::Post);
 
 // 2. Read the input -------------------------------------------------------------------------------
 // Each variable is named after its request key in camelCase (destination_folder => $destinationFolder)
