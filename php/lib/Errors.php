@@ -8,7 +8,7 @@ declare(strict_types=1);
  *
  * - A Throwable whose code is 400-599 uses it as the HTTP status; anything else is a 500.
  * - Below 500 the message is sent as it is (it is for the client) and nothing is logged.
- * - From 500 up the message is hidden and the error is logged, unless APP_DEBUG=1 in the .env
+ * - From 500 up the message is hidden and the error is logged, unless APP_DEBUG = 1/true in the .env
  *   (then the message is also sent).
  * - Log file: LOG_FILEPATH_FROM_ROOT in the .env (relative to APP_ROOT, with an optional leading slash),
  *   or logs/error.log.

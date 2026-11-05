@@ -126,9 +126,7 @@ final class Env
      */
     public static function getBool(string $name): bool
     {
-        $value = parse_bool(self::get($name));
-
-        return $value
+        return parse_bool(self::get($name))
             ?? throw new RuntimeException("Invalid env var $name: expected true or false", 500);
     }
     /**
