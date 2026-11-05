@@ -76,14 +76,17 @@ abstract class DbTable
      *                            user data inside it.
      * @param array       $params Values for the ? placeholders of $where.
      * @param string|null $order  'name', 'name DESC, id'... (validated).
+     * @param int|null    $limit  Maximum number of rows to return.
      * @return array List of rows (empty array if there are none).
      * @throws DbTableException 500 if $readableColumns is empty.
-     * @throws InvalidArgumentException If $order is not valid.
+     * @throws InvalidArgumentException If $order is not valid or $limit is less than 1.
      */
-    public function read(?string $where = null, array $params = [], ?string $order = null): array
+    public function read(?string $where = null, array $params = [], ?string $order = null, ?int $limit = null): array
     {
         if (empty($this->readableColumns))
             throw DbTableException::invalidColumnsConfig($this->tableName, 'readableColumns');
+        if ($limit !== null && $limit < 1)
+            throw new InvalidArgumentException('Limit must be greater than zero');
 
         $columns = array_unique(['id', ...$this->readableColumns]);
         $columnList = implode(', ', array_map(static fn(string $column) => "`$column`", $columns));
@@ -98,6 +101,9 @@ abstract class DbTable
 
             $sql .= " ORDER BY $order";
         }
+
+        if ($limit !== null)
+            $sql .= " LIMIT $limit";
 
         $result = $this->query($sql, $params);
 
@@ -123,8 +129,7 @@ abstract class DbTable
     /**
      * Reads the first row that matches $where.
      *
-     * Meant for conditions that match a single row (a unique column): it reads every match and
-     * keeps the first one.
+     * Meant for conditions that match a single row (a unique column).
      *
      * @param string $where  YOUR OWN SQL fragment with ? placeholders ('email = ?'); never put
      *                       user data inside it.
@@ -133,7 +138,7 @@ abstract class DbTable
      */
     public function readOne(string $where, array $params = []): ?array
     {
-        return $this->read($where, $params)[0] ?? null;
+        return $this->read($where, $params, limit: 1)[0] ?? null;
     }
 
     /**
