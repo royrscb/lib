@@ -27,9 +27,9 @@ final class User extends DbTable
      * Creates a user. The client sends a plain 'password' and only its hash is stored;
      * a 'hashword' sent by the client is ignored.
      *
-     * @return array|null The created user (without hashword), as returned by DbTable::create().
+     * @return array The created user (without hashword), as returned by DbTable::create().
      */
-    public function create(array $data): ?array
+    public function create(array $data): array
     {
         unset($data['hashword']);
 

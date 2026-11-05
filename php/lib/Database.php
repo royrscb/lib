@@ -144,6 +144,7 @@ final class Database
             Env::get(self::ENV_DB_DATABASE),
         );
         $conn->set_charset('utf8mb4');
+        $conn->query("SET time_zone = '+00:00'");
 
         return $conn;
     }

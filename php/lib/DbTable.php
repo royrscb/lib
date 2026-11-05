@@ -35,11 +35,11 @@ abstract class DbTable
      * Inserts a row using the entries of $data whose key is listed in $creatableColumns
      * (any other is ignored).
      *
-     * @return array|null The created row.
+     * @return array The created row.
      * @throws DbTableException 500 if $creatableColumns is empty, 422 if $data has none of them,
      *                          409 on a duplicate key.
      */
-    public function create(array $data): ?array
+    public function create(array $data): array
     {
         if (empty($this->creatableColumns))
             throw DbTableException::invalidColumnsConfig($this->tableName, 'creatableColumns');
@@ -63,7 +63,12 @@ abstract class DbTable
 
         $this->query($sql, $params);
 
-        return $this->readById($this->db->lastInsertId());
+        $id = $this->db->lastInsertId();
+        if ($id < 1)
+            throw DbTableException::insertedRowUnavailable($this->tableName);
+
+        return $this->readById($id)
+            ?? throw DbTableException::insertedRowUnavailable($this->tableName);
     }
 
     /**
@@ -298,6 +303,14 @@ class DbTableException extends RuntimeException
             "⚠️ No valid field to write in table [$tableName]$rowInfo. Provided fields: ".implode(', ', $providedFields),
             422
         );
+    }
+
+    /**
+     * The insert did not produce a readable row with an auto-generated id (programming/schema error, 500).
+     */
+    public static function insertedRowUnavailable(string $tableName): self
+    {
+        return new self("Could not read inserted row from table [$tableName]", 500);
     }
 
     /**
