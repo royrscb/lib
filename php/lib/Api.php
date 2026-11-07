@@ -301,14 +301,15 @@ final class Api
         $me = Auth::me();
 
         // The admin is not limited
-        if ($me['role'] === AuthRole::Admin)
+        if ($me->role === AuthRole::Admin)
             return;
 
-        $myId = (int)$me['id'];
+        $myId = $me->id ?? throw new LogicException('Authenticated user identity has no id');
         $id = self::getId($vars);
 
         if ($id !== null && $method !== HttpMethod::Post) { // Get with id, Put and Delete
-            $row = $dbTable->readById($id) ?? throw new RuntimeException('Not found', 404);
+            $row = $dbTable->readById($id)
+                ?? throw new RuntimeException('Not found', 404);
 
             if ((int)$row['user_id'] !== $myId)
                 throw new RuntimeException('Forbidden', 403);
