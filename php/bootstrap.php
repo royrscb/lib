@@ -41,7 +41,7 @@ spl_autoload_register(function (string $class): void {
     ];
 
     // Only plain names, so a class name can never point to another folder
-    if (!preg_match('/^\w+$/', $class))
+    if (!preg_match('/^\w+$/D', $class))
         return;
 
     $classFile = $inFileOf[$class] ?? $class;

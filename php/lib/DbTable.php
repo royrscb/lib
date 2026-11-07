@@ -101,7 +101,7 @@ abstract class DbTable
             $sql .= " WHERE $where";
 
         if ($order !== null) {
-            if (!preg_match('/^[\w`.]+(\s+(ASC|DESC))?(\s*,\s*[\w`.]+(\s+(ASC|DESC))?)*$/i', $order))
+            if (!preg_match('/^[\w`.]+(\s+(ASC|DESC))?(\s*,\s*[\w`.]+(\s+(ASC|DESC))?)*$/Di', $order))
                 throw new InvalidArgumentException("Invalid order: $order", 500);
 
             $sql .= " ORDER BY $order";

@@ -272,7 +272,7 @@ final class Api
 
         $id = self::getId($vars);
 
-        if (in_array($method, [HttpMethod::Put, HttpMethod::Delete]) && $id === null)
+        if ($id === null && in_array($method, [HttpMethod::Put, HttpMethod::Delete], true))
             throw new RuntimeException("'id' is required", 422);
 
         return match ($method) {
