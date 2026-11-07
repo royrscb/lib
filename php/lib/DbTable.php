@@ -270,7 +270,7 @@ abstract class DbTable
 /**
  * Database table error with an HTTP status code and optional failed SQL.
  */
-class DbTableException extends RuntimeException
+final class DbTableException extends RuntimeException
 {
     // ⚠️❗
 

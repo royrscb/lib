@@ -457,9 +457,6 @@ final class Auth
     
     private static function setCookie(string $name, string $value, int $expiresUnixTime): void
     {
-        if ($name === null)
-            return;
-
         setcookie($name, $value, [
             'expires'  => $expiresUnixTime,
             'path'     => '/',
