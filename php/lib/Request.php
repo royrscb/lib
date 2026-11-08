@@ -128,10 +128,10 @@ final class Request
     /**
      * String from the request vars.
      *
-     * @param bool $allowEmpty If false (default), an empty string ('') is treated as an error.
+     * @param bool $allowEmpty If false (default), an empty or whitespace-only string is treated as an error.
      * @param bool $bodyOnly   If true, the value is read only from the body, not from the query string.
      *                         Use it for secrets (passwords, tokens), so they can never travel in the URL.
-     * @throws RuntimeException 422 if the key is missing, is not a string, or is empty and $allowEmpty is false;
+     * @throws RuntimeException 422 if the key is missing, is not a string, or is blank and $allowEmpty is false;
      *                          400 if the body is JSON and is not valid.
      */
     public static function getString(string $key, bool $allowEmpty = false, bool $bodyOnly = false): string
@@ -143,7 +143,7 @@ final class Request
         }
     }
     /**
-     * String from the request vars, or null if it is missing or an empty string ('').
+     * String from the request vars, or null if it is missing or blank (empty or whitespace-only).
      *
      * @param bool $bodyOnly If true, the value is read only from the body, not from the query string.
      *                       Use it for secrets (passwords, tokens), so they can never travel in the URL.
@@ -178,8 +178,8 @@ final class Request
         }
     }
     /**
-     * Integer from the request vars, or null if it is missing or an empty string (what a blank form
-     * field sends). Otherwise only whole numbers in decimal notation are accepted, as an int or as a
+     * Integer from the request vars, or null if it is missing or blank (empty or whitespace-only).
+     * Otherwise only whole numbers in decimal notation are accepted, as an int or as a
      * string of digits with an optional sign ('7', '-3', '+5', '007'); anything else is rejected.
      *
      * @param bool $bodyOnly If true, the value is read only from the body, not from the query string.
@@ -212,7 +212,7 @@ final class Request
         }
     }
     /**
-     * Optional number from the request vars; missing or empty values return null.
+     * Optional number from the request vars; missing, null, or blank values return null.
      *
      * @param bool $bodyOnly If true, read only from the body, not from the query string.
      * @throws RuntimeException 422 if the key is present but is not a finite number;
@@ -229,7 +229,7 @@ final class Request
 
     /**
      * Boolean from the request vars: true or false, 1 or 0, or the text 'true' or 'false' in any case.
-     * Anything else ('yes', 'on', 2, '') is rejected.
+     * Anything else ('yes', 'on', 2, or a blank string) is rejected.
      *
      * @param bool $bodyOnly If true, the value is read only from the body, not from the query string.
      *                       Use it for secrets (passwords, tokens), so they can never travel in the URL.
@@ -246,8 +246,8 @@ final class Request
     }
 
     /**
-     * Boolean from the request vars, or null if it is missing or an empty string (what a blank form
-     * field sends). Otherwise only true or false, 1 or 0, or the text 'true' or 'false' in any case
+     * Boolean from the request vars, or null if it is missing or blank (what a blank form field sends).
+     * Otherwise only true or false, 1 or 0, or the text 'true' or 'false' in any case
      * are accepted; anything else ('yes', 'on', 2) is rejected.
      *
      * @param bool $bodyOnly If true, the value is read only from the body, not from the query string.

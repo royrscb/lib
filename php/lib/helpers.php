@@ -295,7 +295,7 @@ function parse_number(mixed $value): int|float|null
 /**
  * Required string from an array.
  *
- * @throws InvalidArgumentException If the key is missing, is not a string, or is empty/whitespace and $allowEmpty is false.
+ * @throws InvalidArgumentException If the key is missing, is not a string, or is blank and $allowEmpty is false.
  */
 function array_get_string(array $values, string $key, bool $allowEmpty = false): string
 {
@@ -305,14 +305,14 @@ function array_get_string(array $values, string $key, bool $allowEmpty = false):
     if (!is_string($value))
         throw new InvalidArgumentException("'$key' must be a string");
 
-    if (!$allowEmpty && is_null_or_empty($value))
+    if (!$allowEmpty && is_null_or_blank($value))
         throw new InvalidArgumentException("'$key' must not be empty");
 
     return $value;
 }
 
 /**
- * Optional string from an array; missing, null, and an empty string return null.
+ * Optional string from an array; missing, null, and blank strings return null.
  *
  * @throws InvalidArgumentException If the key is present and is not a string.
  */
@@ -323,7 +323,7 @@ function array_get_string_or_null(array $values, string $key): ?string
     if ($value !== null && !is_string($value))
         throw new InvalidArgumentException("'$key' must be a string");
 
-    return is_null_or_empty($value) ? null : $value;
+    return is_null_or_blank($value) ? null : $value;
 }
 
 /**
@@ -341,7 +341,7 @@ function array_get_int(array $values, string $key): int
 }
 
 /**
- * Optional integer from an array; missing, null, and an empty string return null.
+ * Optional integer from an array; missing, null, and blank strings return null.
  *
  * @throws InvalidArgumentException If the key is present and is not an integer.
  */
@@ -349,7 +349,7 @@ function array_get_int_or_null(array $values, string $key): ?int
 {
     $value = $values[$key] ?? null;
 
-    if ($value === null || $value === '')
+    if ($value === null || (is_string($value) && is_null_or_blank($value)))
         return null;
 
     return parse_int($value)
@@ -371,7 +371,7 @@ function array_get_number(array $values, string $key): int|float
 }
 
 /**
- * Optional number from an array; missing, null, and an empty string return null.
+ * Optional number from an array; missing, null, and blank strings return null.
  *
  * @throws InvalidArgumentException If the key is present and is not a finite number.
  */
@@ -379,7 +379,7 @@ function array_get_number_or_null(array $values, string $key): int|float|null
 {
     $value = $values[$key] ?? null;
 
-    if ($value === null || $value === '')
+    if ($value === null || (is_string($value) && is_null_or_blank($value)))
         return null;
 
     return parse_number($value)
@@ -401,7 +401,7 @@ function array_get_bool(array $values, string $key): bool
 }
 
 /**
- * Optional boolean from an array; missing, null, and an empty string return null.
+ * Optional boolean from an array; missing, null, and blank strings return null.
  *
  * @throws InvalidArgumentException If the key is present and is not a boolean.
  */
@@ -409,7 +409,7 @@ function array_get_bool_or_null(array $values, string $key): ?bool
 {
     $value = $values[$key] ?? null;
 
-    if ($value === null || $value === '')
+    if ($value === null || (is_string($value) && is_null_or_blank($value)))
         return null;
 
     return parse_bool($value)
@@ -419,10 +419,10 @@ function array_get_bool_or_null(array $values, string $key): ?bool
 // Strings -----------------------------------------------------------------------------------------
 
 /**
- * Whether $value is null, empty, or contains only whitespace. Strict: '0' is NOT empty
+ * Whether $value is null, empty, or contains only whitespace. Strict: '0' is NOT blank
  * (unlike empty(), which treats '0' as empty).
  */
-function is_null_or_empty(?string $value): bool
+function is_null_or_blank(?string $value): bool
 {
     return $value === null || trim($value) === '';
 }

@@ -199,7 +199,7 @@ final class MiscData
 
     private static function validateKey(string $key): void
     {
-        if (is_null_or_empty($key))
+        if (is_null_or_blank($key))
             throw new MiscDataException("'key' is required", MiscDataException::INVALID);
 
         if (mb_strlen($key) > self::KEY_MAX_LENGTH)
