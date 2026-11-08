@@ -320,10 +320,13 @@ function array_get_string_or_null(array $values, string $key): ?string
 {
     $value = $values[$key] ?? null;
 
-    if ($value !== null && !is_string($value))
+    if ($value === null || (is_string($value) && is_null_or_blank($value)))
+        return null;
+
+    if (!is_string($value))
         throw new InvalidArgumentException("'$key' must be a string");
 
-    return is_null_or_blank($value) ? null : $value;
+    return $value;
 }
 
 /**
