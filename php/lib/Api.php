@@ -189,33 +189,32 @@ final class Api
         $ruleKey = $action === null ? $method->value : "$method->value $action";
         $rule = $handlers[$ruleKey]
             ?? throw new RuntimeException("Cannot serve '$ruleKey': no handler declared for it", 404);
+        $isCrud = !is_array($rule);
 
-        if (!is_array($rule)) { // Serve CRUD
+        if ($isCrud) {
             if ($action !== null)
                 throw new LogicException("Action '$action' needs a handler: use [access, handler]");
             if ($dbTable === null)
                 throw new LogicException("'$ruleKey' is the generic CRUD and needs a DbTable");
 
-            if ($method === HttpMethod::Delete) {
-                self::crud($dbTable, $method, $vars, $rule);
-                self::sendNoContent();
-            } else {
-                self::sendJson(
-                    self::crud($dbTable, $method, $vars, $rule),
-                    $method === HttpMethod::Post ? 201 : 200
-                );
-            }
+            $result = self::crud($dbTable, $method, $vars, $rule);
         }
-        else { // Serve action with custom handler
+        else {
             [$access, $handler] = $rule;
-    
+
             self::authorize($access);
             $result = $handler($vars, $dbTable);
-            if ($result === null && in_array($method, [HttpMethod::Post, HttpMethod::Put, HttpMethod::Delete], true))
-                self::sendNoContent();
-            else
-                self::sendJson($result);
         }
+
+        match ($method) {
+            HttpMethod::Get    => self::sendJson($result),
+            HttpMethod::Post   => $isCrud
+                ? self::sendJson($result, 201)
+                : ($result === null ? self::sendNoContent() : self::sendJson($result)),
+            HttpMethod::Put, HttpMethod::Delete => $result === null
+                ? self::sendNoContent()
+                : self::sendJson($result),
+        };
     }
 
     // private -------------------------------------------------------------------------------------
