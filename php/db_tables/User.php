@@ -65,7 +65,7 @@ final class User extends DbTable
      */
     public function readByEmail(string $email): ?array
     {
-        return $this->readOne('LOWER(email) = ?', [self::normalizeIdentity($email)]);
+        return $this->readOne('email = ?', [$email]);
     }
 
     /**
@@ -75,7 +75,7 @@ final class User extends DbTable
      */
     public function readByUsername(string $username): ?array
     {
-        return $this->readOne('LOWER(username) = ?', [self::normalizeIdentity($username)]);
+        return $this->readOne('username = ?', [$username]);
     }
 
     /**
@@ -170,19 +170,14 @@ final class User extends DbTable
             }
 
             $data[$column] = $value;
-            $this->assertUnique($column, self::normalizeIdentity($value), $exceptId);
+            $this->assertUnique($column, $value, $exceptId);
         }
-    }
-
-    private static function normalizeIdentity(string $value): string
-    {
-        return mb_strtolower($value, 'UTF-8');
     }
 
     private function assertUnique(string $column, string $value, ?int $exceptId): void
     {
         if ($this->readOne(
-            "LOWER(`$column`) = ?".($exceptId === null ? '' : ' AND id <> ?'),
+            "`$column` = ?".($exceptId === null ? '' : ' AND id <> ?'),
             $exceptId === null ? [$value] : [$value, $exceptId]
         ) !== null)
             throw new RuntimeException("'$column' already exists", 409);
@@ -192,9 +187,10 @@ final class User extends DbTable
     {
         $allowedChars = ['_', '.'];
 
-        if (!preg_match('/^[A-Za-z'.implode('', $allowedChars).']+$/', $username))
+        if (strlen($username) < 1 || strlen($username) > 32
+            || !preg_match('/^[A-Za-z0-9'.implode('', $allowedChars).']+$/', $username))
             throw new RuntimeException(
-                "'username' may only contain ASCII letters and these characters: ".implode(', ', $allowedChars),
+                "'username' must be 1-32 characters and contain only ASCII letters, digits, and these characters: ".implode(', ', $allowedChars),
                 422
             );
     }
