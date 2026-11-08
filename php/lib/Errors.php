@@ -40,6 +40,20 @@ final class Errors
         });
 
         set_exception_handler(self::handle(...));
+
+        register_shutdown_function(static function (): void {
+            $error = error_get_last();
+            if ($error === null || !in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true))
+                return;
+
+            self::handle(new ErrorException(
+                $error['message'],
+                0,
+                $error['type'],
+                $error['file'],
+                $error['line']
+            ));
+        });
     }
 
     /**
@@ -55,7 +69,7 @@ final class Errors
         if ($status >= 500)
             self::log($status, $e);
 
-        $debug = parse_bool(Env::getBoolOrNull(self::ENV_APP_DEBUG) ?? false);
+        $debug = Env::getBoolOrNull(self::ENV_APP_DEBUG) ?? false;
         $message = $status < 500 || $debug ? $e->getMessage() : 'Internal server error';
 
         if (PHP_SAPI === 'cli') {
