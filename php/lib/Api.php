@@ -74,8 +74,8 @@ final class Api
      * - 'GET total' => [ApiAccess::Admin, fn($vars, $dbTable) => ...] a custom action: access + handler
      * - 'POST cancel' => [null, fn($vars, $dbTable) => ...]            null: the handler checks the access itself
      * Successful generic POST returns 201 with the created row; generic DELETE returns 204 with no body.
-     * Handler POST returns 201, handler PUT returning null and every handler DELETE return 204.
-     * Other successful responses return 200 with JSON.
+     * Custom handlers return 200 with JSON unless POST, PUT, or DELETE returns null, in which case
+     * they return 204 with no body. Generic DELETE always returns 204 with no body.
      * METHOD must be the value of an HttpMethod case ('GET', 'POST', 'PUT', 'DELETE'), in upper case.
      * A method with no declared handlers answers 405 and advertises the supported methods; an
      * undeclared action for a supported method answers 404.
@@ -211,10 +211,10 @@ final class Api
     
             self::authorize($access);
             $result = $handler($vars, $dbTable);
-            if ($method === HttpMethod::Delete || ($method === HttpMethod::Put && $result === null))
+            if ($result === null && in_array($method, [HttpMethod::Post, HttpMethod::Put, HttpMethod::Delete], true))
                 self::sendNoContent();
             else
-                self::sendJson($result, $method === HttpMethod::Post ? 201 : 200);
+                self::sendJson($result);
         }
     }
 
