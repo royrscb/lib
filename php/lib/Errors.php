@@ -11,7 +11,7 @@ declare(strict_types=1);
  * - From 500 up the message is hidden and the error is logged, unless APP_DEBUG = 1/true in the .env
  *   (then the message is also sent).
  * - Log file: LOG_FILEPATH_FROM_ROOT in the .env (relative to APP_ROOT, with an optional leading slash),
- *   or logs/error.log.
+ *   or logs/app.log.
  *
  * Registering the handlers does not read the .env file, so it can happen before application
  * configuration is loaded. Configuration is read when an error occurs; process environment
@@ -19,8 +19,12 @@ declare(strict_types=1);
  */
 final class Errors
 {
+    // Env vars ---
     private const string ENV_APP_DEBUG = 'APP_DEBUG';
     private const string ENV_LOG_FILEPATH_FROM_ROOT = 'LOG_FILEPATH_FROM_ROOT';
+    // ---
+
+    private const string DEFAULT_LOG_FILEPATH_FROM_ROOT = '/logs/app.log';
 
     /**
      * Registers the application error and exception handlers.
@@ -89,7 +93,7 @@ final class Errors
     // Appends the error to the log file. The query string is left out of the URI because it can carry secrets.
     private static function log(int $status, Throwable $e): void
     {
-        $path = Env::getOrNull(self::ENV_LOG_FILEPATH_FROM_ROOT) ?? '/logs/error.log';
+        $path = Env::getOrNull(self::ENV_LOG_FILEPATH_FROM_ROOT) ?? self::DEFAULT_LOG_FILEPATH_FROM_ROOT;
         $file = APP_ROOT.'/'.ltrim($path, '/');
 
         $line = sprintf(

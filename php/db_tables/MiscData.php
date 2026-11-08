@@ -30,6 +30,15 @@ final class MiscDataException extends RuntimeException
 /**
  * Typed key/value store backed by the misc_data database table.
  *
+ * Keys must contain 1-128 characters and cannot be empty or whitespace-only. Values support the
+ * `number`, `bool`, `string`, `date`, `dateTime`, and `json` types; null is valid for every type.
+ * Dates use `Y-m-d` and dateTimes use `Y-m-d H:i:s`.
+ *
+ * `create()` inserts a new key and rejects duplicates. `get()` returns its typed value, while
+ * `exists()` checks for the key independently of its value. `update()` changes the value without
+ * changing the stored type. `set()` creates a missing key or updates an existing one, keeping its
+ * existing type. `delete()` removes the key and does nothing if it is absent.
+ *
  * Invalid keys, types, and values; missing keys; and duplicate keys during creation raise
  * MiscDataException with distinct integer codes. Database failures and corrupt stored data
  * propagate as unexpected errors.
@@ -62,7 +71,7 @@ final class MiscData
     /**
      * Creates a new key.
      *
-     * @throws MiscDataException INVALID if the key is empty or the value doesn't match $type,
+     * @throws MiscDataException INVALID if the key is empty/blank or the value doesn't match $type,
      *                           ALREADY_EXISTS if the key already exists.
      */
     public function create(string $key, MiscDataType $type, mixed $value): void
@@ -86,7 +95,7 @@ final class MiscData
     /**
      * Returns the typed value of a key (null if the stored value is NULL / JSON null).
      *
-     * @throws MiscDataException INVALID if the key is empty, NOT_FOUND if it does not exist.
+     * @throws MiscDataException INVALID if the key is empty/blank, NOT_FOUND if it does not exist.
      */
     public function get(string $key): mixed
     {
@@ -129,7 +138,7 @@ final class MiscData
     /**
      * Whether the key exists (regardless of its value, which may be null).
      *
-     * @throws MiscDataException INVALID if the key is empty.
+     * @throws MiscDataException INVALID if the key is empty/blank.
      */
     public function exists(string $key): bool
     {
@@ -144,7 +153,7 @@ final class MiscData
     /**
      * Changes the value of an existing key. The key's type never changes.
      *
-     * @throws MiscDataException INVALID if the key is empty or the value doesn't match its type,
+     * @throws MiscDataException INVALID if the key is empty/blank or the value doesn't match its type,
      *                           NOT_FOUND if the key does not exist.
      */
     public function update(string $key, mixed $value): void
@@ -168,7 +177,7 @@ final class MiscData
      * Creates the key if it does not exist; otherwise changes its value keeping its existing
      * type (so $type is ignored for keys that already exist).
      *
-     * @throws MiscDataException INVALID if the key is empty or the value doesn't match the type.
+     * @throws MiscDataException INVALID if the key is empty/blank or the value doesn't match the type.
      */
     public function set(string $key, MiscDataType $type, mixed $value): void
     {
@@ -183,7 +192,7 @@ final class MiscData
     /**
      * Deletes a key.
      *
-     * @throws MiscDataException INVALID if the key is empty.
+     * @throws MiscDataException INVALID if the key is empty/blank.
      */
     public function delete(string $key): void
     {
