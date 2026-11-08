@@ -179,7 +179,7 @@ abstract class DbTable
     }
 
     /**
-     * Deletes the row with that id. Does nothing if it does not exist.
+     * Deletes the row with that id.
      */
     public function delete(int $id): void
     {

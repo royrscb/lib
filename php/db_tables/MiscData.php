@@ -183,10 +183,9 @@ final class MiscData
     /**
      * Deletes a key.
      *
-     * @return bool true if the key existed and was deleted, false if it did not exist.
      * @throws MiscDataException INVALID if the key is empty.
      */
-    public function delete(string $key): bool
+    public function delete(string $key): void
     {
         self::validateKey($key);
 
@@ -194,8 +193,6 @@ final class MiscData
             'DELETE FROM `'.self::TABLE_NAME.'` WHERE `key` = ?',
             [$key]
         );
-
-        return true;
     }
 
     // private -------------------------------------------------------------------------------------
