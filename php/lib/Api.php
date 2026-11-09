@@ -181,9 +181,11 @@ final class Api
      */
     public static function serve(?DbTable $dbTable, array $handlers): void
     {
-        $method = Request::method();
-        self::requireDeclaredMethod($method, $handlers);
-
+        $allowedMethods = array_values(array_unique(array_map(
+            static fn(string $key): HttpMethod => HttpMethod::from(explode(' ', $key, 2)[0]),
+            array_keys($handlers)
+        )));
+        $method = Request::getAllowedMethod($allowedMethods);
         $vars = Request::vars();
         $action = Request::getStringOrNull('action');
         $ruleKey = $action === null ? $method->value : "$method->value $action";
@@ -207,8 +209,8 @@ final class Api
         }
 
         match ($method) {
-            HttpMethod::Get    => self::sendJson($result),
-            HttpMethod::Post   => $isCrud
+            HttpMethod::Get => self::sendJson($result),
+            HttpMethod::Post => $isCrud
                 ? self::sendJson($result, 201)
                 : ($result === null ? self::sendNoContent() : self::sendJson($result)),
             HttpMethod::Put, HttpMethod::Delete => $result === null
@@ -218,25 +220,6 @@ final class Api
     }
 
     // private -------------------------------------------------------------------------------------
-
-    /**
-     * Rejects methods with no handler and advertises the methods this endpoint supports.
-     *
-     * @param array<string, mixed> $handlers
-     * @throws RuntimeException 405 if no handler is declared for the method.
-     */
-    private static function requireDeclaredMethod(HttpMethod $method, array $handlers): void
-    {
-        $allowedMethods = array_unique(array_map(
-            static fn(string $key): string => explode(' ', $key, 2)[0],
-            array_keys($handlers)
-        ));
-
-        if (!in_array($method->value, $allowedMethods, true)) {
-            header('Allow: '.implode(', ', $allowedMethods));
-            throw new RuntimeException('Method not allowed', 405);
-        }
-    }
 
     /**
      * Generic CRUD of a table, chosen by the HTTP method and using ?id= to identify the row:

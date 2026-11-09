@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 final class User extends DbTable
 {
+    private const array IDENTITY_COLUMNS = ['username', 'email'];
+    private const int USERNAME_MAX_LENGTH = 32;
+    private const array USERNAME_ALLOWED_CHARS = ['_', '.'];
+
     protected array $creatableColumns =
     [
         'username',
@@ -23,6 +27,8 @@ final class User extends DbTable
 
     // public --------------------------------------------------------------------------------------
 
+    // DbTable override ---
+
     /**
      * Creates a user. The client sends a plain 'password' and only its hash is stored;
      * a 'hashword' sent by the client is ignored.
@@ -33,7 +39,12 @@ final class User extends DbTable
     {
         unset($data['hashword']);
 
-        $this->validateIdentity($data);
+        foreach (self::IDENTITY_COLUMNS as $column) {
+            if (!array_key_exists($column, $data))
+                throw new RuntimeException("'$column' is required", 422);
+        }
+
+        $data = $this->validateIdentity($data);
 
         try {
             $password = array_get_string($data, 'password');
@@ -53,10 +64,12 @@ final class User extends DbTable
      */
     public function update(int $id, array $data): ?array
     {
-        $this->validateIdentity($data, $id);
+        $data = $this->validateIdentity($data);
 
         return parent::update($id, $data);
     }
+    
+    // ---
 
     /**
      * Finds a user by email.
@@ -93,6 +106,8 @@ final class User extends DbTable
             throw new RuntimeException('Not found', 404);
         if (!is_string($row['hashword']) || !password_verify($currentPassword, $row['hashword']))
             throw new RuntimeException('Current password is incorrect', 403);
+        if (password_verify($newPassword, $row['hashword']))
+            throw new RuntimeException('New password must be different from the current password', 422);
 
         $this->query(
             "UPDATE $this->tableName SET hashword = ? WHERE id = ? AND hashword = ?",
@@ -150,10 +165,12 @@ final class User extends DbTable
         return is_string($hashword) && $hashword !== '' ? $hashword : null;
     }
 
-    private function validateIdentity(array &$data, ?int $exceptId = null): void
+    // private -------------------------------------------------------------------------------------
+
+    private function validateIdentity(array $data): array
     {
-        foreach (['username', 'email'] as $column) {
-            if ($exceptId !== null && !array_key_exists($column, $data))
+        foreach (self::IDENTITY_COLUMNS as $column) {
+            if (!array_key_exists($column, $data))
                 continue;
 
             try {
@@ -162,35 +179,27 @@ final class User extends DbTable
                 throw new RuntimeException($e->getMessage(), 422, $e);
             }
 
-            if ($column === 'email') {
-                if (!is_valid_email($value))
-                    throw new RuntimeException("'email' is invalid", 422);
-            } else if ($column === 'username') {
-                self::validateUsername($value);
-            }
+            match ($column) {
+                'email' => is_valid_email($value)
+                    ?: throw new RuntimeException("'email' is invalid", 422),
+                'username' => self::validateUsername($value),
+                default => throw new LogicException("Unknown identity column '$column'"),
+            };
 
             $data[$column] = $value;
-            $this->assertUnique($column, $value, $exceptId);
         }
-    }
 
-    private function assertUnique(string $column, string $value, ?int $exceptId): void
-    {
-        if ($this->readOne(
-            "`$column` = ?".($exceptId === null ? '' : ' AND id <> ?'),
-            $exceptId === null ? [$value] : [$value, $exceptId]
-        ) !== null)
-            throw new RuntimeException("'$column' already exists", 409);
+        return $data;
     }
 
     private static function validateUsername(string $username): void
     {
-        $allowedChars = ['_', '.'];
+        $allowedChars = implode('', self::USERNAME_ALLOWED_CHARS);
 
-        if (strlen($username) < 1 || strlen($username) > 32
-            || !preg_match('/^[A-Za-z0-9'.implode('', $allowedChars).']+$/', $username))
+        if (strlen($username) > self::USERNAME_MAX_LENGTH || !preg_match('/^[A-Za-z0-9'.$allowedChars.']+$/', $username))
             throw new RuntimeException(
-                "'username' must be 1-32 characters and contain only ASCII letters, digits, and these characters: ".implode(', ', $allowedChars),
+                "'username' must be 1-".self::USERNAME_MAX_LENGTH
+                ." characters and contain only ASCII letters, digits, and these characters: ".implode(', ', self::USERNAME_ALLOWED_CHARS),
                 422
             );
     }

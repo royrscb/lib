@@ -13,25 +13,52 @@ final class Request
     // public --------------------------------------------------------------------------------------
 
     /**
-     * HTTP method of the request (GET when there is none, e.g. on the command line).
-     *
-     * @throws RuntimeException 405 if the method is not one of HttpMethod (PATCH, HEAD, OPTIONS...).
+     * HTTP method of the request, or null if it is not represented by HttpMethod.
      */
-    public static function method(): HttpMethod
+    public static function getMethod(): ?HttpMethod
     {
-        return HttpMethod::tryFrom(strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET'))
-            ?? throw new RuntimeException('Method not allowed', 405);
+        return HttpMethod::tryFrom(strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET'));
     }
 
     /**
-     * Requires a specific request method and includes it in the Allow header on failure.
+     * HTTP method of the request, if it is in the allowed list.
+     *
+     * @param list<HttpMethod> $allowedMethods
+     * @throws RuntimeException 405 if the request method is not allowed.
+     */
+    public static function getAllowedMethod(array $allowedMethods): HttpMethod
+    {
+        $method = self::getMethod();
+        if ($method === null || !in_array($method, $allowedMethods, true)) {
+            header('Allow: '.implode(', ', array_map(
+                static fn(HttpMethod $method) => $method->value,
+                $allowedMethods
+            )));
+            throw new RuntimeException('Method not allowed', 405);
+        }
+
+        return $method;
+    }
+
+    /**
+     * Requires one of the allowed request methods without returning it.
+     *
+     * @param list<HttpMethod> $allowedMethods
+     * @throws RuntimeException 405 if the request method is not allowed.
+     */
+    public static function requireMethods(array $allowedMethods): void
+    {
+        self::getAllowedMethod($allowedMethods);
+    }
+
+    /**
+     * Requires a specific request method without returning it.
+     *
+     * @throws RuntimeException 405 if the request method is not allowed.
      */
     public static function requireMethod(HttpMethod $allowedMethod): void
     {
-        if (self::method() !== $allowedMethod) {
-            header('Allow: '.$allowedMethod->value);
-            throw new RuntimeException('Method not allowed', 405);
-        }
+        self::requireMethods([$allowedMethod]);
     }
 
     /**
