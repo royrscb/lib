@@ -127,6 +127,7 @@ final class Auth
     private const string ENV_AUTH_PERSISTENT_LOGIN_DAYS = 'AUTH_PERSISTENT_LOGIN_DAYS';
     // ---
 
+    private const string TOKEN_HASH_ALGORITHM = 'sha256';
     private const string SESSION_KEY = 'auth';
 
     // Attributes ----------------------------------------------------------------------------------
@@ -175,12 +176,48 @@ final class Auth
     }
 
     /**
+     * Creates a signed token for the currently authenticated identity.
+     * The token expires after the configured persistent-login period.
+     */
+    public static function getPersistentToken(): ?string
+    {
+        $owner = self::me();
+
+        if ($owner === null)
+            return null;
+
+        return self::createPersistentToken($owner);
+    }
+    
+    /**
+     * Renews the persistent login cookie of this device (only if it has one)
+     * for another AUTH_PERSISTENT_LOGIN_DAYS.
+     */
+    public static function renewPersistentCookie(): void
+    {
+        $owner = self::me();
+        $cookieName = self::getPersistentCookieName();
+
+        if ($owner === null || !isset($_COOKIE[$cookieName]))
+            return;
+
+        $token = self::createPersistentToken($owner);
+
+        if ($token !== null)
+            self::setCookie(
+                $cookieName,
+                $token,
+                time() + 86400 * Env::getInt(self::ENV_AUTH_PERSISTENT_LOGIN_DAYS)
+            );
+    }
+
+    /**
      * Closes the session and forgets this device's persistent login cookie.
      */
     public static function logout(): void
     {
-        $sessionCookie = self::getSessionName();
-        if (session_status() === PHP_SESSION_ACTIVE || is_string($_COOKIE[$sessionCookie] ?? null)) {
+        $sessionCookieName = self::getSessionName();
+        if (session_status() === PHP_SESSION_ACTIVE || is_string($_COOKIE[$sessionCookieName] ?? null)) {
             self::startSession();
 
             $_SESSION = [];
@@ -189,7 +226,7 @@ final class Auth
 
         // Tokens are signed, not stored: forgetting this device is just deleting its cookie
         self::deleteCookie(self::getPersistentCookieName());
-        self::deleteCookie($sessionCookie);
+        self::deleteCookie($sessionCookieName);
 
         self::$me = null;
         self::$isMeResolved = true;
@@ -197,9 +234,18 @@ final class Auth
 
     /**
      * Regenerates the current user's session after a password change.
+     * Bearer clients (the app) have no session: their old token stops working because the
+     * password changed, so they must log in again.
      */
     public static function passwordChanged(int $id): void
     {
+        // return;
+        if (Request::header('Authorization') !== null) {
+            self::$me = null;
+            self::$isMeResolved = false;
+            return;
+        }
+
         self::startSession();
 
         $owner = AuthIdentity::fromSessionArray($_SESSION[self::SESSION_KEY] ?? null);
@@ -239,9 +285,20 @@ final class Auth
         if (self::$isMeResolved)
             return self::$me;
 
+        $bearerToken = self::getBearerToken();
+
+        // return;
+        if ($bearerToken !== null) {
+            $owner = self::verifyPersistentToken($bearerToken);
+            self::$me = $owner !== null ? self::identify($owner) : null;
+            self::$isMeResolved = true;
+
+            return self::$me;
+        }
+
         $sessionCookie = $_COOKIE[self::getSessionName()] ?? null;
         if (session_status() !== PHP_SESSION_ACTIVE && !is_string($sessionCookie)) {
-            $owner = self::readPersistentToken();
+            $owner = self::verifyPersistentToken();
 
             if ($owner === null) {
                 self::$me = null;
@@ -258,7 +315,7 @@ final class Auth
             $owner = AuthIdentity::fromSessionArray($_SESSION[self::SESSION_KEY] ?? null);
 
             if ($owner === null) {
-                $owner = self::readPersistentToken();
+                $owner = self::verifyPersistentToken();
 
                 if ($owner !== null && !session_regenerate_id(true))
                     throw new RuntimeException('Could not regenerate session after restoring login', 500);
@@ -369,20 +426,26 @@ final class Auth
         session_regenerate_id(true);
 
         $_SESSION[self::SESSION_KEY] = $owner->toSessionArray();
-        self::$isMeResolved = false;
-
         $token = $persistent ? self::createPersistentToken($owner) : null;
 
-        if ($token !== null)
+        if ($token !== null) {
             self::setCookie(
-                self::getPersistentCookieName(),
-                $token,
-                time() + 86400 * Env::getInt(self::ENV_AUTH_PERSISTENT_LOGIN_DAYS)
+                name: self::getPersistentCookieName(),
+                value: $token,
+                expiresUnixTime: time() + 86400 * Env::getInt(self::ENV_AUTH_PERSISTENT_LOGIN_DAYS)
             );
-        else
+        }
+        else {
             self::deleteCookie(self::getPersistentCookieName());
+        }
 
-        return self::me();
+        self::$me = self::identify($owner);
+        self::$isMeResolved = true;
+
+        if (self::$me === null)
+            unset($_SESSION[self::SESSION_KEY]);
+
+        return self::$me;
     }
 
     // Identity of an owner, or null if it is invalid or no longer exists
@@ -405,46 +468,73 @@ final class Auth
     }
 
     // Token of an owner, or null if it cannot be made.
-    // Persistent login with no extra table: the cookie is a signed token (HMAC) and nothing is stored.
-    // Format: "<who>.<mac>", where <who> is "admin" or "user-<id>".
-    // The mac covers who + the hashword of the owner and is keyed with AUTH_SECRET. So:
-    // - Logging in again renews the cookie for the configured number of days (the token itself does not expire).
-    // - Changing the password of the owner invalidates their cookies.
-    // - Leaking the database alone is not enough to forge cookies: AUTH_SECRET is not in it.
-    // A token cannot be revoked per device: logout only deletes the cookie of this device.
+    // Format: "<who>.<expires>.<mac>". The MAC covers all fields and the owner's hashword.
     private static function createPersistentToken(AuthIdentity $owner): ?string
     {
-        // Hashword of the owner, which ties the token to the password. Admin-only apps have no User class
-        $hashword = match ($owner->role) {
-            AuthRole::Admin => self::getAdminHashword(),
-            AuthRole::User  => $owner->id !== null && class_exists(User::class)
-                ? self::getUserTable()->getHashword($owner->id) : null,
-        };
+        $hashword = self::getOwnerHashword($owner);
 
         if ($hashword === null)
             return null;
 
-        $secret = Env::get(self::ENV_AUTH_SECRET);
+        $expiresAt = time() + 86400 * Env::getInt(self::ENV_AUTH_PERSISTENT_LOGIN_DAYS);
         $who = $owner->toSlug();
+        
+        $payload = "$who.$expiresAt";
+        $mac = hash_hmac(self::TOKEN_HASH_ALGORITHM, "$payload.$hashword", Env::get(self::ENV_AUTH_SECRET));
 
-        return "$who.".hash_hmac('sha256', "$who.$hashword", $secret);
+        return "$payload.$mac";
     }
-    // Owner stored in the persistent login cookie of this request, or null if there is none or it is not valid
-    private static function readPersistentToken(): ?AuthIdentity
+
+    // Owner stored in a persistent-login cookie or bearer token, or null if it is absent or invalid.
+    private static function verifyPersistentToken(?string $token = null): ?AuthIdentity
     {
-        $token = $_COOKIE[self::getPersistentCookieName()] ?? null;
+        $token ??= $_COOKIE[self::getPersistentCookieName()] ?? null;
 
         if (!is_string($token))
             return null;
 
-        $owner = AuthIdentity::fromSlug(explode('.', $token)[0]);
+        $parts = explode('.', $token);
+        if (count($parts) !== 3 || !ctype_digit($parts[1]))
+            return null;
 
+        $expiresAt = filter_var($parts[1], FILTER_VALIDATE_INT);
+        if ($expiresAt === false || $expiresAt <= time() || (string)$expiresAt !== $parts[1])
+            return null;
+
+        $owner = AuthIdentity::fromSlug($parts[0]);
         if ($owner === null)
             return null;
 
-        $expected = self::createPersistentToken($owner);
+        $hashword = self::getOwnerHashword($owner);
+        if ($hashword === null)
+            return null;
 
-        return $expected !== null && hash_equals($expected, $token) ? $owner : null;
+        $payload = "$parts[0].$expiresAt";
+        $expectedMac = hash_hmac(self::TOKEN_HASH_ALGORITHM, "$payload.$hashword", Env::get(self::ENV_AUTH_SECRET));
+
+        if (!hash_equals($expectedMac, $parts[2]))
+            return null;
+
+        return $owner;
+    }
+
+    private static function getOwnerHashword(AuthIdentity $owner): ?string
+    {
+        // Admin-only apps have no User class.
+        return match ($owner->role) {
+            AuthRole::Admin => self::getAdminHashword(),
+            AuthRole::User  => $owner->id !== null && class_exists(User::class)
+                ? self::getUserTable()->getHashword($owner->id) : null
+        };
+    }
+
+    private static function getBearerToken(): ?string
+    {
+        $authorization = Request::header('Authorization');
+        if ($authorization === null || !preg_match('/^Bearer\s+(\S+)$/iD', trim($authorization), $matches))
+            return null;
+
+        return $matches[1];
     }
 
     private static function startSession(): void
