@@ -3,7 +3,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
-throw new Exception('TODO - Review permissions here', 500);
+throw new Exception('TODO - Review permissions here (Specially GET that returns all data)', 500);
 
 $misc = Database::instance()->miscData();
 

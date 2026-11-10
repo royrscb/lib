@@ -210,3 +210,15 @@ final class User extends DbTable
             throw new RuntimeException("'password' must be between 8 and 64 chars", 422);
     }
 }
+
+/*
+CREATE TABLE `user` (
+    `id`       INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `username` VARCHAR(32)  COLLATE utf8mb4_unicode_ci NOT NULL,
+    `email`    VARCHAR(254) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `hashword` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_user_username` (`username`),
+    UNIQUE KEY `uq_user_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+*/
