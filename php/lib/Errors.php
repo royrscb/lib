@@ -73,7 +73,11 @@ final class Errors
         if ($status >= 500)
             self::log($status, $e);
 
-        $debug = Env::getBoolOrNull(self::ENV_APP_DEBUG) ?? false;
+        try {
+            $debug = Env::getBoolOrNull(self::ENV_APP_DEBUG) ?? false;
+        } catch (Throwable) {
+            $debug = false;
+        }
         $message = $status < 500 || $debug ? $e->getMessage() : 'Internal server error';
 
         if (PHP_SAPI === 'cli') {

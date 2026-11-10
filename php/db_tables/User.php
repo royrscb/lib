@@ -9,8 +9,12 @@ final class User extends DbTable
         'uq_user_username' => 'username',
         'uq_user_email' => 'email',
     ];
+
     private const int USERNAME_MAX_LENGTH = 32;
     private const array USERNAME_ALLOWED_CHARS = ['_', '.'];
+
+    private const int PASSWORD_MIN_LENGTH = 8;
+    private const int PASSWORD_MAX_LENGTH = 32;
 
     protected array $creatableColumns =
     [
@@ -217,7 +221,7 @@ final class User extends DbTable
     {
         $allowedChars = implode('', self::USERNAME_ALLOWED_CHARS);
 
-        if (strlen($username) > self::USERNAME_MAX_LENGTH || !preg_match('/^[A-Za-z0-9'.$allowedChars.']+$/', $username))
+        if (mb_strlen($username) > self::USERNAME_MAX_LENGTH || !preg_match('/^[A-Za-z0-9'.$allowedChars.']+$/', $username))
             throw new RuntimeException(
                 "'username' must be 1-".self::USERNAME_MAX_LENGTH
                 ." characters and contain only ASCII letters, digits, and these characters: ".implode(', ', self::USERNAME_ALLOWED_CHARS),
@@ -227,8 +231,16 @@ final class User extends DbTable
 
     private static function validatePassword(mixed $password): void
     {
-        if (!is_string($password) || strlen($password) < 8 || strlen($password) > 64)
-            throw new RuntimeException("'password' must be between 8 and 64 chars", 422);
+        if (!is_string($password)
+            || !preg_match('/^[\x21-\x7E]+$/D', $password)
+            || strlen($password) < self::PASSWORD_MIN_LENGTH
+            || strlen($password) > self::PASSWORD_MAX_LENGTH
+        )
+            throw new RuntimeException(
+                "'password' must be between ".self::PASSWORD_MIN_LENGTH." and ".self::PASSWORD_MAX_LENGTH
+                ." printable ASCII characters without spaces",
+                422
+            );
     }
 }
 
