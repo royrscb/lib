@@ -1,6 +1,6 @@
 <?php
 /**
- * POST /login_user.php
+ * POST /api/auth/login_user.php
  *
  * Body (JSON, form or x-www-form-urlencoded):
  *   email | username  One of them is required (if both are sent, email is used).

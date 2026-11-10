@@ -1,6 +1,6 @@
 <?php
 /**
- * POST /logout.php
+ * POST /api/auth/logout.php
  *
  * Closes the session and forgets this device's persistent login cookie.
  * It is not an error to call it with nobody logged in.

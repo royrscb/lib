@@ -1,6 +1,6 @@
 <?php
 /**
- * POST /send/email.php
+ * POST /api/send/email.php
  *
  * Body (JSON, form or x-www-form-urlencoded):
  *   from     Sender email address.

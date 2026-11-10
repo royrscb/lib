@@ -1,6 +1,6 @@
 <?php
 /**
- * POST /login_admin.php
+ * POST /api/auth/login_admin.php
  *
  * Body (JSON, form or x-www-form-urlencoded):
  *   password    Plain password of the admin (ADMIN_HASHWORD in the .env).

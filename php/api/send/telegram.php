@@ -1,6 +1,6 @@
 <?php
 /**
- * POST /send/telegram.php
+ * POST /api/send/telegram.php
  *
  * Body (JSON, form or x-www-form-urlencoded):
  *   message  Message to send to the configured Royrscb Telegram chat.
