@@ -1,6 +1,6 @@
 <?php
 /**
- * GET /api/auth/whoami.php
+ * POST /api/auth/whoami.php
  *
  * Returns the currently authenticated identity:
  *   - the admin: ['id' => null, 'role' => 'admin']
