@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+throw new Exception("TODO - Review this whole class if want to use it");
+
 /**
  * Environment variables containing Telegram bot tokens.
  */

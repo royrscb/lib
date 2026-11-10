@@ -39,7 +39,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
-throw new Exception('TODO - Require permissions here', 500);
+throw new Exception('TODO - Review permissions here', 500);
 
 // Config ---
 const UPLOADS_DIR              = APP_ROOT.'/uploads'; // destination_folder goes inside it
