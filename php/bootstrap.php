@@ -28,7 +28,7 @@ spl_autoload_register(function (string $class): void {
     static $inFileOf = [
         // lib ---
         'AuthRole'             => 'Auth',
-        'Identity'             => 'Auth',
+        'AuthIdentity'         => 'Auth',
         'AppEnv'               => 'Env',
         'ApiAccess'            => 'Api',
         'DbTableException'     => 'DbTable',

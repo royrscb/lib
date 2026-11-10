@@ -14,7 +14,7 @@ enum AuthRole: string
 /**
  * Authenticated identity with typed role and id, plus the user data returned by the API.
  */
-final readonly class Identity implements JsonSerializable
+final readonly class AuthIdentity implements JsonSerializable
 {
     public AuthRole $role;
     public ?int $id;
@@ -131,7 +131,7 @@ final class Auth
 
     // Attributes ----------------------------------------------------------------------------------
 
-    private static ?Identity $me = null;
+    private static ?AuthIdentity $me = null;
     private static bool $isMeResolved = false;
 
     // public --------------------------------------------------------------------------------------
@@ -141,17 +141,17 @@ final class Auth
      *
      * @param string $password   Plain password.
      * @param bool   $persistent Keep the login with a cookie for the configured number of days.
-     * @return Identity|null The authenticated admin identity, or null if the password is wrong or
+     * @return AuthIdentity|null The authenticated admin identity, or null if the password is wrong or
      *                       the .env has no admin.
      */
-    public static function loginAdmin(string $password, bool $persistent = false): ?Identity
+    public static function loginAdmin(string $password, bool $persistent = false): ?AuthIdentity
     {
         $hashword = self::getAdminHashword();
 
         if ($hashword === null || !password_verify($password, $hashword))
             return null;
 
-        return self::start(Identity::admin(), $persistent);
+        return self::start(AuthIdentity::admin(), $persistent);
     }
 
     /**
@@ -161,9 +161,9 @@ final class Auth
      * @param string $emailOrUsername Email or username.
      * @param string $password        Plain password.
      * @param bool   $persistent      Keep the login with a cookie for the configured number of days.
-     * @return Identity|null The authenticated user identity, or null if the credentials are wrong.
+     * @return AuthIdentity|null The authenticated user identity, or null if the credentials are wrong.
      */
-    public static function loginUser(string $emailOrUsername, string $password, bool $persistent = false): ?Identity
+    public static function loginUser(string $emailOrUsername, string $password, bool $persistent = false): ?AuthIdentity
     {
         $userTable = self::getUserTable();
         $user = $userTable->readByEmail($emailOrUsername) ?? $userTable->readByUsername($emailOrUsername);
@@ -171,7 +171,7 @@ final class Auth
         if ($user === null || !$userTable->verifyPassword($user['id'], $password))
             return null;
 
-        return self::start(Identity::user($user['id']), $persistent);
+        return self::start(AuthIdentity::user($user['id']), $persistent);
     }
 
     /**
@@ -202,7 +202,7 @@ final class Auth
     {
         self::startSession();
 
-        $owner = Identity::fromSessionArray($_SESSION[self::SESSION_KEY] ?? null);
+        $owner = AuthIdentity::fromSessionArray($_SESSION[self::SESSION_KEY] ?? null);
         if ($owner?->role !== AuthRole::User || $owner->id !== $id)
             throw new LogicException('The current session does not belong to this user');
 
@@ -232,9 +232,9 @@ final class Auth
      * Restores the login from the persistent login cookie if there is no session, and drops sessions
      * whose identity no longer exists.
      *
-     * @return Identity|null
+     * @return AuthIdentity|null
      */
-    public static function me(): ?Identity
+    public static function me(): ?AuthIdentity
     {
         if (self::$isMeResolved)
             return self::$me;
@@ -255,7 +255,7 @@ final class Auth
         } else {
             self::startSession();
 
-            $owner = Identity::fromSessionArray($_SESSION[self::SESSION_KEY] ?? null);
+            $owner = AuthIdentity::fromSessionArray($_SESSION[self::SESSION_KEY] ?? null);
 
             if ($owner === null) {
                 $owner = self::readPersistentToken();
@@ -363,7 +363,7 @@ final class Auth
     }
 
     // Opens the session for an owner and returns the identity
-    private static function start(Identity $owner, bool $persistent): ?Identity
+    private static function start(AuthIdentity $owner, bool $persistent): ?AuthIdentity
     {
         self::startSession();
         session_regenerate_id(true);
@@ -386,10 +386,10 @@ final class Auth
     }
 
     // Identity of an owner, or null if it is invalid or no longer exists
-    private static function identify(Identity $owner): ?Identity
+    private static function identify(AuthIdentity $owner): ?AuthIdentity
     {
         if ($owner->role === AuthRole::Admin)
-            return self::getAdminHashword() !== null ? Identity::admin() : null;
+            return self::getAdminHashword() !== null ? AuthIdentity::admin() : null;
 
         // Admin-only apps have no User class: any session pointing to a user is invalid
         if ($owner->id === null || !class_exists(User::class))
@@ -401,7 +401,7 @@ final class Auth
         if ($user === null)
             return null;
 
-        return Identity::user($owner->id, $user);
+        return AuthIdentity::user($owner->id, $user);
     }
 
     // Token of an owner, or null if it cannot be made.
@@ -412,7 +412,7 @@ final class Auth
     // - Changing the password of the owner invalidates their cookies.
     // - Leaking the database alone is not enough to forge cookies: AUTH_SECRET is not in it.
     // A token cannot be revoked per device: logout only deletes the cookie of this device.
-    private static function createPersistentToken(Identity $owner): ?string
+    private static function createPersistentToken(AuthIdentity $owner): ?string
     {
         // Hashword of the owner, which ties the token to the password. Admin-only apps have no User class
         $hashword = match ($owner->role) {
@@ -430,14 +430,14 @@ final class Auth
         return "$who.".hash_hmac('sha256', "$who.$hashword", $secret);
     }
     // Owner stored in the persistent login cookie of this request, or null if there is none or it is not valid
-    private static function readPersistentToken(): ?Identity
+    private static function readPersistentToken(): ?AuthIdentity
     {
         $token = $_COOKIE[self::getPersistentCookieName()] ?? null;
 
         if (!is_string($token))
             return null;
 
-        $owner = Identity::fromSlug(explode('.', $token)[0]);
+        $owner = AuthIdentity::fromSlug(explode('.', $token)[0]);
 
         if ($owner === null)
             return null;
