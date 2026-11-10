@@ -124,7 +124,7 @@ final class Auth
     private const string ENV_PROJECT_SLUG = 'PROJECT_SLUG';
     private const string ENV_AUTH_SECRET = 'AUTH_SECRET';
     private const string ENV_ADMIN_HASHWORD = 'ADMIN_HASHWORD';
-    private const string ENV_PERSISTENT_LOGIN_DAYS = 'AUTH_PERSISTENT_LOGIN_DAYS';
+    private const string ENV_AUTH_PERSISTENT_LOGIN_DAYS = 'AUTH_PERSISTENT_LOGIN_DAYS';
     // ---
 
     private const string SESSION_KEY = 'auth';
@@ -218,7 +218,7 @@ final class Auth
                 self::setCookie(
                     $cookieName,
                     $token,
-                    time() + 86400 * Env::getInt(self::ENV_PERSISTENT_LOGIN_DAYS)
+                    time() + 86400 * Env::getInt(self::ENV_AUTH_PERSISTENT_LOGIN_DAYS)
                 );
         }
 
@@ -377,7 +377,7 @@ final class Auth
             self::setCookie(
                 self::getPersistentCookieName(),
                 $token,
-                time() + 86400 * Env::getInt(self::ENV_PERSISTENT_LOGIN_DAYS)
+                time() + 86400 * Env::getInt(self::ENV_AUTH_PERSISTENT_LOGIN_DAYS)
             );
         else
             self::deleteCookie(self::getPersistentCookieName());
