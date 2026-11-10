@@ -275,11 +275,13 @@ final class DbTableException extends RuntimeException
     // ⚠️❗
 
     private ?string $sql = null;
+    private ?string $duplicateKey = null;
 
-    private function __construct(string $message, int $code, ?string $sql = null)
+    private function __construct(string $message, int $code, ?string $sql = null, ?string $duplicateKey = null)
     {
         parent::__construct($message, $code);
         $this->sql = $sql;
+        $this->duplicateKey = $duplicateKey;
     }
 
     /**
@@ -319,8 +321,16 @@ final class DbTableException extends RuntimeException
     public static function sqlError(string $method, string $tableName, string $sql, string $mysqlError, int $mysqlErrno = 0): self
     {
         // 1062 = duplicate key: a client conflict, not a server failure
-        if ($mysqlErrno === 1062)
-            return new self("Duplicate entry on table [$tableName]", 409, $sql);
+        if ($mysqlErrno === 1062) {
+            preg_match("/for key ['`](?:[^'`]+\\.)?([^'`]+)['`]/i", $mysqlError, $matches);
+
+            return new self(
+                "Duplicate entry on table [$tableName]",
+                409,
+                $sql,
+                $matches[1] ?? null
+            );
+        }
 
         return new self(
             "❗MySQL $method error on table [$tableName]: $mysqlError",
@@ -335,5 +345,13 @@ final class DbTableException extends RuntimeException
     public function getSql(): ?string
     {
         return $this->sql;
+    }
+
+    /**
+     * The violated unique index, if MySQL provided its name.
+     */
+    public function getDuplicateKey(): ?string
+    {
+        return $this->duplicateKey;
     }
 }

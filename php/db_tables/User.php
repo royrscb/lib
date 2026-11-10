@@ -5,6 +5,10 @@ declare(strict_types=1);
 final class User extends DbTable
 {
     private const array IDENTITY_COLUMNS = ['username', 'email'];
+    private const array IDENTITY_UNIQUE_KEYS = [
+        'uq_user_username' => 'username',
+        'uq_user_email' => 'email',
+    ];
     private const int USERNAME_MAX_LENGTH = 32;
     private const array USERNAME_ALLOWED_CHARS = ['_', '.'];
 
@@ -56,7 +60,11 @@ final class User extends DbTable
 
         unset($data['password']);
 
-        return parent::create($data);
+        try {
+            return parent::create($data);
+        } catch (DbTableException $e) {
+            self::throwIdentityConflict($e);
+        }
     }
 
     /**
@@ -66,7 +74,11 @@ final class User extends DbTable
     {
         $data = $this->validateIdentity($data);
 
-        return parent::update($id, $data);
+        try {
+            return parent::update($id, $data);
+        } catch (DbTableException $e) {
+            self::throwIdentityConflict($e);
+        }
     }
     
     // ---
@@ -190,6 +202,15 @@ final class User extends DbTable
         }
 
         return $data;
+    }
+
+    private static function throwIdentityConflict(DbTableException $e): never
+    {
+        $column = self::IDENTITY_UNIQUE_KEYS[$e->getDuplicateKey() ?? ''] ?? null;
+        if ($column === null)
+            throw $e;
+
+        throw new RuntimeException("'$column' already exists", 409, $e);
     }
 
     private static function validateUsername(string $username): void
