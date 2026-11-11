@@ -12,6 +12,9 @@ declare(strict_types=1);
  *   (then the message is also sent).
  * - Log file: LOG_FILEPATH_FROM_ROOT in the .env (relative to APP_ROOT, with an optional leading slash),
  *   or logs/error.log.
+ * - Forbidden access (403) and the events sent to logAccess() (for example failed logins) go to their own
+ *   access log: ACCESS_LOG_FILEPATH_FROM_ROOT in the .env, or logs/access.log. They are normal 4xx
+ *   responses, so they are kept apart from the errors.
  *
  * Registering the handlers does not read the .env file, so it can happen before application
  * configuration is loaded. Configuration is read when an error occurs; process environment
@@ -21,10 +24,14 @@ final class Errors
 {
     // Env vars ---
     private const string ENV_APP_DEBUG = 'APP_DEBUG';
-    private const string ENV_LOG_FILEPATH_FROM_ROOT = 'LOG_FILEPATH_FROM_ROOT';
+    private const string ENV_ERROR_LOG_FILEPATH_FROM_ROOT = 'ERROR_LOG_FILEPATH_FROM_ROOT';
+    private const string ENV_ACCESS_LOG_FILEPATH_FROM_ROOT = 'ACCESS_LOG_FILEPATH_FROM_ROOT';
     // ---
 
-    private const string DEFAULT_LOG_FILEPATH_FROM_ROOT = '/logs/error.log';
+    private const string DEFAULT_ERROR_LOG_FILEPATH_FROM_ROOT = '/logs/error.log';
+    private const string DEFAULT_ACCESS_LOG_FILEPATH_FROM_ROOT = '/logs/access.log';
+
+    // public --------------------------------------------------------------------------------------
 
     /**
      * Registers the application error and exception handlers.
@@ -71,7 +78,9 @@ final class Errors
         $status = is_int($code) && $code >= 400 && $code <= 599 ? $code : 500;
 
         if ($status >= 500)
-            self::log($status, $e);
+            self::logError($status, $e);
+        else if ($status === 403)
+            self::logAccess($status, $e->getMessage());
 
         try {
             $debug = Env::getBoolOrNull(self::ENV_APP_DEBUG) ?? false;
@@ -96,13 +105,41 @@ final class Errors
         echo json_encode(['error' => $message], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
-    // Appends the error to the log file. The query string is left out of the URI because it can carry secrets.
-    private static function log(int $status, Throwable $e): void
-    {
-        $path = Env::getOrNull(self::ENV_LOG_FILEPATH_FROM_ROOT) ?? self::DEFAULT_LOG_FILEPATH_FROM_ROOT;
-        $file = APP_ROOT.'/'.ltrim($path, '/');
+    // private -------------------------------------------------------------------------------------
 
-        $line = sprintf(
+    /**
+     * Logs a notable client-side event in the access log: failed logins, forbidden access.
+     * These are normal 4xx responses, so they go to their own file and not to the error log.
+     *
+     * @param int    $status  HTTP status of the event (401, 403...).
+     * @param string $message Short description. Never pass passwords or tokens.
+     */
+    private static function logAccess(int $status, string $message): void
+    {
+        $path = Env::getOrNull(self::ENV_ACCESS_LOG_FILEPATH_FROM_ROOT)
+            ?? self::DEFAULT_ACCESS_LOG_FILEPATH_FROM_ROOT;
+
+        // One event per line: line breaks in the message would let a client forge extra entries
+        $message = str_replace(["\r", "\n"], ' ', $message);
+
+        self::write($path, sprintf(
+            "[%s] [%d] %s %s %s %s\n",
+            date('c'),
+            $status,
+            $_SERVER['REQUEST_METHOD'] ?? 'CLI',
+            strtok($_SERVER['REQUEST_URI'] ?? 'cli', '?'),
+            $_SERVER['REMOTE_ADDR'] ?? '-',
+            $message
+        ));
+    }
+
+    // Appends the error to the error log. The query string is left out of the URI because it can carry secrets.
+    private static function logError(int $status, Throwable $e): void
+    {
+        $path = Env::getOrNull(self::ENV_ERROR_LOG_FILEPATH_FROM_ROOT)
+            ?? self::DEFAULT_ERROR_LOG_FILEPATH_FROM_ROOT;
+
+        self::write($path, sprintf(
             "[%s] [%d] %s %s %s\n%s\n",
             date('c'),
             $status,
@@ -110,13 +147,19 @@ final class Errors
             strtok($_SERVER['REQUEST_URI'] ?? 'cli', '?'),
             $_SERVER['REMOTE_ADDR'] ?? '-',
             $e
-        );
+        ));
+    }
+
+    // Appends a text to a log file (path relative to APP_ROOT, with an optional leading slash).
+    private static function write(string $path, string $text): void
+    {
+        $file = APP_ROOT.'/'.ltrim($path, '/');
 
         // @ because a warning here would become an exception inside the handler itself
         @mkdir(dirname($file), 0775, true);
 
-        // If the file can not be written, fall back to PHP's default log so the error is not lost
-        if (!@error_log($line, 3, $file))
-            error_log($line);
+        // If the file can not be written, fall back to PHP's default log so the text is not lost
+        if (!@error_log($text, 3, $file))
+            error_log($text);
     }
 }
