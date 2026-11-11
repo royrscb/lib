@@ -11,7 +11,7 @@ declare(strict_types=1);
  * - From 500 up the message is hidden and the error is logged, unless APP_DEBUG = 1/true in the .env
  *   (then the message is also sent).
  * - Log file: LOG_FILEPATH_FROM_ROOT in the .env (relative to APP_ROOT, with an optional leading slash),
- *   or logs/app.log.
+ *   or logs/error.log.
  *
  * Registering the handlers does not read the .env file, so it can happen before application
  * configuration is loaded. Configuration is read when an error occurs; process environment
@@ -24,7 +24,7 @@ final class Errors
     private const string ENV_LOG_FILEPATH_FROM_ROOT = 'LOG_FILEPATH_FROM_ROOT';
     // ---
 
-    private const string DEFAULT_LOG_FILEPATH_FROM_ROOT = '/logs/app.log';
+    private const string DEFAULT_LOG_FILEPATH_FROM_ROOT = '/logs/error.log';
 
     /**
      * Registers the application error and exception handlers.
@@ -78,7 +78,9 @@ final class Errors
         } catch (Throwable) {
             $debug = false;
         }
-        $message = $status < 500 || $debug ? $e->getMessage() : 'Internal server error';
+        $message = $status < 500 || $debug
+            ? $e->getMessage().($status >= 500 ? ' @ '.$e->getFile().':'.$e->getLine() : '')
+            : 'Internal server error';
 
         if (PHP_SAPI === 'cli') {
             fwrite(STDERR, "[$status] $message\n");

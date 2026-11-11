@@ -181,10 +181,13 @@ final class Api
      */
     public static function serve(?DbTable $dbTable, array $handlers): void
     {
-        $allowedMethods = array_values(array_unique(array_map(
-            static fn(string $key): HttpMethod => HttpMethod::from(explode(' ', $key, 2)[0]),
-            array_keys($handlers)
-        )));
+        $allowedMethods = array_values(array_map(
+            HttpMethod::from(...),
+            array_unique(array_map(
+                static fn(string $key): string => explode(' ', $key, 2)[0],
+                array_keys($handlers)
+            ))
+        ));
         $method = Request::getAllowedMethod($allowedMethods);
         $vars = Request::vars();
         $action = Request::getStringOrNull('action');
