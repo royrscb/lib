@@ -72,7 +72,8 @@ final class Api
      * - 'GET' => ApiAccess::Public                              the CRUD of that method, with that access
      * - 'PUT' => ApiAccess::Owner                               the CRUD, only on the user's own rows
      * - 'GET total' => [ApiAccess::Admin, fn($vars, $dbTable) => ...] a custom action: access + handler
-     * - 'POST cancel' => [null, fn($vars, $dbTable) => ...]            null: the handler checks the access itself
+     * - 'POST cancel' => [null, fn($vars, $dbTable) => ...] null: the handler checks the access itself
+ * - 'POST cancel' => fn($vars, $dbTable) => ... a bare function: the same as [null, fn], the handler checks the access itself
      * Successful generic POST returns 201 with the created row; generic DELETE returns 204 with no body.
      * Custom handlers return 200 with JSON unless POST, PUT, or DELETE returns null, in which case
      * they return 204 with no body. Generic DELETE always returns 204 with no body.
@@ -160,11 +161,12 @@ final class Api
      *
      * @param DbTable|null $dbTable Table served by the CRUD and given to the handlers, or null if there is none
      *        (the handlers then get null, and no rule can be the generic CRUD).
-     * @param array<string, ApiAccess|array{0: ApiAccess|null, 1: callable(array<string, mixed>, DbTable|null): mixed}> $handlers
+     * @param array<string, ApiAccess|Closure|array{0: ApiAccess|null, 1: callable(array<string, mixed>, DbTable|null): mixed}> $handlers
      *        Key is "METHOD" (the CRUD) or "METHOD action". Value is:
      *        - $access alone: runs the generic CRUD after checking the access. Not valid for an action.
      *        - [$access, $handler]: runs $handler after checking the access. The handler receives the request
      *          vars and $dbTable, and returns what is sent as JSON. ApiAccess::Owner is not valid here.
+     *        - a Closure alone: the same as [null, $handler], so the handler performs its own authorization checks.
      *        $access is an ApiAccess, or null when the handler performs its own authorization checks.
      *        null checks nothing, so the handler must enforce any required access.
      * @throws RuntimeException 400 if the body is JSON and is not valid,
@@ -194,7 +196,12 @@ final class Api
         $ruleKey = $action === null ? $method->value : "$method->value $action";
         $rule = $handlers[$ruleKey]
             ?? throw new RuntimeException("Cannot serve '$ruleKey': no handler declared for it", 404);
-        $isCrud = !is_array($rule);
+
+        // A bare function is a handler with no access check: the handler checks the access itself
+        if ($rule instanceof Closure)
+            $rule = [null, $rule];
+
+        $isCrud = $rule instanceof ApiAccess;
 
         if ($isCrud) {
             if ($action !== null)
@@ -202,7 +209,7 @@ final class Api
             if ($dbTable === null)
                 throw new LogicException("'$ruleKey' is the generic CRUD and needs a DbTable");
 
-            $result = self::crud($dbTable, $method, $vars, $rule);
+            $result = self::crud($dbTable, $method, $vars, access: $rule);
         }
         else {
             [$access, $handler] = $rule;
