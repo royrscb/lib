@@ -159,7 +159,8 @@ final class Api
      *       }],
      *   ]);
      *
-     * @param DbTable|null $dbTable Table served by the CRUD and given to the handlers, or null if there is none
+     * @param DbTable|class-string<DbTable>|null $dbTable Table served by the CRUD and given to the handlers, as an
+     *        instance or as its class (Product::class, resolved with Database::table()), or null if there is none
      *        (the handlers then get null, and no rule can be the generic CRUD).
      * @param array<string, ApiAccess|Closure|array{0: ApiAccess|null, 1: callable(array<string, mixed>, DbTable|null): mixed}> $handlers
      *        Key is "METHOD" (the CRUD) or "METHOD action". Value is:
@@ -181,8 +182,11 @@ final class Api
      *                          ApiAccess::Owner on a table without the 'user_id' columns it needs
      *                          (programming errors).
      */
-    public static function serve(?DbTable $dbTable, array $handlers): void
+    public static function serve(DbTable|string|null $dbTable, array $handlers): void
     {
+        if (is_string($dbTable))
+            $dbTable = Database::instance()->table($dbTable);
+
         $allowedMethods = array_values(array_map(
             HttpMethod::from(...),
             array_unique(array_map(

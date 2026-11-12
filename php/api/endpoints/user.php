@@ -3,7 +3,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/../../bootstrap.php';
 
-Api::serve(Database::instance()->table(User::class), [
+Api::serve(User::class, [
     'GET' => function (array $vars, User $userTable) {
         $id = Request::getInt('id');
         Auth::requireUser($id);
