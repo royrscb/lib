@@ -26,13 +26,6 @@ Api::serve(User::class, [
             ?? throw new RuntimeException('Not found', 404);
     },
 
-    'DELETE' => function (array $vars, User $userTable) {
-        $id = Request::getInt('id');
-        Auth::requireUser($id);
-
-        $userTable->delete($id);
-    },
-
     'PUT password' => function ($vars, User $userTable) {
         $id = Request::getInt('id');
         Auth::requireUser($id, allowAdmin: false);
@@ -42,5 +35,12 @@ Api::serve(User::class, [
 
         $userTable->changePassword($id, $currentPassword, $newPassword);
         Auth::passwordChanged($id);
+    },
+
+    'DELETE' => function (array $vars, User $userTable) {
+        $id = Request::getInt('id');
+        Auth::requireUser($id);
+
+        $userTable->delete($id);
     },
 ]);
