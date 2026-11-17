@@ -73,7 +73,7 @@ final class Api
      * - 'PUT' => ApiAccess::Owner                               the CRUD, only on the user's own rows
      * - 'GET total' => [ApiAccess::Admin, fn($vars, $dbTable) => ...] a custom action: access + handler
      * - 'POST cancel' => [null, fn($vars, $dbTable) => ...] null: the handler checks the access itself
- * - 'POST cancel' => fn($vars, $dbTable) => ... a bare function: the same as [null, fn], the handler checks the access itself
+     * - 'POST cancel' => fn($vars, $dbTable) => ... a bare function: the same as [null, fn], the handler checks the access itself
      * Successful generic POST returns 201 with the created row; generic DELETE returns 204 with no body.
      * Custom handlers return 200 with JSON unless POST, PUT, or DELETE returns null, in which case
      * they return 204 with no body. Generic DELETE always returns 204 with no body.
